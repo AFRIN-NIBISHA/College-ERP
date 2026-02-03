@@ -201,9 +201,13 @@ const Timetable = () => {
                                         return (
                                             <td key={period} className="p-2 border-r border-slate-100 min-w-[140px] text-center">
                                                 {subName !== '-' ? (
-                                                    <div className="p-2 rounded-lg bg-blue-50/50 border border-blue-100/50 hover:bg-white hover:shadow-sm transition-all cursor-default">
+                                                    <div className="p-2 rounded-lg bg-blue-50/50 border border-blue-100/50 hover:bg-white hover:shadow-sm transition-all cursor-default relative group">
                                                         <p className="text-xs font-bold text-blue-700">{subName}</p>
-                                                        <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wide">{staffName}</p>
+                                                        <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wide truncate">{staffName}</p>
+                                                        {/* Tooltip for full details */}
+                                                        <div className="absolute opacity-0 group-hover:opacity-100 bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-xs rounded shadow-lg pointer-events-none whitespace-nowrap z-10 transition-opacity">
+                                                            {subjects.find(s => s.id == (entry.subject_id || entry.subjectId))?.name}
+                                                        </div>
                                                     </div>
                                                 ) : <span className="text-slate-300">-</span>}
                                             </td>
@@ -241,6 +245,76 @@ const Timetable = () => {
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Course Details Summary Table */}
+            <div className="mt-8">
+                <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <BookOpen size={20} className="text-blue-600" />
+                    Course Details & Staff Allocation
+                </h3>
+                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-slate-50 border-b border-slate-200">
+                            <tr>
+                                <th className="px-6 py-4 font-bold text-slate-700 w-16 text-center">Sl. No.</th>
+                                <th className="px-6 py-4 font-bold text-slate-700 border-l border-slate-200">Course Code</th>
+                                <th className="px-6 py-4 font-bold text-slate-700 border-l border-slate-200">Course Name</th>
+                                <th className="px-6 py-4 font-bold text-slate-700 border-l border-slate-200">Name of the Staff</th>
+                                <th className="px-6 py-4 font-bold text-slate-700 w-24 text-center border-l border-slate-200">Credit</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {(() => {
+                                // Calculate unique subjects currently in the timetable
+                                const visibleSubjectIds = [...new Set(timetable.filter(t => t.subject_id || t.subjectId).map(t => t.subject_id || t.subjectId))];
+
+                                // Map to subject details
+                                const summaryData = visibleSubjectIds.map((subId, index) => {
+                                    const subject = subjects.find(s => s.id == subId) || {};
+
+                                    // Find staff assigned to this subject in the current timetable
+                                    const assignedStaffIds = [...new Set(timetable
+                                        .filter(t => (t.subject_id || t.subjectId) == subId && (t.staff_id || t.staffId))
+                                        .map(t => t.staff_id || t.staffId))];
+
+                                    const staffNames = assignedStaffIds.map(sid => {
+                                        const s = staff.find(st => st.id == sid);
+                                        return s ? s.name : null;
+                                    }).filter(Boolean).join(', ');
+
+                                    return {
+                                        index: index + 1,
+                                        code: subject.code || 'N/A',
+                                        name: subject.name || 'Unknown Subject',
+                                        staff: staffNames || 'Not Assigned',
+                                        credits: 3 // Default or fetch if available
+                                    };
+                                }).sort((a, b) => a.code.localeCompare(b.code));
+
+                                if (summaryData.length === 0) {
+                                    return (
+                                        <tr>
+                                            <td colSpan="5" className="px-6 py-8 text-center text-slate-400">
+                                                No subjects assigned in the timetable yet.
+                                            </td>
+                                        </tr>
+                                    );
+                                }
+
+                                return summaryData.map((row) => (
+                                    <tr key={row.code} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-6 py-4 text-center font-medium text-slate-600">{row.index}</td>
+                                        <td className="px-6 py-4 font-bold text-slate-800 border-l border-slate-100">{row.code}</td>
+                                        <td className="px-6 py-4 text-slate-700 border-l border-slate-100">{row.name}</td>
+                                        <td className="px-6 py-4 text-slate-700 border-l border-slate-100 font-medium">{row.staff}</td>
+                                        <td className="px-6 py-4 text-center text-slate-600 border-l border-slate-100">{row.credits}</td>
+                                    </tr>
+                                ));
+                            })()}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
