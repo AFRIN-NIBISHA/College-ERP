@@ -574,38 +574,49 @@ app.get('/api/reports/students', async (req, res) => {
 // 7. Attendance Endpoints
 
 // Save Attendance (Bulk Update/Insert)
+// Save Attendance (Period-wise)
 app.post('/api/attendance', async (req, res) => {
-    const { date, records } = req.body; // records: { studentId: 'Present'/'Absent' }
+    const { date, records, period } = req.body; // period is 1-8 or undefined (legacy)
+
+    // Validate period
+    let periodCol = null;
+    if (period && period >= 1 && period <= 8) {
+        periodCol = `period_${period}`;
+    }
 
     try {
         await db.query('BEGIN');
 
-        // Loop through records (for production, use bulk insert for better performance)
         for (const [studentId, status] of Object.entries(records)) {
-            await db.query(
-                `INSERT INTO attendance (student_id, date, status) 
-                 VALUES ($1, $2, $3) 
-                 ON CONFLICT (student_id, date) 
-                 DO UPDATE SET status = EXCLUDED.status`,
-                [studentId, date, status]
-            );
+            if (periodCol) {
+                // Upsert Period Attendance
+                // We use dynamic column name safely because we whitelist period 1-8 above
+                const query = `
+                    INSERT INTO attendance (student_id, date, status, ${periodCol}) 
+                    VALUES ($1, $2, 'Present', $3) 
+                    ON CONFLICT (student_id, date) 
+                    DO UPDATE SET ${periodCol} = EXCLUDED.${periodCol}
+                `;
+                // Note: We default main 'status' to 'Present' on insert, but don't overwrite it on update unless we want to logic it out.
+                // Logic: Just update the specific period. The main 'status' remains 'Present' (default) if inserted new.
+
+                await db.query(query, [studentId, date, status]);
+            } else {
+                // Legacy / Overall fallback (if no period selected)
+                await db.query(
+                    `INSERT INTO attendance (student_id, date, status) 
+                     VALUES ($1, $2, $3) 
+                     ON CONFLICT (student_id, date) 
+                     DO UPDATE SET status = EXCLUDED.status`,
+                    [studentId, date, status]
+                );
+            }
         }
 
         await db.query('COMMIT');
 
-        // Notify students about attendance update
-        // Note: For bulk updates, we iterate to find user IDs. Optimization: Do this only if necessary or limit batch size.
-        if (Object.keys(records).length > 0) {
-            // Fetch user IDs for these students
-            const studentIds = Object.keys(records);
-            const userRes = await db.query("SELECT user_id, name FROM students WHERE id = ANY($1)", [studentIds]);
-
-            for (const row of userRes.rows) {
-                if (row.user_id) {
-                    await createNotification(row.user_id, 'Attendance Updated', `New attendance record added for ${date}`, 'attendance');
-                }
-            }
-        }
+        // Notification logic... (Skip for period updates to avoid spam, or condense?)
+        // Let's notify only if absent? Or just mute for period updates.
 
         res.json({ message: 'Attendance saved successfully' });
     } catch (err) {
@@ -1371,16 +1382,16 @@ app.put('/api/notifications/:id/read', async (req, res) => {
 });
 
 // --- DEPLOYMENT CONFIGURATION ---
-const path = require('path');
+// const path = require('path');
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../client/dist')));
+// app.use(express.static(path.join(__dirname, '../client/dist')));
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-});
+// app.get('*', (req, res) => {
+//     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+// });
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

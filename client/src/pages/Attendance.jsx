@@ -7,7 +7,7 @@ const Attendance = () => {
     const { user } = useAuth();
     const isStudent = user?.role === 'student';
     const isHOD = user?.role === 'hod';
-    
+
     // 0 = Class Selection, 1 = Student List / Report View
     const [view, setView] = useState(isStudent ? 1 : 0); // HOD should start with class selection
     const [mode, setMode] = useState(isHOD ? 'report' : 'mark'); // HOD defaults to report mode
@@ -84,16 +84,20 @@ const Attendance = () => {
         }));
     };
 
+    const [period, setPeriod] = useState(1); // 1-8
+
     const submitAttendance = async () => {
         try {
             const date = new Date().toISOString().split('T')[0];
             await axios.post('/api/attendance', {
                 date,
+                period: period, // Send the period number (1-8)
                 records: attendance
             });
-            alert("Attendance Submitted Successfully!");
-            setView(0);
-            setSelectedClass(null);
+            alert(`Attendance for Period ${period} Submitted Successfully!`);
+            // Optional: Don't close view so they can mark next period?
+            // setView(0); 
+            // setSelectedClass(null);
         } catch (err) {
             console.error("Error submitting attendance", err);
             alert("Failed to save attendance");
@@ -117,7 +121,7 @@ const Attendance = () => {
                             {isHOD ? "Monitor Attendance" : "Attendance"}
                         </h2>
                         <p className="text-slate-500">
-                            {isStudent 
+                            {isStudent
                                 ? "Your Personal Attendance Record"
                                 : isHOD
                                     ? view === 0
@@ -194,13 +198,12 @@ const Attendance = () => {
                                                 </div>
                                             </td>
                                             <td className="p-4 text-center">
-                                                <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
-                                                    record.status === 'Present' 
-                                                        ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                                                        : record.status === 'Absent'
-                                                            ? 'bg-rose-100 text-rose-700 border border-rose-200'
-                                                            : 'bg-blue-100 text-blue-700 border border-blue-200'
-                                                }`}>
+                                                <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${record.status === 'Present'
+                                                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                                                    : record.status === 'Absent'
+                                                        ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                                                        : 'bg-blue-100 text-blue-700 border border-blue-200'
+                                                    }`}>
                                                     {record.status === 'Present' ? (
                                                         <><CheckCircle size={12} /> Present</>
                                                     ) : record.status === 'Absent' ? (
@@ -227,7 +230,7 @@ const Attendance = () => {
                 <div>
                     <div className="mb-6">
                         <p className="text-slate-600">
-                            {isHOD 
+                            {isHOD
                                 ? "Select a class to monitor attendance reports"
                                 : "Select a class to manage attendance"
                             }
@@ -246,14 +249,14 @@ const Attendance = () => {
                                             {cls.year}
                                         </div>
                                         <div>
-                                        <h3 className="font-bold text-slate-800 text-lg">{cls.year === 2 ? '2nd' : cls.year === 3 ? '3rd' : '4th'} Year</h3>
-                                        <p className="text-slate-500">Section {cls.section}</p>
+                                            <h3 className="font-bold text-slate-800 text-lg">{cls.year === 2 ? '2nd' : cls.year === 3 ? '3rd' : '4th'} Year</h3>
+                                            <p className="text-slate-500">Section {cls.section}</p>
+                                        </div>
                                     </div>
+                                    <ChevronRight className="text-slate-300 group-hover:text-slate-600 transition-colors" />
                                 </div>
-                                <ChevronRight className="text-slate-300 group-hover:text-slate-600 transition-colors" />
                             </div>
-                        </div>
-                    ))}
+                        ))}
                     </div>
                 </div>
             ) : (
@@ -263,8 +266,19 @@ const Attendance = () => {
                         {mode === 'mark' ? (
                             // Mark Attendance Interface
                             <>
-                                <div className="p-4 bg-slate-50/50 border-b border-slate-200 flex justify-between items-center">
-                                    <span className="font-semibold text-slate-700">Student List ({students.length})</span>
+                                <div className="p-4 bg-slate-50/50 border-b border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+                                    <div className="flex items-center gap-4">
+                                        <span className="font-semibold text-slate-700">Mark Attendance</span>
+                                        <select
+                                            value={period}
+                                            onChange={(e) => setPeriod(Number(e.target.value))}
+                                            className="bg-white border border-blue-200 text-blue-700 font-bold rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-blue-500"
+                                        >
+                                            {[1, 2, 3, 4, 5, 6, 7, 8].map(p => (
+                                                <option key={p} value={p}>Period {p}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                     <span className="text-sm text-slate-500">{new Date().toLocaleDateString()}</span>
                                 </div>
 
