@@ -832,7 +832,42 @@ app.post('/api/login', async (req, res) => {
 });
 
 
+app.post('/api/login/student', async (req, res) => {
+    const { name, roll_no, year, section } = req.body;
+    console.log('Student Login Attempt:', { name, roll_no, year, section });
 
+    try {
+        // Case insensitive match for name and roll_no
+        const result = await db.query(
+            "SELECT * FROM students WHERE name ILIKE $1 AND roll_no ILIKE $2 AND year = $3 AND section = $4",
+            [name.trim(), roll_no.trim(), year, section]
+        );
+
+        if (result.rows.length === 0) {
+            console.log("Student login failed: No match found");
+            return res.status(401).json({ message: 'Student details not found. Please check your inputs.' });
+        }
+
+        const student = result.rows[0];
+        console.log("Student login success:", student.name);
+
+        res.json({
+            message: 'Login successful',
+            user: {
+                id: student.user_id || 0, // 0 as fallback
+                username: student.roll_no,
+                role: 'student',
+                profileId: student.id,
+                name: student.name,
+                year: student.year,
+                section: student.section // Vital for Timetable
+            }
+        });
+    } catch (err) {
+        console.error("Student Login Error:", err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
 
 // --- NO DUE MODULE ---
 app.post('/api/no-due/request', async (req, res) => {
@@ -1226,12 +1261,57 @@ app.get('/api/student/subjects', async (req, res) => {
 // In-memory OTP Store (Production should use Redis or DB)
 const otpStore = new Map();
 
-app.post('/api/auth/register-check', (req, res) => {
-    res.status(403).json({ message: 'Registration is disabled by administrator.' });
+app.post('/api/auth/register-check', async (req, res) => {
+    const { name, mobile, role } = req.body;
+    try {
+        // Check if user already exists
+        const userCheck = await db.query("SELECT * FROM users WHERE mobile_number = $1 OR username = $2", [mobile, name]);
+        if (userCheck.rows.length > 0) {
+            return res.status(400).json({ message: 'User with this Name or Mobile already exists.' });
+        }
+
+        // Generate Mock OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        otpStore.set(mobile, otp);
+
+        // Simulate SMS Sending
+        console.log(`[MOCK SMS] OTP for ${name} (${mobile}): ${otp}`);
+
+        res.json({ message: 'OTP sent successfully to ' + mobile });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
 });
 
-app.post('/api/auth/register-verify', (req, res) => {
-    res.status(403).json({ message: 'Registration is disabled by administrator.' });
+app.post('/api/auth/register-verify', async (req, res) => {
+    const { name, mobile, otp, password, role } = req.body;
+    try {
+        // Verify OTP
+        const storedOtp = otpStore.get(mobile);
+        if (!storedOtp || storedOtp !== otp) {
+            return res.status(400).json({ message: 'Invalid or Expired OTP' });
+        }
+
+        // Create User
+        // Note: In a real app, hash the password!
+        const result = await db.query(
+            "INSERT INTO users (username, password, role, mobile_number) VALUES ($1, $2, $3, $4) RETURNING id",
+            [name, password, role, mobile]
+        );
+
+        const userId = result.rows[0].id;
+
+        // Also create entry in Staff/Student table if needed
+
+        // Clear OTP
+        otpStore.delete(mobile);
+
+        res.json({ message: 'Registration Successful! You can now login.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Registration failed. Try a different name.' });
+    }
 });
 
 // --- LOGIN & AUTH ---
@@ -1240,11 +1320,9 @@ app.post('/api/login', async (req, res) => {
     console.log("Body:", req.body);
 
     const { username, password } = req.body;
-    const cleanUsername = username?.trim();
-    const cleanPassword = password?.trim();
 
     // Emergency manual check
-    if (cleanUsername === 'admin' && cleanPassword === 'admin123') {
+    if (username === 'admin' && password === 'admin123') {
         console.log("Using Manual Admin Login");
         return res.json({
             message: 'Login successful',
@@ -1253,17 +1331,16 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        const result = await db.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1)', [cleanUsername]);
+        const result = await db.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1)', [username]);
         if (result.rows.length === 0) {
             console.log("User not found in DB");
             return res.status(401).json({ message: 'Invalid credentials (DB-USER)' });
         }
 
         const user = result.rows[0];
-        // Ensure passwords match exactly (case-sensitive)
-        if (user.password !== cleanPassword) {
-            console.log(`Password mismatch. Input: '${cleanPassword}', DB: '${user.password}'`);
-            return res.status(401).json({ message: 'Invalid credentials. Password Incorrect.' });
+        if (user.password !== password) {
+            console.log("Password mismatch in DB");
+            return res.status(401).json({ message: 'Invalid credentials (DB-PASS)' });
         }
 
         let profileId = null;
