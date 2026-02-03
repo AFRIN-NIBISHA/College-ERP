@@ -1261,6 +1261,8 @@ app.get('/api/student/subjects', async (req, res) => {
 // In-memory OTP Store (Production should use Redis or DB)
 const otpStore = new Map();
 
+const axios = require('axios'); // Ensure axios is required at top or here
+
 app.post('/api/auth/register-check', async (req, res) => {
     const { name, mobile, role } = req.body;
     try {
@@ -1270,14 +1272,37 @@ app.post('/api/auth/register-check', async (req, res) => {
             return res.status(400).json({ message: 'User with this Name or Mobile already exists.' });
         }
 
-        // Generate Mock OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        // Generate OTP
+        const otp = Math.floor(1000 + Math.random() * 9000).toString(); // 4 Digit for SMS
         otpStore.set(mobile, otp);
 
-        // Simulate SMS Sending
-        console.log(`[MOCK SMS] OTP for ${name} (${mobile}): ${otp}`);
+        console.log(`[OTP GENERATED] For ${name} (${mobile}): ${otp}`);
 
-        res.json({ message: 'OTP sent successfully to ' + mobile });
+        // --- SEND SMS (Fast2SMS Integration) ---
+        const apiKey = process.env.FAST2SMS_API_KEY;
+
+        if (apiKey) {
+            try {
+                // Using Fast2SMS 'otp' route which uses default template "Your OTP is XXXXX"
+                const smsRes = await axios.get('https://www.fast2sms.com/dev/bulkV2', {
+                    params: {
+                        authorization: apiKey,
+                        variables_values: otp,
+                        route: 'otp',
+                        numbers: mobile
+                    }
+                });
+                console.log("SMS API Response:", smsRes.data);
+            } catch (smsErr) {
+                console.error("SMS Send Failed:", smsErr.message);
+                // Don't fail the request, just log it. The user can see OTP in console if local.
+                // In production, this would be critical.
+            }
+        } else {
+            console.log("⚠️ No FAST2SMS_API_KEY found in .env. SMS not sent. Check Server Logs for OTP.");
+        }
+
+        res.json({ message: 'OTP sent to ' + mobile });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
