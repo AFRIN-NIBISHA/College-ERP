@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const db = require('./db');
 require('dotenv').config();
@@ -1382,15 +1383,17 @@ app.put('/api/notifications/:id/read', async (req, res) => {
 });
 
 // --- DEPLOYMENT CONFIGURATION ---
-const path = require('path');
+// Debugging path
+const clientBuildPath = path.resolve(__dirname, '../client/dist');
+console.log('Serving static files from:', clientBuildPath);
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../client/dist')));
+app.use(express.static(clientBuildPath));
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+app.get(/.*/, (req, res) => {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
 });
 
 app.listen(PORT, () => {
