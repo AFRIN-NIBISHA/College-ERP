@@ -1331,7 +1331,7 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+        const result = await db.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1)', [username]);
         if (result.rows.length === 0) {
             console.log("User not found in DB");
             return res.status(401).json({ message: 'Invalid credentials (DB-USER)' });
@@ -1392,7 +1392,7 @@ app.use(express.static(clientBuildPath));
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
-app.get('*', (req, res) => {
+app.get(/.*/, (req, res) => {
     res.sendFile(path.join(clientBuildPath, 'index.html'));
 });
 
