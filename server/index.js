@@ -1240,9 +1240,11 @@ app.post('/api/login', async (req, res) => {
     console.log("Body:", req.body);
 
     const { username, password } = req.body;
+    const cleanUsername = username?.trim();
+    const cleanPassword = password?.trim();
 
     // Emergency manual check
-    if (username === 'admin' && password === 'admin123') {
+    if (cleanUsername === 'admin' && cleanPassword === 'admin123') {
         console.log("Using Manual Admin Login");
         return res.json({
             message: 'Login successful',
@@ -1251,16 +1253,17 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        const result = await db.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1)', [username]);
+        const result = await db.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1)', [cleanUsername]);
         if (result.rows.length === 0) {
             console.log("User not found in DB");
             return res.status(401).json({ message: 'Invalid credentials (DB-USER)' });
         }
 
         const user = result.rows[0];
-        if (user.password !== password) {
-            console.log("Password mismatch in DB");
-            return res.status(401).json({ message: 'Invalid credentials (DB-PASS)' });
+        // Ensure passwords match exactly (case-sensitive)
+        if (user.password !== cleanPassword) {
+            console.log(`Password mismatch. Input: '${cleanPassword}', DB: '${user.password}'`);
+            return res.status(401).json({ message: 'Invalid credentials. Password Incorrect.' });
         }
 
         let profileId = null;
