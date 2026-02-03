@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+:root {
+    font-family: 'Outfit', sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+
+    color-scheme: light;
+    color: #1e293b;
+    /* slate-800 */
+    background-color: #f1f5f9;
+    /* slate-100 - slightly darker than pure white for depth */
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+    /* Subtle gradient background */
+    position: relative;
+    /* College Logo Background */
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60vh;
+    height: 60vh;
+    background-image: url('/src/assets/dmi_logo.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0.10;
+    /* 10% visible as requested (user said 30% but usually 30 is too strong, I will use 0.1 but can adjust) */
+    /* User specifically asked for 30% visible, let's try 0.15 first as 0.3 might be too distracting for text readability */
+    /* Actually user asked: "30% visible", which typically means opacity: 0.3 */
+    opacity: 0.3;
+    z-index: -1;
+    pointer-events: none;
+    filter: grayscale(100%);
+    /* Optional: makes it look more like a watermark */
+}
+
+/* Glassmorphism Utilities */
+.glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    /* More opaque for better readability in light mode */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.02),
+        0 10px 15px -3px rgba(0, 0, 0, 0.04),
+        /* Softer, deeper shadow */
+        0 0 0 1px rgba(0, 0, 0, 0.02);
+    /* Subtle inner border via shadow */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-card:hover {
+    box-shadow:
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: translateY(-5px);
+    /* Pop up effect */
+}
