@@ -1226,57 +1226,12 @@ app.get('/api/student/subjects', async (req, res) => {
 // In-memory OTP Store (Production should use Redis or DB)
 const otpStore = new Map();
 
-app.post('/api/auth/register-check', async (req, res) => {
-    const { name, mobile, role } = req.body;
-    try {
-        // Check if user already exists
-        const userCheck = await db.query("SELECT * FROM users WHERE mobile_number = $1 OR username = $2", [mobile, name]);
-        if (userCheck.rows.length > 0) {
-            return res.status(400).json({ message: 'User with this Name or Mobile already exists.' });
-        }
-
-        // Generate Mock OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        otpStore.set(mobile, otp);
-
-        // Simulate SMS Sending
-        console.log(`[MOCK SMS] OTP for ${name} (${mobile}): ${otp}`);
-
-        res.json({ message: 'OTP sent successfully to ' + mobile });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
-    }
+app.post('/api/auth/register-check', (req, res) => {
+    res.status(403).json({ message: 'Registration is disabled by administrator.' });
 });
 
-app.post('/api/auth/register-verify', async (req, res) => {
-    const { name, mobile, otp, password, role } = req.body;
-    try {
-        // Verify OTP
-        const storedOtp = otpStore.get(mobile);
-        if (!storedOtp || storedOtp !== otp) {
-            return res.status(400).json({ message: 'Invalid or Expired OTP' });
-        }
-
-        // Create User
-        // Note: In a real app, hash the password!
-        const result = await db.query(
-            "INSERT INTO users (username, password, role, mobile_number) VALUES ($1, $2, $3, $4) RETURNING id",
-            [name, password, role, mobile]
-        );
-
-        const userId = result.rows[0].id;
-
-        // Also create entry in Staff/Student table if needed
-
-        // Clear OTP
-        otpStore.delete(mobile);
-
-        res.json({ message: 'Registration Successful! You can now login.' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Registration failed. Try a different name.' });
-    }
+app.post('/api/auth/register-verify', (req, res) => {
+    res.status(403).json({ message: 'Registration is disabled by administrator.' });
 });
 
 // --- LOGIN & AUTH ---

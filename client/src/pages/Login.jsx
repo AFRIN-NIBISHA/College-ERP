@@ -127,15 +127,7 @@ const Login = () => {
                                             required
                                         />
                                     </div>
-                                    <div className="text-right">
-                                        <button
-                                            type="button"
-                                            onClick={() => navigate('/register')}
-                                            className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors"
-                                        >
-                                            First Time? Create Account
-                                        </button>
-                                    </div>
+
                                 </div>
                             </div>
 
