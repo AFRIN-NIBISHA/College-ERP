@@ -832,42 +832,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 
-app.post('/api/login/student', async (req, res) => {
-    const { name, roll_no, year, section } = req.body;
-    console.log('Student Login Attempt:', { name, roll_no, year, section });
 
-    try {
-        // Case insensitive match for name and roll_no
-        const result = await db.query(
-            "SELECT * FROM students WHERE name ILIKE $1 AND roll_no ILIKE $2 AND year = $3 AND section = $4",
-            [name.trim(), roll_no.trim(), year, section]
-        );
-
-        if (result.rows.length === 0) {
-            console.log("Student login failed: No match found");
-            return res.status(401).json({ message: 'Student details not found. Please check your inputs.' });
-        }
-
-        const student = result.rows[0];
-        console.log("Student login success:", student.name);
-
-        res.json({
-            message: 'Login successful',
-            user: {
-                id: student.user_id || 0, // 0 as fallback
-                username: student.roll_no,
-                role: 'student',
-                profileId: student.id,
-                name: student.name,
-                year: student.year,
-                section: student.section // Vital for Timetable
-            }
-        });
-    } catch (err) {
-        console.error("Student Login Error:", err);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
 
 // --- NO DUE MODULE ---
 app.post('/api/no-due/request', async (req, res) => {
