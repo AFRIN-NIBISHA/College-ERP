@@ -1246,17 +1246,33 @@ app.post('/api/login/student', async (req, res) => {
 });
 
 // --- NO DUE MODULE ---
+// --- NO DUE MODULE ---
 app.post('/api/no-due/request', async (req, res) => {
     const { student_id, semester } = req.body;
     try {
-        const result = await db.query(
-            "INSERT INTO no_dues (student_id, semester) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *",
-            [student_id, semester]
-        );
+        console.log(`No Due Request: Student ${student_id}, Sem ${semester}`);
+
+        // UPSERT: Insert or Update if exists
+        // We reset office_status to 'Pending' to reopen the request if it was previously rejected/closed
+        const query = `
+            INSERT INTO no_dues (student_id, semester, office_status, created_at)
+            VALUES ($1, $2, 'Pending', NOW())
+            ON CONFLICT (student_id, semester) 
+            DO UPDATE SET 
+                office_status = 'Pending', 
+                created_at = NOW() -- optional: bump timestamp
+            RETURNING *;
+        `;
+
+        const result = await db.query(query, [student_id, semester]);
 
         if (result.rows.length > 0) {
+            const row = result.rows[0];
+            console.log("Request Processed:", row.id);
+
             // Fetch student details for notification
             const studentRes = await db.query("SELECT name, roll_no FROM students WHERE id = $1", [student_id]);
+
             if (studentRes.rows.length > 0) {
                 const { name, roll_no } = studentRes.rows[0];
 
@@ -1265,17 +1281,20 @@ app.post('/api/no-due/request', async (req, res) => {
 
                 // Notify each office user
                 for (const user of officeUsers.rows) {
-                    await db.query(
-                        "INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)",
-                        [user.id, 'New No Due Request', `Student ${name} (${roll_no}) has requested No Due clearance.`, 'info']
+                    await createNotification(
+                        user.id,
+                        'New No Due Request',
+                        `Student ${name} (${roll_no}) has requested No Due clearance.`,
+                        'info'
                     );
                 }
+                console.log(`Notified ${officeUsers.rows.length} Office users.`);
             }
         }
 
-        res.json({ message: 'Request submitted' });
+        res.json({ message: 'Request submitted successfully' });
     } catch (err) {
-        console.error(err);
+        console.error("No Due Request Error:", err);
         res.status(500).json({ message: 'Server error' });
     }
 });
