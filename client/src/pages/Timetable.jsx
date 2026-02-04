@@ -186,13 +186,6 @@ const Timetable = () => {
                             </select>
                         </div>
                         <button
-                            onClick={handlePopulate}
-                            disabled={loading}
-                            className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2"
-                        >
-                            <span className="whitespace-nowrap">Populate Default</span>
-                        </button>
-                        <button
                             onClick={saveTimetable}
                             disabled={loading}
                             className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-blue-500/30 transition-all flex items-center gap-2"
