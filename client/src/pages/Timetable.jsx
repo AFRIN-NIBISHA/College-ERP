@@ -306,13 +306,15 @@ const Timetable = () => {
                                     }).filter(Boolean).join(', ');
 
                                     return {
-                                        index: index + 1,
                                         code: subject.code || 'N/A',
                                         name: subject.name || 'Unknown Subject',
                                         staff: staffNames || 'Not Assigned',
-                                        credits: 3 // Default or fetch if available
+                                        credits: 3, // Default
+                                        isValid: !!subject.id // Mark layout
                                     };
-                                }).sort((a, b) => a.code.localeCompare(b.code));
+                                })
+                                    .filter(item => item.isValid) // Hide N/A rows
+                                    .sort((a, b) => a.code.localeCompare(b.code));
 
                                 if (summaryData.length === 0) {
                                     return (
@@ -324,9 +326,9 @@ const Timetable = () => {
                                     );
                                 }
 
-                                return summaryData.map((row) => (
+                                return summaryData.map((row, idx) => (
                                     <tr key={row.code} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-6 py-4 text-center font-medium text-slate-600">{row.index}</td>
+                                        <td className="px-6 py-4 text-center font-medium text-slate-600">{idx + 1}</td>
                                         <td className="px-6 py-4 font-bold text-slate-800 border-l border-slate-100">{row.code}</td>
                                         <td className="px-6 py-4 text-slate-700 border-l border-slate-100">{row.name}</td>
                                         <td className="px-6 py-4 text-slate-700 border-l border-slate-100 font-medium">{row.staff}</td>
