@@ -27,21 +27,16 @@ const Login = () => {
         setIsLoading(true);
 
         try {
-            let res;
-            if (role === 'student') {
-                res = await axios.post('/api/login/student', studentData);
-            } else {
-                res = await axios.post('/api/login', {
-                    username: staffData.username,
-                    password: staffData.password,
-                    role: 'staff'
-                });
-            }
+            // Unified Login Attempt
+            const res = await axios.post('/api/login', {
+                username: staffData.username,
+                password: staffData.password,
+                role: staffRole // Now includes 'student' as a possible role
+            });
 
             const userData = res.data.user;
-            if (role === 'staff') {
-                userData.role = staffRole.toLowerCase();
-            }
+            // Ensure the local role matches selected (though backend should validate this too)
+            userData.role = staffRole.toLowerCase();
 
             login(userData);
             navigate('/');
@@ -104,28 +99,9 @@ const Login = () => {
                                 <img src={logo} alt="Logo" className="w-12 h-12 object-contain" />
                             </div>
                             <h2 className="text-3xl font-bold text-slate-800 animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>Welcome Back</h2>
-                            <p className="text-slate-500 animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: '400ms', animationFillMode: 'both' }}>Please enter your details to sign in.</p>
-                        </div>
-
-                        {/* Custom Tab Switcher */}
-                        <div className="bg-slate-100/80 p-1.5 rounded-xl flex relative">
-                            <div
-                                className={`absolute top-1.5 bottom-1.5 w-[calc(50%-0.375rem)] bg-white rounded-lg shadow-sm transition-all duration-300 ease-out ${role === 'student' ? 'left-1.5' : 'left-[calc(50%+0.375rem)]'}`}
-                            ></div>
-                            <button
-                                onClick={() => setRole('student')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg relative z-10 transition-colors duration-300 ${role === 'student' ? 'text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
-                            >
-                                <GraduationCap size={16} />
-                                Student
-                            </button>
-                            <button
-                                onClick={() => setRole('staff')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg relative z-10 transition-colors duration-300 ${role === 'staff' ? 'text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
-                            >
-                                <ShieldCheck size={16} />
-                                Staff
-                            </button>
+                            <p className="text-slate-500 animate-in fade-in slide-in-from-bottom-4 duration-700" style={{ animationDelay: '400ms', animationFillMode: 'both' }}>
+                                Enter your credentials to access the portal.
+                            </p>
                         </div>
 
                         {error && (
@@ -136,131 +112,65 @@ const Login = () => {
                         )}
 
                         <form onSubmit={handleSubmit} className="space-y-5">
-                            {role === 'student' ? (
-                                <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Full Name</label>
-                                        <div className="relative group">
-                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors duration-300" size={18} />
-                                            <input
-                                                type="text"
-                                                className="w-full bg-white border-2 border-slate-100 rounded-xl py-3.5 pl-11 pr-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-slate-700 placeholder:text-slate-300"
-                                                placeholder="John Doe"
-                                                value={studentData.name}
-                                                onChange={(e) => setStudentData({ ...studentData, name: e.target.value })}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Register No</label>
-                                        <div className="relative group">
-                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors duration-300" size={18} />
-                                            <input
-                                                type="text"
-                                                className="w-full bg-white border-2 border-slate-100 rounded-xl py-3.5 pl-11 pr-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-slate-700 placeholder:text-slate-300 uppercase"
-                                                placeholder="CSE001"
-                                                value={studentData.roll_no}
-                                                onChange={(e) => setStudentData({ ...studentData, roll_no: e.target.value })}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Year</label>
-                                            <div className="relative">
-                                                <select
-                                                    value={studentData.year}
-                                                    onChange={(e) => setStudentData({ ...studentData, year: e.target.value })}
-                                                    className="w-full bg-white border-2 border-slate-100 rounded-xl py-3.5 px-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-slate-700 appearance-none"
-                                                >
-                                                    <option value="1">1st Year</option>
-                                                    <option value="2">2nd Year</option>
-                                                    <option value="3">3rd Year</option>
-                                                    <option value="4">4th Year</option>
-                                                </select>
-                                                <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 rotate-90 pointer-events-none" size={16} />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Section</label>
-                                            <div className="relative">
-                                                <select
-                                                    value={studentData.section}
-                                                    onChange={(e) => setStudentData({ ...studentData, section: e.target.value })}
-                                                    className="w-full bg-white border-2 border-slate-100 rounded-xl py-3.5 px-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-slate-700 appearance-none"
-                                                >
-                                                    <option value="A">A</option>
-                                                    <option value="B">B</option>
-                                                    <option value="C">C</option>
-                                                </select>
-                                                <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 rotate-90 pointer-events-none" size={16} />
-                                            </div>
-                                        </div>
+                            <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Username / Roll No</label>
+                                    <div className="relative group">
+                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors duration-300" size={18} />
+                                        <input
+                                            type="text"
+                                            className="w-full bg-white border-2 border-slate-100 rounded-xl py-3.5 pl-11 pr-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-slate-700 placeholder:text-slate-300"
+                                            placeholder="Enter ID or Username"
+                                            value={staffData.username}
+                                            onChange={(e) => setStaffData({ ...staffData, username: e.target.value })}
+                                            required
+                                        />
                                     </div>
                                 </div>
-                            ) : (
-                                <div className="space-y-4 animate-in fade-in slide-in-from-right-8 duration-500">
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Role</label>
-                                        <div className="relative">
-                                            <select
-                                                value={staffRole}
-                                                onChange={(e) => setStaffRole(e.target.value)}
-                                                className="w-full bg-white border-2 border-slate-100 rounded-xl py-3.5 px-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-slate-700 appearance-none"
-                                            >
-                                                <option value="staff">Staff</option>
-                                                <option value="hod">HOD</option>
-                                                <option value="office">Office</option>
-                                                <option value="principal">Principal</option>
-                                            </select>
-                                            <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 rotate-90 pointer-events-none" size={16} />
-                                        </div>
-                                    </div>
 
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Username</label>
-                                        <div className="relative group">
-                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors duration-300" size={18} />
-                                            <input
-                                                type="text"
-                                                className="w-full bg-white border-2 border-slate-100 rounded-xl py-3.5 pl-11 pr-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-slate-700 placeholder:text-slate-300"
-                                                placeholder="Enter Username"
-                                                value={staffData.username}
-                                                onChange={(e) => setStaffData({ ...staffData, username: e.target.value })}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Password</label>
-                                        <div className="relative group">
-                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors duration-300" size={18} />
-                                            <input
-                                                type="password"
-                                                className="w-full bg-white border-2 border-slate-100 rounded-xl py-3.5 pl-11 pr-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-slate-700 placeholder:text-slate-300"
-                                                placeholder="••••••••"
-                                                value={staffData.password}
-                                                onChange={(e) => setStaffData({ ...staffData, password: e.target.value })}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="text-right">
-                                            <button
-                                                type="button"
-                                                onClick={() => navigate('/register')}
-                                                className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors"
-                                            >
-                                                First Time? Create Account
-                                            </button>
-                                        </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Password</label>
+                                    <div className="relative group">
+                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors duration-300" size={18} />
+                                        <input
+                                            type="password"
+                                            className="w-full bg-white border-2 border-slate-100 rounded-xl py-3.5 pl-11 pr-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-slate-700 placeholder:text-slate-300"
+                                            placeholder="••••••••"
+                                            value={staffData.password}
+                                            onChange={(e) => setStaffData({ ...staffData, password: e.target.value })}
+                                            required
+                                        />
                                     </div>
                                 </div>
-                            )}
+
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Role</label>
+                                    <div className="relative">
+                                        <select
+                                            value={staffRole}
+                                            onChange={(e) => setStaffRole(e.target.value)}
+                                            className="w-full bg-white border-2 border-slate-100 rounded-xl py-3.5 px-4 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-slate-700 appearance-none"
+                                        >
+                                            <option value="student">Student</option>
+                                            <option value="staff">Staff</option>
+                                            <option value="hod">HOD</option>
+                                            <option value="office">Office</option>
+                                            <option value="principal">Principal</option>
+                                        </select>
+                                        <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 rotate-90 pointer-events-none" size={16} />
+                                    </div>
+                                </div>
+
+                                <div className="text-right">
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/register')}
+                                        className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                                    >
+                                        Register New Account
+                                    </button>
+                                </div>
+                            </div>
 
                             <div className="pt-2">
                                 <button
@@ -272,7 +182,7 @@ const Login = () => {
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                     ) : (
                                         <>
-                                            Sign In to Portal
+                                            Secure Login
                                             <ArrowRight size={18} />
                                         </>
                                     )}
