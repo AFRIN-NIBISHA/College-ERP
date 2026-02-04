@@ -700,6 +700,27 @@ app.get('/api/attendance/report', async (req, res) => {
     }
 });
 
+// --- METADATA ENDPOINTS ---
+app.get('/api/staff', async (req, res) => {
+    try {
+        const result = await db.query("SELECT * FROM staff ORDER BY name");
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.get('/api/subjects', async (req, res) => {
+    try {
+        const result = await db.query("SELECT * FROM subjects ORDER BY subject_code");
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 // --- MARKS ENDPOINTS ---
 
 // Get marks for a specific class and subject
