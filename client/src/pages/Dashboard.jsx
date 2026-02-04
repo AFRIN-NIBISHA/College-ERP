@@ -38,10 +38,27 @@ const Dashboard = () => {
     const [showNoticeModal, setShowNoticeModal] = useState(false);
     const [noticeForm, setNoticeForm] = useState({ title: '', content: '' });
 
+    const [classInfo, setClassInfo] = useState({});
+
     useEffect(() => {
         fetchStats();
         fetchNotices();
     }, []);
+
+    useEffect(() => {
+        if (user?.role === 'student' && user.year && user.section) {
+            fetchClassInfo();
+        }
+    }, [user]);
+
+    const fetchClassInfo = async () => {
+        try {
+            const res = await axios.get(`/api/class-details?year=${user.year}&section=${user.section}`);
+            setClassInfo(res.data);
+        } catch (err) {
+            console.error("Fetch Class Info Error", err);
+        }
+    };
 
     const fetchStats = () => {
         axios.get('/api/stats')
@@ -108,11 +125,24 @@ const Dashboard = () => {
                             <span className="text-emerald-400 text-xs font-bold uppercase tracking-wide">Active Semester</span>
                         </div>
                     </div>
-                    <div className="relative z-10 hidden sm:block">
-                        <div className="w-20 h-20 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm">
-                            <GraduationCap size={40} className="text-blue-200" />
+
+                    {/* Only for Student: Show In-Charge Info */}
+                    {user?.role === 'student' && classInfo?.in_charge_name && (
+                        <div className="relative z-10 hidden sm:block text-right">
+                            <p className="text-slate-400 text-xs font-bold uppercase tracking-wide mb-1">Class In-Charge</p>
+                            <p className="text-xl font-bold text-white mb-1">{classInfo.in_charge_name}</p>
+                            <p className="text-sm text-emerald-300 font-mono tracking-wide">{classInfo.in_charge_phone}</p>
                         </div>
-                    </div>
+                    )}
+
+                    {/* Default Icon for others */}
+                    {user?.role !== 'student' && (
+                        <div className="relative z-10 hidden sm:block">
+                            <div className="w-20 h-20 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm">
+                                <GraduationCap size={40} className="text-blue-200" />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <StatCard title="Total Students" value={stats.students || 0} icon={Users} color="bg-blue-500 text-blue-600" trend="+12%" />

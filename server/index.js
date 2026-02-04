@@ -1853,6 +1853,21 @@ app.get('/api/notifications', async (req, res) => {
     }
 });
 
+// --- CLASS DETAILS ---
+app.get('/api/class-details', async (req, res) => {
+    const { year, section } = req.query;
+    try {
+        const result = await db.query(
+            "SELECT * FROM class_details WHERE year = $1 AND section = $2",
+            [year, section]
+        );
+        res.json(result.rows[0] || {});
+    } catch (err) {
+        console.error("Class Details Error:", err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 app.put('/api/notifications/:id/read', async (req, res) => {
     const { id } = req.params;
     try {
