@@ -848,36 +848,63 @@ app.post('/api/login', async (req, res) => {
             });
         }
 
-        // 2. Database User Check
-        // Case insensitive username match
+        // 2. Database User Check (Standard Flow)
         const result = await db.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1)', [username]);
 
-        if (result.rows.length === 0) {
-            console.log(`Login Failed: User ${username} not found`);
+        let user = null;
+        if (result.rows.length > 0) {
+            user = result.rows[0];
+            // Password Check
+            if (user.password !== password) {
+                console.log(`Login Failed: Password mismatch for ${username}`);
+                return res.status(401).json({ message: 'Invalid credentials' });
+            }
+        }
+
+        // 3. FALLBACK: Student Legacy Login (Name + RollNo)
+        // Check if user is trying to login as student using Name and RollNo
+        // Here, frontend sends Name as 'username' and RollNo as 'password'
+        if (!user && (role === 'student' || role === 'student'.toLowerCase())) {
+            console.log("Attempting Legacy Student Login:", username);
+            const studentRes = await db.query(
+                "SELECT * FROM students WHERE name ILIKE $1 AND roll_no = $2",
+                [username.trim(), password.trim()]
+            );
+
+            if (studentRes.rows.length > 0) {
+                const student = studentRes.rows[0];
+                console.log("Legacy Student Login Success:", student.name);
+
+                // Construct a virtual user object
+                user = {
+                    id: student.user_id || 99999, // Fallback ID if user_id is null
+                    username: student.roll_no, // Use roll_no as username for potential future linking
+                    role: 'student',
+                    password: '', // sensitive
+                    profileId: student.id,
+                    // Add extra fields useful for frontend
+                    name: student.name,
+                    year: student.year,
+                    section: student.section
+                };
+            }
+        }
+
+        if (!user) {
+            console.log(`Login Failed: User ${username} not found in Users or Students table`);
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        const user = result.rows[0];
-
-        // 3. Password Check (Plain text for now as per current schema)
-        if (user.password !== password) {
-            console.log(`Login Failed: Password mismatch for ${username}`);
-            return res.status(401).json({ message: 'Invalid credentials' });
-        }
-
-        // 4. Role Check (Optional but recommended)
-        // If the frontend sends a role, we should verify strictly, but 'student' role logic is flexible in DB
-        // Let's ensure the user actually has the role they claim if strictly needed.
-        // For now, we trust the DB role.
-
-        // 5. Fetch Profile ID (for Students/Staff)
-        let profileId = null;
-        if (user.role === 'student') {
-            const sRes = await db.query("SELECT id FROM students WHERE user_id = $1", [user.id]);
-            if (sRes.rows.length > 0) profileId = sRes.rows[0].id;
-        } else if (['staff', 'hod', 'principal', 'office'].includes(user.role)) {
-            const sRes = await db.query("SELECT id FROM staff WHERE user_id = $1", [user.id]);
-            if (sRes.rows.length > 0) profileId = sRes.rows[0].id;
+        // 4. Fetch Profile ID (if not already set by legacy fallback)
+        let profileId = user.profileId;
+        if (!profileId) {
+            if (user.role === 'student') {
+                const sRes = await db.query("SELECT id FROM students WHERE user_id = $1", [user.id]);
+                if (sRes.rows.length > 0) profileId = sRes.rows[0].id;
+            } else if (['staff', 'hod', 'principal', 'office'].includes(user.role)) {
+                const sRes = await db.query("SELECT id FROM staff WHERE user_id = $1", [user.id]);
+                if (sRes.rows.length > 0) profileId = sRes.rows[0].id;
+            }
         }
 
         res.json({
