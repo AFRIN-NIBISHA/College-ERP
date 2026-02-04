@@ -865,28 +865,37 @@ app.post('/api/login', async (req, res) => {
         // Check if user is trying to login as student using Name and RollNo
         // Here, frontend sends Name as 'username' and RollNo as 'password'
         if (!user && (role === 'student' || role === 'student'.toLowerCase())) {
-            console.log("Attempting Legacy Student Login:", username);
-            const studentRes = await db.query(
-                "SELECT * FROM students WHERE name ILIKE $1 AND roll_no = $2",
-                [username.trim(), password.trim()]
-            );
+            console.log(`[Legacy Login] Attempting for Username: '${username}' with Password/RollNo: '${password}'`);
+
+            // Strategy: Look up by RollNo (password) first, as it's likely unique/structured
+            const studentRes = await db.query("SELECT * FROM students WHERE roll_no = $1", [password.trim()]);
 
             if (studentRes.rows.length > 0) {
                 const student = studentRes.rows[0];
-                console.log("Legacy Student Login Success:", student.name);
+                // Verify Name (Case insensitive, allowed to be partial match if user is lazy?)
+                // Let's require the input name to be contained in the DB name or vice versa to be safe but flexible
+                const nInput = username.trim().toLowerCase();
+                const nDb = student.name.toLowerCase();
 
-                // Construct a virtual user object
-                user = {
-                    id: student.user_id || 99999, // Fallback ID if user_id is null
-                    username: student.roll_no, // Use roll_no as username for potential future linking
-                    role: 'student',
-                    password: '', // sensitive
-                    profileId: student.id,
-                    // Add extra fields useful for frontend
-                    name: student.name,
-                    year: student.year,
-                    section: student.section
-                };
+                // Check strict-ish equality first, then loose
+                if (nDb === nInput || nDb.includes(nInput) || nInput.includes(nDb)) {
+                    console.log("Legacy Student Login Success:", student.name);
+
+                    user = {
+                        id: student.user_id || 99999,
+                        username: student.roll_no,
+                        role: 'student',
+                        password: '',
+                        profileId: student.id,
+                        name: student.name,
+                        year: student.year,
+                        section: student.section
+                    };
+                } else {
+                    console.log(`Legacy Login Fail: RollNo found, but Name mismatch. DB: '${student.name}', Input: '${username}'`);
+                }
+            } else {
+                console.log("[Legacy Login] No student found with this Roll No (Password).");
             }
         }
 
