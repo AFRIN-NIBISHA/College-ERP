@@ -1311,7 +1311,7 @@ app.get('/api/no-due', async (req, res) => {
         // Updated query to include Fee Details
         let query = `
             SELECT nd.*, s.name, s.roll_no, s.year, s.section, s.department,
-                   f.total_amount, f.paid_amount, f.status as fee_status
+                   f.total_fee, f.paid_amount, f.status as fee_status
             FROM no_dues nd
             JOIN students s ON nd.student_id = s.id
             LEFT JOIN fees f ON nd.student_id = f.student_id
@@ -1319,9 +1319,17 @@ app.get('/api/no-due', async (req, res) => {
         `;
         const params = [];
 
-        if (role === 'student' && student_id) {
+        // Filter for specific student if provided
+        if (student_id) {
             params.push(student_id);
             query += ` AND nd.student_id = $${params.length}`;
+        }
+
+        // Office users can see all No Due requests
+        // Students can only see their own requests
+        if (role === 'student' && !student_id) {
+            // If student role but no student_id provided, return empty
+            return res.json([]);
         }
 
         query += " ORDER BY nd.created_at DESC";
