@@ -83,14 +83,21 @@ const NoDue = () => {
     const handleRequest = async () => {
         if (!isStudent) return;
         try {
-            await axios.post('/api/no-due/request', {
+            const res = await axios.post('/api/no-due/request', {
                 student_id: user.profileId,
                 semester: 8 // Assuming final sem, or fetch from student data
             });
-            fetchRequests();
-            alert("No Due Request Submitted!");
+            console.log("Submit Response:", res.data);
+            alert("No Due Request Submitted Successfully!");
+
+            // Wait slightly before refetching to ensure DB commit visibility (optional but safer)
+            setTimeout(() => {
+                fetchRequests();
+            }, 500);
+
         } catch (err) {
-            alert("Failed to submit request.");
+            console.error(err);
+            alert("Failed to submit request: " + (err.response?.data?.message || err.message));
         }
     };
 
