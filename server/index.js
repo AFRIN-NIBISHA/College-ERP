@@ -1857,32 +1857,38 @@ app.get(/.*/, (req, res) => {
 // 1. Check User & Status
 app.post('/api/auth/check-user', async (req, res) => {
     const { role, phone } = req.body;
-    console.log("Auth Check:", { role, phone });
+    console.log("Auth Check Request:", { role, phone });
+
     try {
+        if (!role || !phone) {
+            return res.status(400).json({ message: 'Missing role or phone number' });
+        }
+
+        const roleLower = role.toLowerCase();
+
         const result = await db.query(`
             SELECT u.id, u.username, u.role, u.is_setup
             FROM users u
             JOIN staff s ON u.id = s.user_id
             WHERE s.phone = $1 AND u.role = $2
-        `, [phone, role.toLowerCase()]);
+        `, [phone, roleLower]);
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ message: 'No user found with this mobile number for the selected role.' });
+            return res.status(404).json({ message: `No ${role} account found with mobile number ${phone}` });
         }
 
         const user = result.rows[0];
 
         if (!user.is_setup) {
             console.log(`Sending OTP to ${phone} for User ${user.username}`);
-            // In production, integrate SMS logic here
             res.json({ status: 'SETUP_REQUIRED', userId: user.id, message: 'OTP Sent successfully' });
         } else {
             res.json({ status: 'PASSWORD_REQUIRED', userId: user.id });
         }
 
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        console.error("Check-User Error:", err);
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
 
