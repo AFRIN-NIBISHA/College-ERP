@@ -1481,34 +1481,40 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
             };
 
             // ... Code to update status ...
-            if (updateField.startsWith('office_status') && status === 'Approved') {
-                // Notify Staffs
-                // 1. Get Student details
-                const studRes = await db.query(`
-               SELECT s.id, s.year, s.section, s.name, s.roll_no 
-               FROM no_dues nd 
-               JOIN students s ON nd.student_id = s.id 
-               WHERE nd.id = $1
-           `, [id]);
+            // Fetch Student User ID for notification
+            const studentUserId = await getUserFromStudent(r.student_id);
 
+            // Notify Student on Rejection
+            if (status === 'Rejected') {
+                await createNotification(
+                    studentUserId,
+                    'No Due Request Rejected',
+                    `Your No Due request has been rejected by ${updateField.replace('_status', '').toUpperCase()}. Remarks: ${remarks || 'None'}`,
+                    'alert'
+                );
+            }
+
+            // 1. Office Approved -> Notify Staff & Student
+            if (updateField === 'office_status' && status === 'Approved') {
+                await createNotification(studentUserId, 'No Due Update', 'Office has approved your No Due request. Now awaiting Subject Staff approvals.', 'info');
+
+                // Get Staffs for this class from timetable
+                const studRes = await db.query(`SELECT year, section FROM students WHERE id = $1`, [r.student_id]);
                 if (studRes.rows.length > 0) {
-                    const student = studRes.rows[0];
-
-                    // 2. Get Staffs for this class from timetable
-                    // We select distinct staff_ids handling subjects for this student's year/sec
+                    const { year, section } = studRes.rows[0];
                     const staffRes = await db.query(`
-                   SELECT DISTINCT st.user_id 
-                   FROM timetable t
-                   JOIN staff st ON t.staff_id = st.id
-                   WHERE t.year = $1 AND t.section = $2
-                   AND st.user_id IS NOT NULL
-               `, [student.year, student.section]);
+                       SELECT DISTINCT st.user_id 
+                       FROM timetable t
+                       JOIN staff st ON t.staff_id = st.id
+                       WHERE t.year = $1 AND t.section = $2
+                       AND st.user_id IS NOT NULL
+                   `, [year, section]);
 
                     for (const row of staffRes.rows) {
                         await createNotification(
                             row.user_id,
                             'No Due Request',
-                            `Clearance request from ${student.name} (${student.roll_no}) is ready for subject approval.`,
+                            `Clearance request for Class ${year}-${section} is ready for subject approval.`,
                             'info'
                         );
                     }
@@ -1516,16 +1522,13 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
             }
 
             // Check if all subject approvals are done
-            const check = await db.query("SELECT * FROM no_dues WHERE id = $1", [id]);
-            const r = check.rows[0];
-
-            // subjectColumns is already defined above
-
             const allSubjectsApproved = subjectColumns.every(col => r[col] === 'Approved');
 
+            // 2. Subject Approval -> Check if All Done
             if (status === 'Approved' && updateField.endsWith('_status') && !['office_status', 'hod_status', 'principal_status'].includes(updateField)) {
-                // It was a subject approval
                 if (allSubjectsApproved) {
+                    await createNotification(studentUserId, 'No Due Update', 'All subject staffs have approved. Sent to HOD.', 'info');
+
                     // Notify HOD
                     const hodRes = await db.query("SELECT id FROM users WHERE role = 'hod'");
                     for (const row of hodRes.rows) {
@@ -1539,8 +1542,10 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
                 }
             }
 
+            // 3. HOD Approved -> Notify Principal & Student
             if (updateField === 'hod_status' && status === 'Approved') {
-                // Notify Principal
+                await createNotification(studentUserId, 'No Due Update', 'HOD has approved. Sent to Principal.', 'info');
+
                 const prinRes = await db.query("SELECT id FROM users WHERE role = 'principal'");
                 for (const row of prinRes.rows) {
                     await createNotification(
@@ -1552,28 +1557,13 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
                 }
             }
 
+            // 4. Principal Approved -> Notify Student (Final)
             if (updateField === 'principal_status' && status === 'Approved') {
-                // Notify Student
-                const studRes = await db.query(`
-               SELECT s.user_id 
-               FROM no_dues nd 
-               JOIN students s ON nd.student_id = s.id 
-               WHERE nd.id = $1
-           `, [id]);
-
-                if (studRes.rows.length > 0) {
-                    await createNotification(
-                        studRes.rows[0].user_id,
-                        'No Due Approved',
-                        `Your No Due clearance has been fully approved!`,
-                        'success'
-                    );
-                }
-
-                // Auto-complete status
-                await db.query("UPDATE no_dues SET status = 'Approved' WHERE id = $1", [id]);
+                await createNotification(studentUserId, 'No Due Complete', 'Principal has approved! Your No Due Certificate is ready.', 'success');
+                // Also Update Final Status
+                await db.query("UPDATE no_dues SET status = 'Completed' WHERE id = $1", [id]);
             }
-        } // Close else block
+        }
 
         console.log("✅ Sending success response");
         res.json({ message: 'Updated successfully', field: updateField, status });
