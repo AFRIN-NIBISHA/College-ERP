@@ -1837,6 +1837,97 @@ app.get(/.*/, (req, res) => {
     res.sendFile(path.join(clientBuildPath, 'index.html'));
 });
 
+// --- NEW AUTH FLOW (Mobile -> OTP -> Password) ---
+
+// 1. Check User & Status
+app.post('/api/auth/check-user', async (req, res) => {
+    const { role, phone } = req.body;
+    console.log("Auth Check:", { role, phone });
+    try {
+        const result = await db.query(`
+            SELECT u.id, u.username, u.role, u.is_setup
+            FROM users u
+            JOIN staff s ON u.id = s.user_id
+            WHERE s.phone = $1 AND u.role = $2
+        `, [phone, role.toLowerCase()]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'No user found with this mobile number for the selected role.' });
+        }
+
+        const user = result.rows[0];
+
+        if (!user.is_setup) {
+            console.log(`Sending OTP to ${phone} for User ${user.username}`);
+            // In production, integrate SMS logic here
+            res.json({ status: 'SETUP_REQUIRED', userId: user.id, message: 'OTP Sent successfully' });
+        } else {
+            res.json({ status: 'PASSWORD_REQUIRED', userId: user.id });
+        }
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// 2. Verify OTP (Mock)
+app.post('/api/auth/verify-otp', async (req, res) => {
+    const { userId, otp } = req.body;
+    if (otp === '123456') {
+        res.json({ verified: true });
+    } else {
+        res.status(400).json({ verified: false, message: 'Invalid OTP' });
+    }
+});
+
+// 3. Set/Reset Password
+app.post('/api/auth/setup-password', async (req, res) => {
+    const { userId, password } = req.body;
+    try {
+        await db.query("UPDATE users SET password = $1, is_setup = TRUE WHERE id = $2", [password, userId]);
+        res.json({ success: true, message: 'Password set successfully. Please login.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Error setting password' });
+    }
+});
+
+// 4. Login via Phone (Alternative to Username login)
+app.post('/api/auth/login-phone', async (req, res) => {
+    const { phone, role, password } = req.body;
+    try {
+        const result = await db.query(`
+            SELECT u.* 
+            FROM users u
+            JOIN staff s ON u.id = s.user_id
+            WHERE s.phone = $1 AND u.role = $2
+        `, [phone, role.toLowerCase()]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const user = result.rows[0];
+        if (user.password !== password) {
+            return res.status(401).json({ message: 'Invalid Password' });
+        }
+
+        // Fetch Profile ID
+        const profileRes = await db.query("SELECT id FROM staff WHERE user_id = $1", [user.id]);
+        const profileId = profileRes.rows[0]?.id;
+
+        res.json({
+            message: 'Login successful',
+            user: { ...user, profileId }
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
