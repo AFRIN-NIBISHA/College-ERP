@@ -384,6 +384,32 @@ const NoDue = () => {
                                                 <span className="text-xs font-bold uppercase text-slate-500">Office</span>
                                                 <StatusBadge status={req.office_status} />
                                             </div>
+
+                                            {/* Fee Details for Office */}
+                                            {(role === 'office' || role === 'admin') && (
+                                                <div className="mb-3 p-2 bg-white rounded border border-slate-200 text-xs text-slate-600 space-y-1">
+                                                    <div className="flex justify-between">
+                                                        <span>Total Fees:</span>
+                                                        <span className="font-bold">₹{Number(req.total_amount || 0).toLocaleString()}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span>Paid:</span>
+                                                        <span className="text-green-600 font-bold">₹{Number(req.paid_amount || 0).toLocaleString()}</span>
+                                                    </div>
+                                                    <div className="flex justify-between border-t border-slate-100 pt-1 mt-1">
+                                                        <span>Pending:</span>
+                                                        <span className={`font-bold ${(req.total_amount - req.paid_amount) > 0 ? 'text-red-600' : 'text-slate-700'}`}>
+                                                            ₹{Number((req.total_amount || 0) - (req.paid_amount || 0)).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-right mt-1">
+                                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${(req.fee_status === 'Paid') ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                            {req.fee_status || 'Unknown'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {role === 'office' && req.office_status === 'Pending' && (
                                                 <div className="flex gap-2 text-xs">
                                                     <button onClick={() => handleUpdate(req.id, 'office', 'Approved')} className="flex-1 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700">Approve</button>
