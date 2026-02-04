@@ -969,7 +969,98 @@ app.post('/api/admin/seed', async (req, res) => {
 // --- TIMETABLE SEEDING ENDPOINT ---
 app.post('/api/admin/seed-timetable', async (req, res) => {
     try {
-        console.log("Seeding Timetable Entries via API...");
+        console.log("Master Seed: Starting...");
+
+        // --- STEP 1: ENSURE STAFF & SUBJECTS EXIST ---
+        // (Copying essential logic from seed_data to ensure dependencies)
+
+        // 1. Staff List
+        const staffList = [
+            { name: "Mr.ARUN VENKADESH", id: "FAC001" },
+            { name: "Mrs.STEPHY CHRISTINA", id: "FAC002" },
+            { name: "Mrs.RAJU", id: "FAC003" },
+            { name: "Mrs.SAHAYA REEMA", id: "FAC004" },
+            { name: "Mrs.MONISHA RAJU", id: "FAC005" },
+            { name: "Dr. JOHNCY ROSE", id: "FAC006" },
+            { name: "Mrs.DHANYA RAJU", id: "FAC007" },
+            { name: "Dr. EDWIN ALBERT", id: "FAC008" },
+            { name: "Dr. JEBA STARLING", id: "FAC009" },
+            { name: "Dr.A.Ancy Femila", id: "FAC010" },
+            { name: "Mrs.JENET RAJEE", id: "FAC011" },
+            { name: "Mrs.SINDHU", id: "FAC012" },
+            { name: "Dr.Bobby Denis", id: "FAC013" },
+            { name: "Mrs. BINISHA", id: "FAC014" },
+            { name: "Mrs. ANTO BABIYOLA", id: "FAC015" },
+            { name: "Mrs. RAJA KALA", id: "FAC016" },
+            { name: "Dr. ABISHA MANO", id: "FAC017" },
+            { name: "Mrs. SHEEBA D", id: "FAC018" },
+            { name: "Mrs.BENILA", id: "FAC019" }
+        ];
+
+        let staffAdded = 0;
+        for (const s of staffList) {
+            const username = s.name.split(' ')[0] + s.id;
+            let userId;
+
+            // Ensure User
+            const userRes = await db.query("SELECT id FROM users WHERE username = $1", [username]);
+            if (userRes.rows.length === 0) {
+                const newU = await db.query(
+                    "INSERT INTO users (username, password, role) VALUES ($1, $2, 'staff') RETURNING id",
+                    [username, 'password123']
+                );
+                userId = newU.rows[0].id;
+            } else {
+                userId = userRes.rows[0].id;
+            }
+
+            // Ensure Staff Profile
+            const staffCheck = await db.query("SELECT id FROM staff WHERE staff_id = $1", [s.id]);
+            if (staffCheck.rows.length === 0) {
+                await db.query(
+                    "INSERT INTO staff (user_id, staff_id, name, department) VALUES ($1, $2, $3, 'CSE')",
+                    [userId, s.id, s.name]
+                );
+                staffAdded++;
+            }
+        }
+        console.log(`Step 1: Verified Staff (Added ${staffAdded})`);
+
+        // 2. Subject List
+        const subjects = [
+            { code: "CS3452", name: "THEORY OF COMPUTATION", sem: 4 },
+            { code: "CS3491", name: "ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING", sem: 4 },
+            { code: "CS3451", name: "INTRODUCTION TO OPERATING SYSTEM", sem: 4 },
+            { code: "CS3401", name: "ALGORITHMS", sem: 4 },
+            { code: "CS3492", name: "DATABASE MANAGEMENT SYSTEM", sem: 4 },
+            { code: "GE3451", name: "ENVIRONMENTAL SCIENCES AND SUSTAINABILITY", sem: 4 },
+            { code: "NM", name: "NAAN MUDHALVAN", sem: 4 },
+            { code: "LAB1", name: "DATABASE MANAGEMENT SYSTEM LABORATORY", sem: 4 },
+            { code: "LAB2", name: "OPERATING SYSTEMS LABORATORY", sem: 4 },
+            { code: "LAB3", name: "SOFTSKILL TRAINING", sem: 4 },
+            { code: "CCS336", name: "SOFTWARE TESTING AND AUTOMATION", sem: 6 },
+            { code: "CCS356", name: "OBJECT ORIENTED SOFTWARE ENGINEERING", sem: 6 },
+            { code: "OBT352", name: "FOOD NUTRIENTS AND HEALTH", sem: 6 },
+            { code: "CCS354", name: "NETWORK SECURITY", sem: 6 },
+            { code: "CS3491_2", name: "EMBEDDED SYSTEMS AND IOT", sem: 6 },
+            { code: "LAB4", name: "OBJECT ORIENTED SOFTWARE ENGINEERING LAB", sem: 6 }
+        ];
+
+        let subjectAdded = 0;
+        for (const sub of subjects) {
+            const check = await db.query("SELECT id FROM subjects WHERE subject_code = $1", [sub.code]);
+            if (check.rows.length === 0) {
+                await db.query(
+                    "INSERT INTO subjects (subject_code, subject_name, semester) VALUES ($1, $2, $3)",
+                    [sub.code, sub.name, sub.sem]
+                );
+                subjectAdded++;
+            }
+        }
+        console.log(`Step 2: Verified Subjects (Added ${subjectAdded})`);
+
+
+        // --- STEP 2: SEED TIMETABLE ---
 
         const getSub = async (code) => {
             const res = await db.query("SELECT id FROM subjects WHERE subject_code = $1", [code]);
@@ -982,7 +1073,7 @@ app.post('/api/admin/seed-timetable', async (req, res) => {
 
         const sections = ['A', 'B'];
 
-        // --- YEAR 2 (Semester 4) SCHEDULE ---
+        // Year 2 (Sem 4)
         const patternYear2 = {
             'Monday': ['CS3401', 'CS3492', 'CS3452', 'CS3451', 'LAB1', 'LAB1', 'LAB3', 'CS3491'],
             'Tuesday': ['CS3452', 'NM', 'NM', 'CS3491', 'LAB1', 'NM', 'CS3452', 'CS3401'],
@@ -991,7 +1082,7 @@ app.post('/api/admin/seed-timetable', async (req, res) => {
             'Friday': ['CS3492', 'CS3451', 'CS3492', 'CS3452', 'CS3401', 'GE3451', 'CS3451', 'CS3491']
         };
 
-        // --- YEAR 3 (Semester 6) SCHEDULE ---
+        // Year 3 (Sem 6)
         const patternYear3 = {
             'Monday': ['CCS336', 'CCS354', 'CCS336', 'CCS336', 'OBT352', 'NM', 'CCS356', 'CS3691'],
             'Tuesday': ['CS3691', 'CCS356', 'CCS336', 'Softskill', 'CCS354', 'CCS336', 'CCS356', 'CS3691'],
@@ -1001,70 +1092,58 @@ app.post('/api/admin/seed-timetable', async (req, res) => {
         };
 
         const staffMap = {
-            // Year 2 Staff
             'CS3452': 'ARUN', 'CS3491': 'STEPHY', 'CS3451': 'RAJU',
             'CS3401': 'SAHAYA', 'CS3492': 'MONISHA', 'GE3451': 'JOHNCY',
             'NM': 'DHANYA', 'LAB1': 'MONISHA', 'LAB2': 'RAJU', 'LAB3': 'Bobby',
-            // Year 3 Staff
+
             'CCS336': 'BINISHA', 'CCS356': 'SHEEBA', 'OBT352': 'SINDU',
             'CCS354': 'RAJA', 'CS3491_2': 'ABISHA', 'CS3691': 'ABISHA',
             'LAB4': 'ANTO', 'Softskill': 'Bobby'
         };
 
         let count = 0;
+        let errors = [];
 
-        // SEED YEAR 2
-        for (const section of sections) {
-            for (const [day, codes] of Object.entries(patternYear2)) {
-                for (let i = 0; i < codes.length; i++) {
-                    const code = codes[i];
-                    if (!code) continue;
-                    const period = i + 1;
+        // Helper to loop and insert
+        const processPattern = async (year, pattern) => {
+            for (const section of sections) {
+                for (const [day, codes] of Object.entries(pattern)) {
+                    for (let i = 0; i < codes.length; i++) {
+                        const code = codes[i];
+                        if (!code) continue;
+                        const period = i + 1;
 
-                    const subId = await getSub(code);
-                    const staffId = await getStaff(staffMap[code] || 'ARUN');
+                        const queryCode = code === 'CS3691' ? 'CS3491_2' : code;
 
-                    if (subId && staffId) {
-                        await db.query(
-                            `INSERT INTO timetable (year, section, day, period, subject_id, staff_id)
-                             VALUES ($1, $2, $3, $4, $5, $6)
-                             ON CONFLICT (year, section, day, period) 
-                             DO UPDATE SET subject_id = EXCLUDED.subject_id, staff_id = EXCLUDED.staff_id`,
-                            [2, section, day, period, subId, staffId]
-                        );
-                        count++;
+                        const subId = await getSub(queryCode);
+                        const staffId = await getStaff(staffMap[queryCode] || staffMap[code] || 'ARUN');
+
+                        if (subId && staffId) {
+                            await db.query(
+                                `INSERT INTO timetable (year, section, day, period, subject_id, staff_id)
+                                 VALUES ($1, $2, $3, $4, $5, $6)
+                                 ON CONFLICT (year, section, day, period) 
+                                 DO UPDATE SET subject_id = EXCLUDED.subject_id, staff_id = EXCLUDED.staff_id`,
+                                [year, section, day, period, subId, staffId]
+                            );
+                            count++;
+                        } else {
+                            if (!subId) errors.push(`Missing Subject: ${queryCode}`);
+                            if (!staffId) errors.push(`Missing Staff for: ${queryCode}`);
+                        }
                     }
                 }
             }
-        }
+        };
 
-        // SEED YEAR 3
-        for (const section of sections) {
-            for (const [day, codes] of Object.entries(patternYear3)) {
-                for (let i = 0; i < codes.length; i++) {
-                    const code = codes[i];
-                    if (!code) continue;
-                    const period = i + 1;
-                    const queryCode = code === 'CS3691' ? 'CS3491_2' : code;
+        await processPattern(2, patternYear2);
+        await processPattern(3, patternYear3);
 
-                    const subId = await getSub(queryCode);
-                    const staffId = await getStaff(staffMap[queryCode] || staffMap[code] || 'ARUN');
+        res.json({
+            message: `Repair Complete! Added ${staffAdded} Staff, ${subjectAdded} Subjects, and updated ${count} Timetable slots.`,
+            errors: [...new Set(errors)] // Unique errors
+        });
 
-                    if (subId && staffId) {
-                        await db.query(
-                            `INSERT INTO timetable (year, section, day, period, subject_id, staff_id)
-                             VALUES ($1, $2, $3, $4, $5, $6)
-                             ON CONFLICT (year, section, day, period) 
-                             DO UPDATE SET subject_id = EXCLUDED.subject_id, staff_id = EXCLUDED.staff_id`,
-                            [3, section, day, period, subId, staffId]
-                        );
-                        count++;
-                    }
-                }
-            }
-        }
-
-        res.json({ message: `Timetable Seeding Complete! Updated ${count} slots for Year 2 and 3.` });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Seeding failed', error: err.message });
