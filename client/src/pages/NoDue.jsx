@@ -82,6 +82,12 @@ const NoDue = () => {
 
     const handleRequest = async () => {
         if (!isStudent) return;
+
+        if (!user.profileId) {
+            alert("Error: Student Profile ID missing. Please create your profile or re-login.");
+            return;
+        }
+
         try {
             const res = await axios.post('/api/no-due/request', {
                 student_id: user.profileId,

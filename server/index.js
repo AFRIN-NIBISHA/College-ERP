@@ -1252,8 +1252,14 @@ app.post('/api/no-due/request', async (req, res) => {
     try {
         console.log(`No Due Request: Student ${student_id}, Sem ${semester}`);
 
+        if (!student_id || !semester) {
+            return res.status(400).json({ message: 'Missing student ID or semester' });
+        }
+
+        // Cleanup ghost requests (where student_id might have been null previously)
+        await db.query("DELETE FROM no_dues WHERE student_id IS NULL");
+
         // UPSERT: Insert or Update if exists
-        // We reset office_status to 'Pending' to reopen the request if it was previously rejected/closed
         const query = `
             INSERT INTO no_dues (student_id, semester, office_status, created_at)
             VALUES ($1, $2, 'Pending', NOW())
