@@ -8,18 +8,32 @@ const Timetable = () => {
     const isStudent = user?.role === 'student';
     const [year, setYear] = useState(isStudent ? 2 : 2);
     const [section, setSection] = useState(isStudent ? 'A' : 'A');
-    const [timetable, setTimetable] = useState([]); // [{ day, period, subjectId, staffId }]
+    const [timetable, setTimetable] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // Mock Data for Dropdowns (Ideally fetch from API)
     const [subjects, setSubjects] = useState([]);
     const [staff, setStaff] = useState([]);
 
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
     const periods = [1, 2, 3, 4, 5, 6, 7, 8];
 
+    // Defined outside useEffect to be accessible by Seed Button
+    const fetchMetadata = async () => {
+        try {
+            const [staffRes, subjectRes] = await Promise.all([
+                axios.get('/api/staff'),
+                axios.get('/api/subjects'),
+            ]);
+            setStaff(staffRes.data);
+            setSubjects(subjectRes.data.map(s => ({
+                id: s.id,
+                name: s.subject_name,
+                code: s.subject_code
+            })));
+        } catch (e) { console.error("Metadata Fetch Error", e); }
+    };
+
     useEffect(() => {
-        // Auto-set for student
         if (isStudent && user) {
             setYear(user.year);
             setSection(user.section);
@@ -27,22 +41,7 @@ const Timetable = () => {
     }, [user, isStudent]);
 
     useEffect(() => {
-        // Fetch Metadata
-        const fetchData = async () => {
-            try {
-                const [staffRes, subjectRes] = await Promise.all([
-                    axios.get('/api/staff'),
-                    axios.get('/api/subjects'),
-                ]);
-                setStaff(staffRes.data);
-                setSubjects(subjectRes.data.map(s => ({
-                    id: s.id,
-                    name: s.subject_name,
-                    code: s.subject_code
-                })));
-            } catch (e) { console.error(e); }
-        };
-        fetchData();
+        fetchMetadata();
     }, []);
 
     useEffect(() => {
@@ -56,6 +55,29 @@ const Timetable = () => {
             setTimetable(res.data);
         } catch (err) {
             console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ... (rest of methods)
+
+    // Helper for manual trigger
+    const handlePopulate = async () => {
+        if (!window.confirm("Are you sure? This will overwrite existing entries for the standard schedule.")) return;
+        try {
+            setLoading(true);
+            const res = await axios.post('/api/admin/seed-timetable');
+
+            // Critical: Refresh Metadata first (in case new subjects/staff were added)
+            await fetchMetadata();
+
+            // Then refresh timetable
+            await fetchTimetable();
+
+            alert(`Success: ${res.data.message}`);
+        } catch (e) {
+            alert("Error seeding: " + (e.response?.data?.message || e.message));
         } finally {
             setLoading(false);
         }
@@ -164,19 +186,7 @@ const Timetable = () => {
                             </select>
                         </div>
                         <button
-                            onClick={async () => {
-                                if (!window.confirm("Are you sure? This will overwrite existing entries for the standard schedule.")) return;
-                                try {
-                                    setLoading(true);
-                                    await axios.post('/api/admin/seed-timetable');
-                                    alert("Timetable Populated Successfully!");
-                                    fetchTimetable();
-                                } catch (e) {
-                                    alert("Error seeding: " + e.message);
-                                } finally {
-                                    setLoading(false);
-                                }
-                            }}
+                            onClick={handlePopulate}
                             disabled={loading}
                             className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white px-6 py-2 rounded-xl font-bold shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2"
                         >
