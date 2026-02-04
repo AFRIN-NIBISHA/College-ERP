@@ -1771,11 +1771,10 @@ app.post('/api/auth/register-verify', async (req, res) => {
 });
 
 // --- LOGIN & AUTH ---
+// --- LOGIN & AUTH ---
 app.post('/api/login', async (req, res) => {
     console.log("HIT /api/login");
-    console.log("Body:", req.body);
-
-    const { username, password } = req.body;
+    const { username, password } = req.body; // legacy: username=name, password=rollno
 
     // Emergency manual check
     if (username === 'admin' && password === 'admin123') {
@@ -1787,28 +1786,55 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
+        // 1. Try Standard User Login
         const result = await db.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1)', [username]);
-        if (result.rows.length === 0) {
-            console.log("User not found in DB");
-            return res.status(401).json({ message: 'Invalid credentials (DB-USER)' });
+
+        if (result.rows.length > 0) {
+            const user = result.rows[0];
+            if (user.password !== password) {
+                return res.status(401).json({ message: 'Invalid credentials' });
+            }
+
+            let profileId = null;
+            if (user.role === 'student') {
+                const sRes = await db.query("SELECT id FROM students WHERE user_id = $1", [user.id]);
+                if (sRes.rows.length > 0) profileId = sRes.rows[0].id;
+            } else if (['staff', 'hod', 'principal', 'office'].includes(user.role)) {
+                const stRes = await db.query("SELECT id FROM staff WHERE user_id = $1", [user.id]);
+                if (stRes.rows.length > 0) profileId = stRes.rows[0].id;
+            }
+
+            return res.json({
+                message: 'Login successful',
+                user: { ...user, profileId }
+            });
         }
 
-        const user = result.rows[0];
-        if (user.password !== password) {
-            console.log("Password mismatch in DB");
-            return res.status(401).json({ message: 'Invalid credentials (DB-PASS)' });
+        // 2. Fallback: Legacy Student Login (Check students table directly)
+        // Assume username=Name, password=RollNo
+        console.log("Checking Legacy Student Login:", username);
+        const sRes = await db.query("SELECT * FROM students WHERE LOWER(name) = LOWER($1) AND roll_no = $2", [username, password]);
+
+        if (sRes.rows.length > 0) {
+            const student = sRes.rows[0];
+            console.log("Legacy Student Found:", student.name);
+
+            // Create a virtual user object
+            return res.json({
+                message: 'Login successful',
+                user: {
+                    id: student.user_id || 999999, // Fallback ID if not linked
+                    username: student.name,
+                    role: 'student',
+                    profileId: student.id, // THE MOST IMPORTANT FIELD
+                    is_legacy: true
+                }
+            });
         }
 
-        let profileId = null;
-        if (user.role === 'student') {
-            const sRes = await db.query("SELECT id FROM students WHERE user_id = $1", [user.id]);
-            if (sRes.rows.length > 0) profileId = sRes.rows[0].id;
-        }
+        console.log("User not found in DB (Standard or Legacy)");
+        return res.status(401).json({ message: 'Invalid credentials' });
 
-        res.json({
-            message: 'Login successful',
-            user: { ...user, profileId }
-        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
