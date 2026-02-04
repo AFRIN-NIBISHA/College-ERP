@@ -980,10 +980,10 @@ app.post('/api/admin/seed-timetable', async (req, res) => {
             return res.rows[0]?.id;
         };
 
-        const year = 3;
         const sections = ['A', 'B'];
 
-        const schedulePattern = {
+        // --- YEAR 2 (Semester 4) SCHEDULE ---
+        const patternYear2 = {
             'Monday': ['CS3401', 'CS3492', 'CS3452', 'CS3451', 'LAB1', 'LAB1', 'LAB3', 'CS3491'],
             'Tuesday': ['CS3452', 'NM', 'NM', 'CS3491', 'LAB1', 'NM', 'CS3452', 'CS3401'],
             'Wednesday': ['CS3491', 'GE3451', 'CS3401', 'CS3492', 'LAB2', 'LAB2', 'CS3452', 'NM'],
@@ -991,24 +991,34 @@ app.post('/api/admin/seed-timetable', async (req, res) => {
             'Friday': ['CS3492', 'CS3451', 'CS3492', 'CS3452', 'CS3401', 'GE3451', 'CS3451', 'CS3491']
         };
 
+        // --- YEAR 3 (Semester 6) SCHEDULE ---
+        const patternYear3 = {
+            'Monday': ['CCS336', 'CCS354', 'CCS336', 'CCS336', 'OBT352', 'NM', 'CCS356', 'CS3691'],
+            'Tuesday': ['CS3691', 'CCS356', 'CCS336', 'Softskill', 'CCS354', 'CCS336', 'CCS356', 'CS3691'],
+            'Wednesday': ['CCS354', 'CCS336', 'CCS356', 'CS3691', 'CS3691', 'CCS336', 'OBT352', 'LAB4'],
+            'Thursday': ['OBT352', 'CCS354', 'CS3691', 'CCS336', 'CCS336', 'OBT352', 'CS3691', 'CCS356'],
+            'Friday': ['CCS356', 'CCS336', 'CCS354', 'NS', 'CCS336', 'CCS336', 'CCS336', 'OBT352']
+        };
+
         const staffMap = {
-            'CS3452': 'ARUN',
-            'CS3491': 'STEPHY',
-            'CS3451': 'RAJU',
-            'CS3401': 'SAHAYA',
-            'CS3492': 'MONISHA',
-            'GE3451': 'JOHNCY',
-            'NM': 'DHANYA',
-            'LAB1': 'MONISHA',
-            'LAB2': 'RAJU',
-            'LAB3': 'Bobby'
+            // Year 2 Staff
+            'CS3452': 'ARUN', 'CS3491': 'STEPHY', 'CS3451': 'RAJU',
+            'CS3401': 'SAHAYA', 'CS3492': 'MONISHA', 'GE3451': 'JOHNCY',
+            'NM': 'DHANYA', 'LAB1': 'MONISHA', 'LAB2': 'RAJU', 'LAB3': 'Bobby',
+            // Year 3 Staff
+            'CCS336': 'BINISHA', 'CCS356': 'SHEEBA', 'OBT352': 'SINDU',
+            'CCS354': 'RAJA', 'CS3491_2': 'ABISHA', 'CS3691': 'ABISHA',
+            'LAB4': 'ANTO', 'Softskill': 'Bobby'
         };
 
         let count = 0;
+
+        // SEED YEAR 2
         for (const section of sections) {
-            for (const [day, codes] of Object.entries(schedulePattern)) {
+            for (const [day, codes] of Object.entries(patternYear2)) {
                 for (let i = 0; i < codes.length; i++) {
                     const code = codes[i];
+                    if (!code) continue;
                     const period = i + 1;
 
                     const subId = await getSub(code);
@@ -1020,7 +1030,7 @@ app.post('/api/admin/seed-timetable', async (req, res) => {
                              VALUES ($1, $2, $3, $4, $5, $6)
                              ON CONFLICT (year, section, day, period) 
                              DO UPDATE SET subject_id = EXCLUDED.subject_id, staff_id = EXCLUDED.staff_id`,
-                            [year, section, day, period, subId, staffId]
+                            [2, section, day, period, subId, staffId]
                         );
                         count++;
                     }
@@ -1028,7 +1038,33 @@ app.post('/api/admin/seed-timetable', async (req, res) => {
             }
         }
 
-        res.json({ message: `Timetable Seeding Complete! Updated ${count} slots.` });
+        // SEED YEAR 3
+        for (const section of sections) {
+            for (const [day, codes] of Object.entries(patternYear3)) {
+                for (let i = 0; i < codes.length; i++) {
+                    const code = codes[i];
+                    if (!code) continue;
+                    const period = i + 1;
+                    const queryCode = code === 'CS3691' ? 'CS3491_2' : code;
+
+                    const subId = await getSub(queryCode);
+                    const staffId = await getStaff(staffMap[queryCode] || staffMap[code] || 'ARUN');
+
+                    if (subId && staffId) {
+                        await db.query(
+                            `INSERT INTO timetable (year, section, day, period, subject_id, staff_id)
+                             VALUES ($1, $2, $3, $4, $5, $6)
+                             ON CONFLICT (year, section, day, period) 
+                             DO UPDATE SET subject_id = EXCLUDED.subject_id, staff_id = EXCLUDED.staff_id`,
+                            [3, section, day, period, subId, staffId]
+                        );
+                        count++;
+                    }
+                }
+            }
+        }
+
+        res.json({ message: `Timetable Seeding Complete! Updated ${count} slots for Year 2 and 3.` });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Seeding failed', error: err.message });
