@@ -966,7 +966,75 @@ app.post('/api/admin/seed', async (req, res) => {
     }
 });
 
-// --- LOGIN & AUTH ---
+// --- TIMETABLE SEEDING ENDPOINT ---
+app.post('/api/admin/seed-timetable', async (req, res) => {
+    try {
+        console.log("Seeding Timetable Entries via API...");
+
+        const getSub = async (code) => {
+            const res = await db.query("SELECT id FROM subjects WHERE subject_code = $1", [code]);
+            return res.rows[0]?.id;
+        };
+        const getStaff = async (namePart) => {
+            const res = await db.query("SELECT id FROM staff WHERE name ILIKE $1", [`%${namePart}%`]);
+            return res.rows[0]?.id;
+        };
+
+        const year = 3;
+        const sections = ['A', 'B'];
+
+        const schedulePattern = {
+            'Monday': ['CS3401', 'CS3492', 'CS3452', 'CS3451', 'LAB1', 'LAB1', 'LAB3', 'CS3491'],
+            'Tuesday': ['CS3452', 'NM', 'NM', 'CS3491', 'LAB1', 'NM', 'CS3452', 'CS3401'],
+            'Wednesday': ['CS3491', 'GE3451', 'CS3401', 'CS3492', 'LAB2', 'LAB2', 'CS3452', 'NM'],
+            'Thursday': ['CS3451', 'CS3492', 'CS3401', 'CS3491', 'CS3452', 'LAB3', 'CS3451', 'GE3451'],
+            'Friday': ['CS3492', 'CS3451', 'CS3492', 'CS3452', 'CS3401', 'GE3451', 'CS3451', 'CS3491']
+        };
+
+        const staffMap = {
+            'CS3452': 'ARUN',
+            'CS3491': 'STEPHY',
+            'CS3451': 'RAJU',
+            'CS3401': 'SAHAYA',
+            'CS3492': 'MONISHA',
+            'GE3451': 'JOHNCY',
+            'NM': 'DHANYA',
+            'LAB1': 'MONISHA',
+            'LAB2': 'RAJU',
+            'LAB3': 'Bobby'
+        };
+
+        let count = 0;
+        for (const section of sections) {
+            for (const [day, codes] of Object.entries(schedulePattern)) {
+                for (let i = 0; i < codes.length; i++) {
+                    const code = codes[i];
+                    const period = i + 1;
+
+                    const subId = await getSub(code);
+                    const staffId = await getStaff(staffMap[code] || 'ARUN');
+
+                    if (subId && staffId) {
+                        await db.query(
+                            `INSERT INTO timetable (year, section, day, period, subject_id, staff_id)
+                             VALUES ($1, $2, $3, $4, $5, $6)
+                             ON CONFLICT (year, section, day, period) 
+                             DO UPDATE SET subject_id = EXCLUDED.subject_id, staff_id = EXCLUDED.staff_id`,
+                            [year, section, day, period, subId, staffId]
+                        );
+                        count++;
+                    }
+                }
+            }
+        }
+
+        res.json({ message: `Timetable Seeding Complete! Updated ${count} slots.` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Seeding failed', error: err.message });
+    }
+});
+
 // --- LOGIN & AUTH ---
 app.post('/api/login/student', async (req, res) => {
     const { name, roll_no, year, section } = req.body;
