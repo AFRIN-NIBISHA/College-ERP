@@ -207,6 +207,33 @@ const Login = () => {
                             {/* --- STUDENT FLOW --- */}
                             {role === 'student' && (
                                 <form onSubmit={handleStudentLogin} className="space-y-4">
+                                    <div className="flex gap-4">
+                                        <div className="space-y-1.5 flex-1">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Year</label>
+                                            <select
+                                                value={studentData.year || '3'}
+                                                onChange={(e) => setStudentData({ ...studentData, year: e.target.value })}
+                                                className="w-full bg-white border-2 border-slate-100 rounded-xl py-3.5 px-4 outline-none focus:border-blue-500"
+                                            >
+                                                <option value="1">I</option>
+                                                <option value="2">II</option>
+                                                <option value="3">III</option>
+                                                <option value="4">IV</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-1.5 flex-1">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Section</label>
+                                            <select
+                                                value={studentData.section || 'A'}
+                                                onChange={(e) => setStudentData({ ...studentData, section: e.target.value })}
+                                                className="w-full bg-white border-2 border-slate-100 rounded-xl py-3.5 px-4 outline-none focus:border-blue-500"
+                                            >
+                                                <option value="A">A</option>
+                                                <option value="B">B</option>
+                                                <option value="C">C</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Name</label>
                                         <input
