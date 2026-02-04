@@ -1283,10 +1283,13 @@ app.post('/api/no-due/request', async (req, res) => {
 app.get('/api/no-due', async (req, res) => {
     const { student_id, role } = req.query;
     try {
+        // Updated query to include Fee Details
         let query = `
-            SELECT nd.*, s.name, s.roll_no, s.year, s.section, s.department
+            SELECT nd.*, s.name, s.roll_no, s.year, s.section, s.department,
+                   f.total_amount, f.paid_amount, f.status as fee_status
             FROM no_dues nd
             JOIN students s ON nd.student_id = s.id
+            LEFT JOIN fees f ON nd.student_id = f.student_id
             WHERE 1=1
         `;
         const params = [];
@@ -1302,6 +1305,43 @@ app.get('/api/no-due', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Init Fees Table (Migration Endpoint)
+app.post('/api/admin/init-fees', async (req, res) => {
+    try {
+        console.log("Initializing Fees Table...");
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS fees (
+                id SERIAL PRIMARY KEY,
+                student_id INT REFERENCES students(id) ON DELETE CASCADE,
+                total_amount DECIMAL(10, 2) NOT NULL DEFAULT 85000.00,
+                paid_amount DECIMAL(10, 2) DEFAULT 0.00,
+                status VARCHAR(20) DEFAULT 'Pending',
+                last_payment_date DATE,
+                UNIQUE(student_id)
+            );
+        `);
+
+        // Seed
+        const students = await db.query("SELECT id FROM students");
+        let count = 0;
+        for (const s of students.rows) {
+            const check = await db.query("SELECT id FROM fees WHERE student_id = $1", [s.id]);
+            if (check.rows.length === 0) {
+                await db.query(`
+                    INSERT INTO fees (student_id, total_amount, paid_amount, status, last_payment_date)
+                    VALUES ($1, 85000, 0, 'Pending', NOW())
+                 `, [s.id]);
+                count++;
+            }
+        }
+
+        res.json({ message: `Fees table ready. Seeded ${count} records.` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Init failed' });
     }
 });
 
