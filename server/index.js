@@ -815,20 +815,59 @@ app.post('/api/marks', async (req, res) => {
 // --- LOGIN & AUTH ---
 app.post('/api/login', async (req, res) => {
     console.log("HIT /api/login");
-    console.log("Body:", req.body);
+    const { username, password, role } = req.body;
 
-    // FORCE SUCCESS FOR DEBUGGING
-    return res.json({
-        message: 'Login successful',
-        user: { username: 'admin', role: 'admin', id: 1 }
-    });
+    try {
+        // 1. Emergency Admin Check (Strict)
+        if (username === 'admin' && password === 'admin123') {
+            console.log("Admin Login Success");
+            return res.json({
+                message: 'Login successful',
+                user: { username: 'admin', role: 'admin', id: 1 }
+            });
+        }
 
-    /*
-    const { username, password } = req.body;
-    console.log(`FULL LOGIN BODY:`, req.body); // Debug Log
+        // 2. Database User Check
+        // Case insensitive username match
+        const result = await db.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1)', [username]);
 
-    // ... old code ...
-    */
+        if (result.rows.length === 0) {
+            console.log(`Login Failed: User ${username} not found`);
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        const user = result.rows[0];
+
+        // 3. Password Check (Plain text for now as per current schema)
+        if (user.password !== password) {
+            console.log(`Login Failed: Password mismatch for ${username}`);
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // 4. Role Check (Optional but recommended)
+        // If the frontend sends a role, we should verify strictly, but 'student' role logic is flexible in DB
+        // Let's ensure the user actually has the role they claim if strictly needed.
+        // For now, we trust the DB role.
+
+        // 5. Fetch Profile ID (for Students/Staff)
+        let profileId = null;
+        if (user.role === 'student') {
+            const sRes = await db.query("SELECT id FROM students WHERE user_id = $1", [user.id]);
+            if (sRes.rows.length > 0) profileId = sRes.rows[0].id;
+        } else if (['staff', 'hod', 'principal', 'office'].includes(user.role)) {
+            const sRes = await db.query("SELECT id FROM staff WHERE user_id = $1", [user.id]);
+            if (sRes.rows.length > 0) profileId = sRes.rows[0].id;
+        }
+
+        res.json({
+            message: 'Login successful',
+            user: { ...user, profileId }
+        });
+
+    } catch (err) {
+        console.error("Login Error:", err);
+        res.status(500).json({ message: 'Server error' });
+    }
 });
 
 
