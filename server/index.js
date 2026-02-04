@@ -832,6 +832,103 @@ app.post('/api/login', async (req, res) => {
 });
 
 
+// --- SEEDING ENDPOINT (For Live Server) ---
+app.post('/api/admin/seed', async (req, res) => {
+    try {
+        console.log("Seeding Database via API...");
+
+        // 1. Staff
+        const staffList = [
+            { name: "Mr.ARUN VENKADESH", id: "FAC001" },
+            { name: "Mrs.STEPHY CHRISTINA", id: "FAC002" },
+            { name: "Mrs.RAJU", id: "FAC003" },
+            { name: "Mrs.SAHAYA REEMA", id: "FAC004" },
+            { name: "Mrs.MONISHA RAJU", id: "FAC005" },
+            { name: "Dr. JOHNCY ROSE", id: "FAC006" },
+            { name: "Mrs.DHANYA RAJU", id: "FAC007" },
+            { name: "Dr. EDWIN ALBERT", id: "FAC008" },
+            { name: "Dr. JEBA STARLING", id: "FAC009" },
+            { name: "Dr.A.Ancy Femila", id: "FAC010" },
+            { name: "Mrs.JENET RAJEE", id: "FAC011" },
+            { name: "Mrs.SINDHU", id: "FAC012" },
+            { name: "Dr.Bobby Denis", id: "FAC013" },
+            { name: "Mrs. BINISHA", id: "FAC014" },
+            { name: "Mrs. ANTO BABIYOLA", id: "FAC015" },
+            { name: "Mrs. RAJA KALA", id: "FAC016" },
+            { name: "Dr. ABISHA MANO", id: "FAC017" },
+            { name: "Mrs. SHEEBA D", id: "FAC018" },
+            { name: "Mrs.BENILA", id: "FAC019" }
+        ];
+
+        let staffCount = 0;
+        for (const s of staffList) {
+            const username = s.name.split(' ')[0] + s.id;
+            let userId;
+
+            // Check User
+            const userRes = await db.query("SELECT id FROM users WHERE username = $1", [username]);
+            if (userRes.rows.length === 0) {
+                const newU = await db.query(
+                    "INSERT INTO users (username, password, role) VALUES ($1, $2, 'staff') RETURNING id",
+                    [username, 'password123']
+                );
+                userId = newU.rows[0].id;
+            } else {
+                userId = userRes.rows[0].id;
+            }
+
+            // Check Staff
+            const staffCheck = await db.query("SELECT id FROM staff WHERE staff_id = $1", [s.id]);
+            if (staffCheck.rows.length === 0) {
+                await db.query(
+                    "INSERT INTO staff (user_id, staff_id, name, department) VALUES ($1, $2, $3, 'CSE')",
+                    [userId, s.id, s.name]
+                );
+                staffCount++;
+            }
+        }
+
+        // 2. Subjects
+        const subjects = [
+            { code: "CS3452", name: "THEORY OF COMPUTATION", sem: 4 },
+            { code: "CS3491", name: "ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING", sem: 4 },
+            { code: "CS3451", name: "INTRODUCTION TO OPERATING SYSTEM", sem: 4 },
+            { code: "CS3401", name: "ALGORITHMS", sem: 4 },
+            { code: "CS3492", name: "DATABASE MANAGEMENT SYSTEM", sem: 4 },
+            { code: "GE3451", name: "ENVIRONMENTAL SCIENCES AND SUSTAINABILITY", sem: 4 },
+            { code: "NM", name: "NAAN MUDHALVAN", sem: 4 },
+            { code: "LAB1", name: "DATABASE MANAGEMENT SYSTEM LABORATORY", sem: 4 },
+            { code: "LAB2", name: "OPERATING SYSTEMS LABORATORY", sem: 4 },
+            { code: "LAB3", name: "SOFTSKILL TRAINING", sem: 4 },
+            { code: "CCS336", name: "SOFTWARE TESTING AND AUTOMATION", sem: 6 },
+            { code: "CCS356", name: "OBJECT ORIENTED SOFTWARE ENGINEERING", sem: 6 },
+            { code: "OBT352", name: "FOOD NUTRIENTS AND HEALTH", sem: 6 },
+            { code: "CCS354", name: "NETWORK SECURITY", sem: 6 },
+            { code: "CS3491_2", name: "EMBEDDED SYSTEMS AND IOT", sem: 6 },
+            { code: "LAB4", name: "OBJECT ORIENTED SOFTWARE ENGINEERING LAB", sem: 6 }
+        ];
+
+        let subjectCount = 0;
+        for (const sub of subjects) {
+            const check = await db.query("SELECT id FROM subjects WHERE subject_code = $1", [sub.code]);
+            if (check.rows.length === 0) {
+                await db.query(
+                    "INSERT INTO subjects (subject_code, subject_name, semester) VALUES ($1, $2, $3)",
+                    [sub.code, sub.name, sub.sem]
+                );
+                subjectCount++;
+            }
+        }
+
+        res.json({ message: `Seeding Complete! Added ${staffCount} new staff and ${subjectCount} new subjects.` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Seeding failed', error: err.message });
+    }
+});
+
+// --- LOGIN & AUTH ---
+// --- LOGIN & AUTH ---
 app.post('/api/login/student', async (req, res) => {
     const { name, roll_no, year, section } = req.body;
     console.log('Student Login Attempt:', { name, roll_no, year, section });
