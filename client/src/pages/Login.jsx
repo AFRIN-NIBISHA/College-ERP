@@ -155,12 +155,12 @@ const Login = () => {
 
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">
-                                        {role === 'student' ? 'Name' : 'Username'}
+                                        {role === 'student' ? 'Register Number' : 'Username'}
                                     </label>
                                     <input
                                         type="text"
                                         className="w-full bg-white border-2 border-slate-100 rounded-xl py-3.5 px-4 outline-none focus:border-blue-500"
-                                        placeholder={role === 'student' ? "Enter Name" : "Enter Username"}
+                                        placeholder={role === 'student' ? "Enter Register No" : "Enter Username"}
                                         value={studentData.username}
                                         onChange={(e) => setStudentData({ ...studentData, username: e.target.value })}
                                         required
@@ -169,12 +169,12 @@ const Login = () => {
 
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">
-                                        {role === 'student' ? 'Roll Number' : 'Password'}
+                                        {role === 'student' ? 'Date of Birth' : 'Password'}
                                     </label>
                                     <input
-                                        type="password"
+                                        type={role === 'student' ? "date" : "password"}
                                         className="w-full bg-white border-2 border-slate-100 rounded-xl py-3.5 px-4 outline-none focus:border-blue-500"
-                                        placeholder={role === 'student' ? "Enter Roll No" : "Enter Password"}
+                                        placeholder={role === 'student' ? "" : "Enter Password"}
                                         value={studentData.password}
                                         onChange={(e) => setStudentData({ ...studentData, password: e.target.value })}
                                         required

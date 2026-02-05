@@ -19,7 +19,8 @@ const Students = () => {
         year: '1',
         section: 'A',
         email: '',
-        phone: ''
+        phone: '',
+        dob: ''
     });
 
     const classOptions = [
@@ -92,7 +93,8 @@ const Students = () => {
             year: selectedClass ? selectedClass.year.toString() : '1',
             section: 'A',
             email: '',
-            phone: ''
+            phone: '',
+            dob: ''
         });
         setEditingId(null);
         setShowAddModal(false);
@@ -105,7 +107,8 @@ const Students = () => {
             year: student.year,
             section: student.section,
             email: student.email || '',
-            phone: student.phone || ''
+            phone: student.phone || '',
+            dob: student.dob ? student.dob.split('T')[0] : ''
         });
         setEditingId(student.id);
         setShowAddModal(true);
@@ -355,9 +358,15 @@ const Students = () => {
                                 <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
                             </div>
 
-                            <div className="space-y-1">
-                                <label className="text-xs font-medium text-slate-500">Phone</label>
-                                <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-medium text-slate-500">Phone</label>
+                                    <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-medium text-slate-500">Date of Birth</label>
+                                    <input type="date" required name="dob" value={formData.dob} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                </div>
                             </div>
 
                             <div className="flex gap-3 pt-4 border-t border-slate-100 mt-6 md:justify-end">

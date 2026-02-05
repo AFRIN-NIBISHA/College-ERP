@@ -131,6 +131,7 @@ const initDb = async () => {
             ALTER TABLE fees ADD COLUMN IF NOT EXISTS total_fee DECIMAL(10, 2) DEFAULT 0;
             ALTER TABLE fees ADD COLUMN IF NOT EXISTS paid_amount DECIMAL(10, 2) DEFAULT 0;
             ALTER TABLE fees ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'Pending';
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS dob DATE;
         `);
         console.log("Schema verified/updated.");
     } catch (err) {
@@ -439,13 +440,13 @@ app.get('/api/students', async (req, res) => {
 
 // 3. Add Student
 app.post('/api/students', async (req, res) => {
-    const { roll_no, name, year, section, email, phone } = req.body;
+    const { roll_no, name, year, section, email, phone, dob } = req.body;
     try {
         await db.query('BEGIN');
 
         const result = await db.query(
-            "INSERT INTO students (roll_no, name, department, year, section, email, phone) VALUES ($1, $2, 'CSE', $3, $4, $5, $6) RETURNING *",
-            [roll_no, name, year, section, email, phone]
+            "INSERT INTO students (roll_no, name, department, year, section, email, phone, dob) VALUES ($1, $2, 'CSE', $3, $4, $5, $6, $7) RETURNING *",
+            [roll_no, name, year, section, email, phone, dob]
         );
 
         const newStudent = result.rows[0];
@@ -471,11 +472,11 @@ app.post('/api/students', async (req, res) => {
 // 3.1 Update Student
 app.put('/api/students/:id', async (req, res) => {
     const { id } = req.params;
-    const { roll_no, name, year, section, email, phone } = req.body;
+    const { roll_no, name, year, section, email, phone, dob } = req.body;
     try {
         const result = await db.query(
-            "UPDATE students SET roll_no = $1, name = $2, year = $3, section = $4, email = $5, phone = $6 WHERE id = $7 RETURNING *",
-            [roll_no, name, year, section, email, phone, id]
+            "UPDATE students SET roll_no = $1, name = $2, year = $3, section = $4, email = $5, phone = $6, dob = $7 WHERE id = $8 RETURNING *",
+            [roll_no, name, year, section, email, phone, dob, id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Student not found' });
@@ -1215,19 +1216,19 @@ app.post('/api/admin/seed-timetable', async (req, res) => {
 
 // --- LOGIN & AUTH ---
 app.post('/api/login/student', async (req, res) => {
-    const { name, roll_no, year, section } = req.body;
-    console.log('Student Login Attempt:', { name, roll_no, year, section });
+    const { roll_no, dob, year, section } = req.body;
+    console.log('Student Login Attempt:', { roll_no, dob, year, section });
 
     try {
-        // Case insensitive match for name and roll_no
+        // Match roll_no and dob
         const result = await db.query(
-            "SELECT * FROM students WHERE name ILIKE $1 AND roll_no ILIKE $2 AND year = $3 AND section = $4",
-            [name.trim(), roll_no.trim(), year, section]
+            "SELECT * FROM students WHERE roll_no ILIKE $1 AND dob = $2 AND year = $3 AND section = $4",
+            [roll_no.trim(), dob, year, section]
         );
 
         if (result.rows.length === 0) {
             console.log("Student login failed: No match found");
-            return res.status(401).json({ message: 'Student details not found. Please check your inputs.' });
+            return res.status(401).json({ message: 'Student details not found or DOB is incorrect.' });
         }
 
         const student = result.rows[0];
@@ -1838,9 +1839,9 @@ app.post('/api/login', async (req, res) => {
         }
 
         // 2. Fallback: Legacy Student Login (Check students table directly)
-        // Assume username=Name, password=RollNo
+        // Assume username=RollNo, password=DOB (YYYY-MM-DD)
         console.log("Checking Legacy Student Login:", username);
-        const sRes = await db.query("SELECT * FROM students WHERE LOWER(name) = LOWER($1) AND roll_no = $2", [username, password]);
+        const sRes = await db.query("SELECT * FROM students WHERE roll_no = $1 AND dob = $2", [username, password]);
 
         if (sRes.rows.length > 0) {
             const student = sRes.rows[0];
@@ -1851,10 +1852,11 @@ app.post('/api/login', async (req, res) => {
                 message: 'Login successful',
                 user: {
                     id: student.user_id || 999999, // Fallback ID if not linked
-                    username: student.name,
+                    username: student.roll_no,
                     role: 'student',
                     profileId: student.id, // THE MOST IMPORTANT FIELD
-                    is_legacy: true
+                    is_legacy: true,
+                    name: student.name
                 }
             });
         }

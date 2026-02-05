@@ -120,6 +120,16 @@ const Profile = () => {
                                             <p className="font-semibold text-slate-700">{displayData?.section || 'N/A'}</p>
                                         </div>
                                     </div>
+
+                                    <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl">
+                                        <div className="p-2 bg-white rounded-xl shadow-sm text-slate-600">
+                                            <Calendar size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold text-slate-400 uppercase">Date of Birth</p>
+                                            <p className="font-semibold text-slate-700">{displayData?.dob ? new Date(displayData.dob).toLocaleDateString() : 'N/A'}</p>
+                                        </div>
+                                    </div>
                                 </>
                             )}
                         </div>
