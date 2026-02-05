@@ -26,6 +26,12 @@ const Profile = () => {
     // Use profileData if available (for students), otherwise fallback to user context (for staff/admin)
     const displayData = profileData || user;
 
+    const getYearDisplay = (year) => {
+        if (!year) return 'N/A';
+        const suffixes = { 1: 'st', 2: 'nd', 3: 'rd' };
+        return `${year}${suffixes[year] || 'th'} Year`;
+    };
+
     return (
         <div className="max-w-4xl mx-auto space-y-8">
             <div>
@@ -107,7 +113,7 @@ const Profile = () => {
                                         </div>
                                         <div>
                                             <p className="text-xs font-bold text-slate-400 uppercase">Year</p>
-                                            <p className="font-semibold text-slate-700">{displayData?.year ? `${displayData.year}th Year` : 'N/A'}</p>
+                                            <p className="font-semibold text-slate-700">{getYearDisplay(displayData?.year)}</p>
                                         </div>
                                     </div>
 

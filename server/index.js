@@ -248,11 +248,7 @@ app.get('/api/fees', async (req, res) => {
 
         if (student_id) {
             params.push(student_id);
-            if (!isNaN(student_id)) {
-                query += ` AND (s.id = $${params.length} OR s.roll_no ILIKE $${params.length})`;
-            } else {
-                query += ` AND s.roll_no ILIKE $${params.length}`;
-            }
+            query += ` AND (s.id::text = $${params.length} OR s.roll_no ILIKE $${params.length})`;
         }
         if (year) {
             params.push(year);
@@ -429,11 +425,7 @@ app.get('/api/students', async (req, res) => {
 
         if (targetId) {
             params.push(targetId);
-            if (!isNaN(targetId)) {
-                query += ` AND (id = $${params.length} OR roll_no ILIKE $${params.length})`;
-            } else {
-                query += ` AND roll_no ILIKE $${params.length}`;
-            }
+            query += ` AND (id::text = $${params.length} OR roll_no ILIKE $${params.length})`;
         } else {
             if (year) {
                 params.push(year);
@@ -680,11 +672,7 @@ app.get('/api/attendance/report', async (req, res) => {
         }
         if (student_id) {
             queryParams.push(student_id);
-            if (!isNaN(student_id)) {
-                whereConditions.push(`(s.id = $${queryParams.length} OR s.roll_no ILIKE $${queryParams.length})`);
-            } else {
-                whereConditions.push(`s.roll_no ILIKE $${queryParams.length}`);
-            }
+            whereConditions.push(`(s.id::text = $${queryParams.length} OR s.roll_no ILIKE $${queryParams.length})`);
         }
 
         if (month) {
@@ -770,11 +758,7 @@ app.get('/api/marks', async (req, res) => {
 
         if (student_id) {
             sParams.push(student_id);
-            if (!isNaN(student_id)) {
-                sQuery += ` AND (id = $${sParams.length} OR roll_no ILIKE $${sParams.length})`;
-            } else {
-                sQuery += ` AND roll_no ILIKE $${sParams.length}`;
-            }
+            sQuery += ` AND (id::text = $${sParams.length} OR roll_no ILIKE $${sParams.length})`;
         } else {
             if (year) { sParams.push(year); sQuery += ` AND year = $${sParams.length}`; }
             if (section) { sParams.push(section); sQuery += ` AND section = $${sParams.length}`; }
@@ -1277,13 +1261,18 @@ app.post('/api/login/student', async (req, res) => {
         res.json({
             message: 'Login successful',
             user: {
-                id: student.user_id || 0, // 0 as fallback
+                id: student.user_id || 0,
                 username: student.roll_no,
                 role: 'student',
                 profileId: student.id,
                 name: student.name,
+                roll_no: student.roll_no,
+                email: student.email,
+                phone: student.phone,
+                dob: student.dob,
                 year: student.year,
-                section: student.section // Vital for Timetable
+                section: student.section,
+                department: student.department || 'CSE'
             }
         });
     } catch (err) {
@@ -1371,13 +1360,8 @@ app.get('/api/no-due', async (req, res) => {
 
         // Filter for specific student if provided
         if (student_id) {
-            if (!isNaN(student_id)) {
-                params.push(student_id);
-                query += ` AND (s.id = $${params.length} OR s.roll_no ILIKE $${params.length})`;
-            } else {
-                params.push(student_id);
-                query += ` AND s.roll_no ILIKE $${params.length}`;
-            }
+            params.push(student_id);
+            query += ` AND (s.id::text = $${params.length} OR s.roll_no ILIKE $${params.length})`;
         }
 
         // Filter by Year and Section
