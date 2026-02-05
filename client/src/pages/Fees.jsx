@@ -5,7 +5,7 @@ import { Search, Filter, Edit2, Check, X, CreditCard, IndianRupee, RefreshCw } f
 
 const Fees = () => {
     const { user } = useAuth();
-    const canManageFees = ['admin', 'office', 'staff', 'hod', 'principal'].includes(user?.role);
+    const canEditFees = ['admin', 'office'].includes(user?.role);
     const isStudent = user?.role === 'student';
 
     // Default to 1st Year, A Section (Common default) - or maintain user selection
@@ -193,8 +193,8 @@ const Fees = () => {
                                         <tr key={student.id} className="hover:bg-slate-50/50 transition-colors">
                                             <td className="p-4 text-slate-700 font-medium">{student.roll_no}</td>
                                             <td
-                                                className="p-4 text-blue-600 font-bold hover:underline cursor-pointer flex items-center gap-2"
-                                                onClick={() => canManageFees && handleEditClick(student)}
+                                                className={`p-4 font-bold flex items-center gap-2 ${canEditFees ? 'text-blue-600 hover:underline cursor-pointer' : 'text-slate-700'}`}
+                                                onClick={() => canEditFees && handleEditClick(student)}
                                             >
                                                 {student.name}
                                             </td>
@@ -209,7 +209,7 @@ const Fees = () => {
                                                 </span>
                                             </td>
                                             <td className="p-4 text-right">
-                                                {canManageFees && (
+                                                {canEditFees && (
                                                     <button
                                                         onClick={() => handleEditClick(student)}
                                                         className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
