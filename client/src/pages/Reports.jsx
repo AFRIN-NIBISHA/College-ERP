@@ -14,6 +14,7 @@ const Reports = () => {
     const [year, setYear] = useState(isStaff ? '3' : user?.year || '3'); // Default to 3rd year
     const [section, setSection] = useState(isStaff ? 'A' : user?.section || 'A');
     const [month, setMonth] = useState('');
+    const [statusFilter, setStatusFilter] = useState('All'); // For No Due: All, Completed, Pending
 
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -77,7 +78,7 @@ const Reports = () => {
 
     useEffect(() => {
         fetchData();
-    }, [activeTab, year, section, month]);
+    }, [activeTab, year, section, month, statusFilter]);
 
     const fetchData = async () => {
         setLoading(true);
@@ -114,8 +115,21 @@ const Reports = () => {
 
             if (url) {
                 const res = await axios.get(url);
+                let rawData = res.data;
+
+                // Client-side status filtering for No Due
+                if (activeTab === 'no_due' && statusFilter !== 'All') {
+                    rawData = rawData.filter(item => {
+                        const overall = item.nodue_overall_status || 'Not Started';
+                        if (statusFilter === 'Completed') return overall === 'Completed';
+                        if (statusFilter === 'Pending') return overall !== 'Completed' && overall !== 'Not Started';
+                        if (statusFilter === 'Not Started') return overall === 'Not Started';
+                        return true;
+                    });
+                }
+
                 // Process data to add S.No and formatting
-                const processed = res.data.map((item, index) => ({
+                const processed = rawData.map((item, index) => ({
                     ...item,
                     s_no: index + 1,
                     percentage_str: item.percentage ? item.percentage + '%' : (activeTab === 'attendance' ? '0%' : ''),
@@ -235,6 +249,14 @@ const Reports = () => {
                                 <option value="">All Months</option>
                                 <option value="1">January</option>
                                 <option value="2">February</option>
+                            </select>
+                        )}
+                        {activeTab === 'no_due' && (
+                            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-white border rounded-lg px-3 py-2 text-sm">
+                                <option value="All">All Status</option>
+                                <option value="Completed">Approved (Completed)</option>
+                                <option value="Pending">Pending / In Progress</option>
+                                <option value="Not Started">Not Started</option>
                             </select>
                         )}
                     </div>
