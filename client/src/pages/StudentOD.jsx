@@ -13,7 +13,9 @@ const StudentOD = () => {
         date_from: '',
         date_to: '',
         reason: '',
-        no_of_days: 1
+        no_of_days: 1,
+        hours: 1,
+        od_type: 'Day' // 'Day' or 'Hour'
     });
 
     const isStudent = user?.role === 'student';
@@ -47,7 +49,7 @@ const StudentOD = () => {
                 ...formData
             });
             alert('OD Request Submitted');
-            setFormData({ date_from: '', date_to: '', reason: '', no_of_days: 1 });
+            setFormData({ date_from: '', date_to: '', reason: '', no_of_days: 1, hours: 1, od_type: 'Day' });
             fetchRequests();
         } catch (err) {
             console.error(err);
@@ -108,6 +110,22 @@ const StudentOD = () => {
                                 <FileText className="text-blue-600" /> New Application
                             </h3>
                             <form onSubmit={handleSubmit} className="space-y-4">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-500 uppercase">OD Type</label>
+                                    <div className="flex gap-2">
+                                        {['Day', 'Hour'].map(type => (
+                                            <button
+                                                key={type}
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, od_type: type })}
+                                                className={`flex-1 py-2 rounded-lg border text-sm font-bold transition-all ${formData.od_type === type ? 'bg-blue-600 text-white border-blue-600 shadow-md' : 'bg-white text-slate-600 border-slate-200'}`}
+                                            >
+                                                {type}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <label className="text-xs font-bold text-slate-500 uppercase">From Date</label>
@@ -123,24 +141,41 @@ const StudentOD = () => {
                                         <label className="text-xs font-bold text-slate-500 uppercase">To Date</label>
                                         <input
                                             type="date"
-                                            required
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500"
-                                            value={formData.date_to}
+                                            required={formData.od_type === 'Day'}
+                                            disabled={formData.od_type === 'Hour'}
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500 disabled:opacity-50"
+                                            value={formData.od_type === 'Hour' ? formData.date_from : formData.date_to}
                                             onChange={(e) => setFormData({ ...formData, date_to: e.target.value })}
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-slate-500 uppercase">Total Days</label>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        required
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500"
-                                        value={formData.no_of_days}
-                                        onChange={(e) => setFormData({ ...formData, no_of_days: e.target.value })}
-                                    />
-                                </div>
+                                {formData.od_type === 'Day' ? (
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-slate-500 uppercase">Total Days</label>
+                                        <input
+                                            type="number"
+                                            min="0.5"
+                                            step="0.5"
+                                            required
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500"
+                                            value={formData.no_of_days}
+                                            onChange={(e) => setFormData({ ...formData, no_of_days: e.target.value })}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-slate-500 uppercase">Number of Hours</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max="8"
+                                            required
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm outline-none focus:border-blue-500"
+                                            value={formData.hours}
+                                            onChange={(e) => setFormData({ ...formData, hours: e.target.value })}
+                                        />
+                                    </div>
+                                )}
                                 <div className="space-y-1">
                                     <label className="text-xs font-bold text-slate-500 uppercase">Reason</label>
                                     <textarea
@@ -181,9 +216,13 @@ const StudentOD = () => {
                                             )}
                                             <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
                                                 <Calendar size={16} className="text-blue-500" />
-                                                {new Date(req.date_from).toLocaleDateString()}  Example: TO  {new Date(req.date_to).toLocaleDateString()}
+                                                {new Date(req.date_from).toLocaleDateString()}
+                                                {req.od_type === 'Day' && ` to ${new Date(req.date_to).toLocaleDateString()}`}
                                                 <span className="px-2 py-0.5 bg-slate-100 rounded text-xs text-slate-500">
-                                                    {req.no_of_days} Day(s)
+                                                    {req.od_type === 'Day' ? `${req.no_of_days} Day(s)` : `${req.hours} Hour(s)`}
+                                                </span>
+                                                <span className="px-2 py-0.5 bg-blue-50 rounded text-xs text-blue-600 border border-blue-100 italic">
+                                                    Pending: {req.pending_with?.toUpperCase()}
                                                 </span>
                                             </div>
                                         </div>
@@ -205,8 +244,8 @@ const StudentOD = () => {
                                         </div>
                                     )}
 
-                                    {/* Action Buttons for Staff/HOD */}
-                                    {canApprove && req.status === 'Pending' && (
+                                    {/* Action Buttons for Staff/HOD/Principal based on routing */}
+                                    {canApprove && req.status === 'Pending' && (user.role === req.pending_with || user.role === 'admin') && (
                                         <div className="flex gap-3 pt-4 border-t border-slate-100">
                                             <button
                                                 onClick={() => handleStatus(req.id, 'Approved')}

@@ -122,6 +122,9 @@ const initDb = async () => {
                 date_to DATE NOT NULL,
                 reason TEXT,
                 no_of_days INT,
+                hours INT,
+                od_type VARCHAR(10) DEFAULT 'Day', -- 'Hour' or 'Day'
+                pending_with VARCHAR(20), -- 'staff', 'hod', 'principal'
                 status VARCHAR(20) DEFAULT 'Pending',
                 remarks TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -132,6 +135,9 @@ const initDb = async () => {
             ALTER TABLE fees ADD COLUMN IF NOT EXISTS paid_amount DECIMAL(10, 2) DEFAULT 0;
             ALTER TABLE fees ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'Pending';
             ALTER TABLE students ADD COLUMN IF NOT EXISTS dob DATE;
+            ALTER TABLE student_od ADD COLUMN IF NOT EXISTS od_type VARCHAR(10) DEFAULT 'Day';
+            ALTER TABLE student_od ADD COLUMN IF NOT EXISTS hours INT;
+            ALTER TABLE student_od ADD COLUMN IF NOT EXISTS pending_with VARCHAR(20);
         `);
         console.log("Schema verified/updated.");
     } catch (err) {
@@ -1610,13 +1616,58 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
 
 // --- STUDENT OD ENDPOINTS ---
 app.post('/api/od/apply', async (req, res) => {
-    const { student_id, date_from, date_to, reason, no_of_days } = req.body;
+    const { student_id, date_from, date_to, reason, no_of_days, hours, od_type } = req.body;
     try {
-        await db.query(
-            "INSERT INTO student_od (student_id, date_from, date_to, reason, no_of_days) VALUES ($1, $2, $3, $4, $5)",
-            [student_id, date_from, date_to, reason, no_of_days]
+        let pendingWith = 'staff';
+        if (od_type === 'Day') {
+            if (parseFloat(no_of_days) === 1) {
+                pendingWith = 'hod';
+            } else if (parseFloat(no_of_days) > 1) {
+                pendingWith = 'principal';
+            }
+        } else if (od_type === 'Hour') {
+            pendingWith = 'staff';
+        }
+
+        const result = await db.query(
+            "INSERT INTO student_od (student_id, date_from, date_to, reason, no_of_days, hours, od_type, pending_with) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
+            [student_id, date_from, date_to, reason, no_of_days, hours, od_type, pendingWith]
         );
-        res.json({ message: 'OD Request submitted successfully' });
+
+        const newOD = result.rows[0];
+
+        // Notify relevant users
+        let notificationQuery = "";
+        let notificationParams = [];
+
+        if (pendingWith === 'staff') {
+            // Get student info to find class staff
+            const stud = await db.query("SELECT year, section FROM students WHERE id = $1", [student_id]);
+            if (stud.rows.length > 0) {
+                const { year, section } = stud.rows[0];
+                notificationQuery = `
+                    SELECT u.id as user_id FROM users u
+                    JOIN staff s ON u.id = s.user_id
+                    JOIN timetable t ON s.id = t.staff_id
+                    WHERE t.year = $1 AND t.section = $2
+                    UNION
+                    SELECT user_id FROM staff WHERE designation ILIKE '%Incharge%' -- Fallback/Specific
+                `;
+                notificationParams = [year, section];
+            }
+        } else {
+            notificationQuery = "SELECT id as user_id FROM users WHERE role = $1";
+            notificationParams = [pendingWith];
+        }
+
+        if (notificationQuery) {
+            const usersToNotify = await db.query(notificationQuery, notificationParams);
+            for (const user of usersToNotify.rows) {
+                await createNotification(user.user_id, 'New OD Request', `A new ${od_type} OD request requires your approval.`);
+            }
+        }
+
+        res.json({ message: 'OD Request submitted successfully', pending_with: pendingWith });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
