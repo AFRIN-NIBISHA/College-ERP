@@ -10,7 +10,7 @@ const Reports = () => {
     const { user } = useAuth();
     const isStaff = user?.role === 'staff' || user?.role === 'admin';
 
-    const [activeTab, setActiveTab] = useState('students'); // students, attendance, marks, fees, staff
+    const [activeTab, setActiveTab] = useState('students'); // no_due, students, attendance, marks, fees, staff
     const [year, setYear] = useState(isStaff ? '3' : user?.year || '3'); // Default to 3rd year
     const [section, setSection] = useState(isStaff ? 'A' : user?.section || 'A');
     const [month, setMonth] = useState('');
@@ -20,6 +20,16 @@ const Reports = () => {
 
     // Column Configuration
     const columnConfig = {
+        no_due: [
+            { header: "S.No", key: "s_no" },
+            { header: "Roll No", key: "roll_no" },
+            { header: "Name", key: "name" },
+            { header: "Office", key: "office_status" },
+            { header: "Staff", key: "staff_status" },
+            { header: "HOD", key: "hod_status" },
+            { header: "Principal", key: "principal_status" },
+            { header: "Overall", key: "nodue_overall_status" }
+        ],
         students: [
             { header: "S.No", key: "s_no" },
             { header: "Roll No", key: "roll_no" },
@@ -62,16 +72,6 @@ const Reports = () => {
             { header: "Designation", key: "designation" },
             { header: "Dept", key: "department" },
             { header: "Phone", key: "phone" }
-        ],
-        no_due: [
-            { header: "S.No", key: "s_no" },
-            { header: "Roll No", key: "roll_no" },
-            { header: "Name", key: "name" },
-            { header: "Office", key: "office_status" },
-            { header: "Staff", key: "staff_status" },
-            { header: "HOD", key: "hod_status" },
-            { header: "Principal", key: "principal_status" },
-            { header: "Overall", key: "nodue_overall_status" }
         ]
     };
 
