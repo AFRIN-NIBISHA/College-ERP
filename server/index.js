@@ -1312,15 +1312,18 @@ app.post('/api/no-due/request', async (req, res) => {
 });
 
 app.get('/api/no-due', async (req, res) => {
-    const { student_id, role } = req.query;
+    const { student_id, role, year, section } = req.query;
     try {
-        // Updated query to include Fee Details
+        // Updated query to include Fee Details and Support Filtering
         let query = `
-            SELECT nd.*, s.name, s.roll_no, s.year, s.section, s.department,
+            SELECT nd.id as nodue_id, nd.student_id, nd.semester, nd.office_status, 
+                   nd.staff_status, nd.hod_status, nd.principal_status, 
+                   nd.status as nodue_overall_status, nd.remarks, nd.created_at,
+                   s.name, s.roll_no, s.year, s.section, s.department,
                    f.total_fee, f.paid_amount, f.status as fee_status
-            FROM no_dues nd
-            JOIN students s ON nd.student_id = s.id
-            LEFT JOIN fees f ON nd.student_id = f.student_id
+            FROM students s
+            LEFT JOIN no_dues nd ON s.id = nd.student_id
+            LEFT JOIN fees f ON s.id = f.student_id
             WHERE 1=1
         `;
         const params = [];
@@ -1328,17 +1331,26 @@ app.get('/api/no-due', async (req, res) => {
         // Filter for specific student if provided
         if (student_id) {
             params.push(student_id);
-            query += ` AND nd.student_id = $${params.length}`;
+            query += ` AND s.id = $${params.length}`;
+        }
+
+        // Filter by Year and Section
+        if (year) {
+            params.push(year);
+            query += ` AND s.year = $${params.length}`;
+        }
+        if (section) {
+            params.push(section);
+            query += ` AND s.section = $${params.length}`;
         }
 
         // Office users can see all No Due requests
         // Students can only see their own requests
         if (role === 'student' && !student_id) {
-            // If student role but no student_id provided, return empty
             return res.json([]);
         }
 
-        query += " ORDER BY nd.created_at DESC";
+        query += " ORDER BY s.roll_no";
         const result = await db.query(query, params);
         res.json(result.rows);
     } catch (err) {
@@ -1346,6 +1358,7 @@ app.get('/api/no-due', async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
+
 
 // Init Fees Table (Migration Endpoint)
 app.post('/api/admin/init-fees', async (req, res) => {

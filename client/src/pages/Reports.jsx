@@ -62,6 +62,16 @@ const Reports = () => {
             { header: "Designation", key: "designation" },
             { header: "Dept", key: "department" },
             { header: "Phone", key: "phone" }
+        ],
+        no_due: [
+            { header: "S.No", key: "s_no" },
+            { header: "Roll No", key: "roll_no" },
+            { header: "Name", key: "name" },
+            { header: "Office", key: "office_status" },
+            { header: "Staff", key: "staff_status" },
+            { header: "HOD", key: "hod_status" },
+            { header: "Principal", key: "principal_status" },
+            { header: "Overall", key: "nodue_overall_status" }
         ]
     };
 
@@ -79,6 +89,13 @@ const Reports = () => {
                 params.append('section', section);
             }
 
+            if (user) {
+                params.append('role', user.role);
+                if (!isStaff && user.profileId) {
+                    params.append('student_id', user.profileId);
+                }
+            }
+
             if (activeTab === 'students') {
                 url = `/api/students?${params.toString()}`;
             } else if (activeTab === 'attendance') {
@@ -91,6 +108,8 @@ const Reports = () => {
                 url = `/api/fees?${params.toString()}`;
             } else if (activeTab === 'staff') {
                 url = `/api/staff`;
+            } else if (activeTab === 'no_due') {
+                url = `/api/no-due?${params.toString()}`;
             }
 
             if (url) {
@@ -106,7 +125,12 @@ const Reports = () => {
                     receipt_no: item.receipt_no || '-',
                     paid_amount: item.paid_amount || 0,
                     total_fee: item.total_fee || 0,
-                    status: item.status || 'Pending'
+                    status: item.status || 'Pending',
+                    nodue_overall_status: item.nodue_overall_status || 'Not Started',
+                    office_status: item.office_status || '-',
+                    staff_status: item.staff_status || '-',
+                    hod_status: item.hod_status || '-',
+                    principal_status: item.principal_status || '-'
                 }));
                 setData(processed);
             }
@@ -127,7 +151,7 @@ const Reports = () => {
             doc.setFontSize(22);
             doc.text("DMI Engineering College", 105, 20, null, null, "center");
             doc.setFontSize(14);
-            doc.text(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Report`, 105, 30, null, null, "center");
+            doc.text(`${activeTab.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} Report`, 105, 30, null, null, "center");
 
             const tableRows = data.map(item => config.map(col => item[col.key]));
             const tableHeaders = config.map(col => col.header);
@@ -187,7 +211,7 @@ const Reports = () => {
                                 : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
                                 }`}
                         >
-                            {tab}
+                            {tab.replace('_', ' ')}
                         </button>
                     ))}
                 </div>
