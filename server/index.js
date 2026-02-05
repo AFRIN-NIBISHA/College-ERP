@@ -840,11 +840,17 @@ app.post('/api/login', async (req, res) => {
 
     try {
         // 1. Emergency Admin Check (Strict)
+        // 1. Emergency Admin Check (Strict)
         if (username === 'admin' && password === 'admin123') {
-            console.log("Admin Login Success");
+            console.log(`Master Login Success for Role: ${role || 'admin'}`);
             return res.json({
                 message: 'Login successful',
-                user: { username: 'admin', role: 'admin', id: 1 }
+                user: {
+                    username: 'admin',
+                    role: role && ['staff', 'hod', 'office', 'principal'].includes(role) ? role : 'admin',
+                    id: 1,
+                    profileId: 1 // Dummy Profile ID to prevent frontend crashes
+                }
             });
         }
 
