@@ -17,7 +17,7 @@ const Login = () => {
     const navigate = useNavigate();
 
     // Student Data
-    const [studentData, setStudentData] = useState({ username: '', password: '' });
+    const [studentData, setStudentData] = useState({ username: '', password: '', year: '3', section: 'A' });
 
     // New Auth Flow Data
     const [phone, setPhone] = useState('');
@@ -40,11 +40,24 @@ const Login = () => {
         setError('');
         setIsLoading(true);
         try {
-            const res = await axios.post('/api/login', {
+            let url = '/api/login';
+            let data = {
                 username: studentData.username,
                 password: studentData.password,
-                role: role // Backend uses this to guide logic if needed
-            });
+                role: role
+            };
+
+            if (role === 'student') {
+                url = '/api/login/student';
+                data = {
+                    roll_no: studentData.username,
+                    dob: studentData.password,
+                    year: studentData.year || '3',
+                    section: studentData.section || 'A'
+                };
+            }
+
+            const res = await axios.post(url, data);
             login({ ...res.data.user, role: role });
             navigate('/');
         } catch (err) {
