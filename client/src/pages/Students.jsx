@@ -253,6 +253,7 @@ const Students = () => {
                                         <th className="p-4 text-slate-500 font-semibold text-sm">Student</th>
                                         <th className="p-4 text-slate-500 font-semibold text-sm">Roll No</th>
                                         <th className="p-4 text-slate-500 font-semibold text-sm">Year/Sec</th>
+                                        <th className="p-4 text-slate-500 font-semibold text-sm">DOB</th>
                                         <th className="p-4 text-slate-500 font-semibold text-sm">Email</th>
                                         <th className="p-4 text-slate-500 font-semibold text-sm">Status</th>
                                         {canEditStudents && <th className="p-4 text-slate-500 font-semibold text-sm">Actions</th>}
@@ -260,9 +261,9 @@ const Students = () => {
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
                                     {isLoading ? (
-                                        <tr><td colSpan={canEditStudents ? 6 : 5} className="p-8 text-center text-slate-500">Loading...</td></tr>
+                                        <tr><td colSpan={canEditStudents ? 7 : 6} className="p-8 text-center text-slate-500">Loading...</td></tr>
                                     ) : students.length === 0 ? (
-                                        <tr><td colSpan={canEditStudents ? 6 : 5} className="p-8 text-center text-slate-500">No students found in {selectedClass?.title}</td></tr>
+                                        <tr><td colSpan={canEditStudents ? 7 : 6} className="p-8 text-center text-slate-500">No students found in {selectedClass?.title}</td></tr>
                                     ) : (
                                         students.map((student) => (
                                             <tr key={student.id} className="hover:bg-slate-50 transition-colors group">
@@ -279,6 +280,7 @@ const Students = () => {
                                                 </td>
                                                 <td className="p-4 text-slate-600 font-mono text-sm">{student.roll_no}</td>
                                                 <td className="p-4 text-slate-600 font-medium">{student.year} - {student.section}</td>
+                                                <td className="p-4 text-slate-500 text-sm">{student.dob ? new Date(student.dob).toLocaleDateString() : '-'}</td>
                                                 <td className="p-4 text-slate-500 text-sm">{student.email}</td>
                                                 <td className="p-4">
                                                     <span className="px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
