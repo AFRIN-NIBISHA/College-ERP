@@ -248,7 +248,11 @@ app.get('/api/fees', async (req, res) => {
 
         if (student_id) {
             params.push(student_id);
-            query += ` AND s.id = $${params.length}`;
+            if (!isNaN(student_id)) {
+                query += ` AND (s.id = $${params.length} OR s.roll_no ILIKE $${params.length})`;
+            } else {
+                query += ` AND s.roll_no ILIKE $${params.length}`;
+            }
         }
         if (year) {
             params.push(year);
@@ -416,14 +420,20 @@ app.post('/api/timetable', async (req, res) => {
 
 
 app.get('/api/students', async (req, res) => {
-    const { year, section, id } = req.query;
+    const { year, section, id, student_id } = req.query;
     try {
         let query = "SELECT * FROM students WHERE 1=1";
         const params = [];
 
-        if (id) {
-            params.push(id);
-            query += ` AND id = $${params.length}`;
+        const targetId = id || student_id;
+
+        if (targetId) {
+            params.push(targetId);
+            if (!isNaN(targetId)) {
+                query += ` AND (id = $${params.length} OR roll_no ILIKE $${params.length})`;
+            } else {
+                query += ` AND roll_no ILIKE $${params.length}`;
+            }
         } else {
             if (year) {
                 params.push(year);
@@ -654,15 +664,35 @@ app.get('/api/attendance/personal', async (req, res) => {
 
 // Get Attendance Report (Aggregated)
 app.get('/api/attendance/report', async (req, res) => {
-    const { year, section, month } = req.query;
+    const { year, section, month, student_id } = req.query;
     try {
-        let queryParams = [year, section];
+        let queryParams = [];
         let dateCondition = "";
+        let whereConditions = [];
+
+        if (year) {
+            queryParams.push(year);
+            whereConditions.push(`s.year = $${queryParams.length}`);
+        }
+        if (section) {
+            queryParams.push(section);
+            whereConditions.push(`s.section = $${queryParams.length}`);
+        }
+        if (student_id) {
+            queryParams.push(student_id);
+            if (!isNaN(student_id)) {
+                whereConditions.push(`(s.id = $${queryParams.length} OR s.roll_no ILIKE $${queryParams.length})`);
+            } else {
+                whereConditions.push(`s.roll_no ILIKE $${queryParams.length}`);
+            }
+        }
 
         if (month) {
             queryParams.push(month);
-            dateCondition = `AND EXTRACT(MONTH FROM a.date) = $3`;
+            dateCondition = `AND EXTRACT(MONTH FROM a.date) = $${queryParams.length}`;
         }
+
+        const whereClause = whereConditions.length > 0 ? "WHERE " + whereConditions.join(" AND ") : "";
 
         const query = `
             SELECT 
@@ -673,7 +703,7 @@ app.get('/api/attendance/report', async (req, res) => {
                 SUM(CASE WHEN a.status = 'On Duty' THEN 1 ELSE 0 END) as od_days
             FROM students s
             LEFT JOIN attendance a ON s.id = a.student_id ${dateCondition}
-            WHERE s.year = $1 AND s.section = $2
+            ${whereClause}
             GROUP BY s.id, s.roll_no, s.name
             ORDER BY s.roll_no
         `;
@@ -740,7 +770,11 @@ app.get('/api/marks', async (req, res) => {
 
         if (student_id) {
             sParams.push(student_id);
-            sQuery += ` AND id = $${sParams.length}`;
+            if (!isNaN(student_id)) {
+                sQuery += ` AND (id = $${sParams.length} OR roll_no ILIKE $${sParams.length})`;
+            } else {
+                sQuery += ` AND roll_no ILIKE $${sParams.length}`;
+            }
         } else {
             if (year) { sParams.push(year); sQuery += ` AND year = $${sParams.length}`; }
             if (section) { sParams.push(section); sQuery += ` AND section = $${sParams.length}`; }
@@ -1337,8 +1371,13 @@ app.get('/api/no-due', async (req, res) => {
 
         // Filter for specific student if provided
         if (student_id) {
-            params.push(student_id);
-            query += ` AND s.id = $${params.length}`;
+            if (!isNaN(student_id)) {
+                params.push(student_id);
+                query += ` AND (s.id = $${params.length} OR s.roll_no ILIKE $${params.length})`;
+            } else {
+                params.push(student_id);
+                query += ` AND s.roll_no ILIKE $${params.length}`;
+            }
         }
 
         // Filter by Year and Section

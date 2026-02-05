@@ -15,6 +15,8 @@ const Reports = () => {
     const [section, setSection] = useState(isStaff ? 'A' : user?.section || 'A');
     const [month, setMonth] = useState('');
     const [statusFilter, setStatusFilter] = useState('All'); // For No Due: All, Completed, Pending
+    const [studentSearch, setStudentSearch] = useState('');
+    const [selectedStudentId, setSelectedStudentId] = useState('');
 
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -78,7 +80,7 @@ const Reports = () => {
 
     useEffect(() => {
         fetchData();
-    }, [activeTab, year, section, month, statusFilter]);
+    }, [activeTab, year, section, month, statusFilter, selectedStudentId]);
 
     const fetchData = async () => {
         setLoading(true);
@@ -94,6 +96,8 @@ const Reports = () => {
                 params.append('role', user.role);
                 if (!isStaff && user.profileId) {
                     params.append('student_id', user.profileId);
+                } else if (selectedStudentId) {
+                    params.append('student_id', selectedStudentId);
                 }
             }
 
@@ -258,6 +262,18 @@ const Reports = () => {
                                 <option value="Pending">Pending / In Progress</option>
                                 <option value="Not Started">Not Started</option>
                             </select>
+                        )}
+                        {isStaff && activeTab !== 'staff' && (
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Roll No (Filter)"
+                                    className="bg-white border rounded-lg px-3 py-2 text-sm w-32"
+                                    value={selectedStudentId}
+                                    onChange={(e) => setSelectedStudentId(e.target.value)}
+                                    title="Enter student ID/Roll No to filter"
+                                />
+                            </div>
                         )}
                     </div>
                 )}
