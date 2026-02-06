@@ -174,12 +174,12 @@ const Login = () => {
 
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">
-                                        {role === 'student' ? 'Register Number' : 'Username'}
+                                        {role === 'student' ? 'Register Number' : (['staff', 'hod', 'office', 'principal'].includes(role) ? 'Staff ID' : 'Username')}
                                     </label>
                                     <input
                                         type="text"
                                         className="w-full bg-white border-2 border-slate-100 rounded-xl py-3.5 px-4 outline-none focus:border-blue-500"
-                                        placeholder={role === 'student' ? "Enter Register No" : "Enter Username"}
+                                        placeholder={role === 'student' ? "Enter Register No" : (['staff', 'hod', 'office', 'principal'].includes(role) ? "Enter Staff ID" : "Enter Username")}
                                         value={studentData.username}
                                         onChange={(e) => setStudentData({ ...studentData, username: e.target.value })}
                                         required
@@ -188,12 +188,12 @@ const Login = () => {
 
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">
-                                        {role === 'student' ? 'Date of Birth' : 'Password'}
+                                        {role === 'student' ? 'Date of Birth' : (['staff', 'hod', 'office', 'principal'].includes(role) ? 'Full Name' : 'Password')}
                                     </label>
                                     <input
-                                        type={role === 'student' ? "date" : "password"}
+                                        type={role === 'student' ? "date" : (['staff', 'hod', 'office', 'principal'].includes(role) ? "text" : "password")}
                                         className="w-full bg-white border-2 border-slate-100 rounded-xl py-3.5 px-4 outline-none focus:border-blue-500"
-                                        placeholder={role === 'student' ? "" : "Enter Password"}
+                                        placeholder={role === 'student' ? "" : (['staff', 'hod', 'office', 'principal'].includes(role) ? "Enter Full Name" : "Enter Password")}
                                         value={studentData.password}
                                         onChange={(e) => setStudentData({ ...studentData, password: e.target.value })}
                                         required

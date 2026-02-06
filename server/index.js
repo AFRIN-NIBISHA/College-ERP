@@ -974,7 +974,7 @@ app.post('/api/login', async (req, res) => {
             }
         }
 
-        // 3. FALLBACK: Student Legacy Login (Name + RollNo)
+        // 3. FALLBACK: Student/Staff Legacy Login (ID + Name)
         // Check if user is trying to login as student using Name and RollNo
         // Here, frontend sends Name as 'username' and RollNo as 'password'
         if (!user && (role === 'student' || role === 'student'.toLowerCase())) {
@@ -1012,12 +1012,37 @@ app.post('/api/login', async (req, res) => {
             }
         }
 
-        if (!user) {
-            console.log(`Login Failed: User ${username} not found in Users or Students table`);
-            return res.status(401).json({ message: 'Invalid credentials' });
+        // 4. FALLBACK: Staff Legacy Login (StaffID + Name)
+        if (!user && ['staff', 'hod', 'principal', 'office'].includes(role)) {
+            console.log(`[Staff Legacy Login] Attempting for StaffID: '${username}' with Name: '${password}'`);
+            const staffRes = await db.query("SELECT * FROM staff WHERE staff_id = $1", [username.trim()]);
+            if (staffRes.rows.length > 0) {
+                const staff = staffRes.rows[0];
+                const nInput = password.trim().toLowerCase();
+                const nDb = staff.name.toLowerCase();
+                if (nDb === nInput || nDb.includes(nInput) || nInput.includes(nDb)) {
+                    console.log("Staff Legacy Login Success:", staff.name);
+                    user = {
+                        id: staff.user_id || (88000 + staff.id),
+                        username: staff.staff_id,
+                        role: role,
+                        password: '',
+                        profileId: staff.id,
+                        name: staff.name,
+                        department: staff.department
+                    };
+                } else {
+                    console.log(`Staff Legacy Login Fail: StaffID found, but Name mismatch. DB: '${staff.name}', Input: '${password}'`);
+                }
+            }
         }
 
-        // 4. Fetch Profile ID (if not already set by legacy fallback)
+        if (!user) {
+            console.log(`Login Failed: User ${username} not found for role ${role}`);
+            return res.status(401).json({ message: 'Invalid credentials. Please check your ID and Name.' });
+        }
+
+        // 5. Fetch Profile ID (if not already set by legacy fallback)
         let profileId = user.profileId;
         if (!profileId) {
             if (user.role === 'student') {
