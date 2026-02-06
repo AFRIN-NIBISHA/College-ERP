@@ -1427,9 +1427,19 @@ app.get('/api/no-due', async (req, res) => {
     const { student_id, role, year, section } = req.query;
     try {
         let query = `
-            SELECT nd.*, nd.status as nodue_overall_status,
-                   s.name, s.roll_no, s.year, s.section, s.department,
-                   f.total_fee, f.paid_amount, f.status as fee_status
+            SELECT 
+                nd.id, 
+                nd.semester, 
+                COALESCE(nd.office_status, '-') as office_status,
+                COALESCE(nd.staff_status, '-') as staff_status,
+                COALESCE(nd.hod_status, '-') as hod_status,
+                COALESCE(nd.principal_status, '-') as principal_status,
+                COALESCE(nd.status, 'Not Started') as nodue_overall_status,
+                COALESCE(nd.created_at, s.created_at) as created_at,
+                s.name, s.roll_no, s.year, s.section, s.department,
+                COALESCE(f.total_fee, 50000) as total_fee, 
+                COALESCE(f.paid_amount, 0) as paid_amount, 
+                COALESCE(f.status, 'Pending') as fee_status
             FROM students s
             LEFT JOIN no_dues nd ON s.id = nd.student_id
             LEFT JOIN fees f ON s.id = f.student_id
@@ -1455,11 +1465,18 @@ app.get('/api/no-due', async (req, res) => {
             return res.json([]);
         }
 
-        query += " ORDER BY nd.created_at DESC";
+        // Order by active status first, then date. Put 'Not Started' at the bottom.
+        query += ` 
+            ORDER BY 
+                CASE WHEN nd.status IS NULL THEN 1 ELSE 0 END,
+                nd.created_at DESC NULLS LAST, 
+                s.roll_no ASC
+        `;
+
         const result = await db.query(query, params);
         res.json(result.rows);
     } catch (err) {
-        console.error(err);
+        console.error("No Due Report Error:", err);
         res.status(500).json({ message: 'Server error' });
     }
 });
