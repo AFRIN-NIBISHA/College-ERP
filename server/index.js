@@ -139,6 +139,22 @@ const initDb = async () => {
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS hours INT;
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS pending_with VARCHAR(20);
 
+            CREATE TABLE IF NOT EXISTS attendance (
+                id SERIAL PRIMARY KEY,
+                student_id INT REFERENCES students(id) ON DELETE CASCADE,
+                date DATE NOT NULL,
+                status VARCHAR(20) DEFAULT 'Present',
+                period_1 VARCHAR(20),
+                period_2 VARCHAR(20),
+                period_3 VARCHAR(20),
+                period_4 VARCHAR(20),
+                period_5 VARCHAR(20),
+                period_6 VARCHAR(20),
+                period_7 VARCHAR(20),
+                period_8 VARCHAR(20),
+                UNIQUE(student_id, date)
+            );
+
             -- Ensure Deletion Cascades
             ALTER TABLE faculty_attendance DROP CONSTRAINT IF EXISTS faculty_attendance_substitute_id_fkey;
             ALTER TABLE faculty_attendance ADD CONSTRAINT faculty_attendance_substitute_id_fkey FOREIGN KEY (substitute_id) REFERENCES staff(id) ON DELETE SET NULL;
