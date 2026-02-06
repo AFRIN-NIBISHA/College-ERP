@@ -442,9 +442,16 @@ const NoDue = () => {
                                                         // Logic to show approval buttons only to relevant staff
                                                         const userName = user?.name?.trim().toLowerCase() || user?.username?.trim().toLowerCase();
                                                         const staffName = sub.staff_name?.trim().toLowerCase();
-                                                        const isMySubject = userName && staffName && (userName === staffName || userName.includes(staffName) || staffName.includes(userName));
 
-                                                        // Demo Mode Check
+                                                        // Priority match: Profile ID comparison
+                                                        const isIdMatch = user?.profileId && sub.staff_profile_id && (Number(user.profileId) === Number(sub.staff_profile_id));
+
+                                                        // Fallback match: Name string comparison
+                                                        const isNameMatch = userName && staffName && (userName === staffName || userName.includes(staffName) || staffName.includes(userName));
+
+                                                        const isMySubject = isIdMatch || isNameMatch;
+
+                                                        // Demo Mode Check - admin or specific demo usernames get all buttons
                                                         const isDemo = ['admin', 'staff', 'hod', 'principal'].includes(user?.username?.toLowerCase());
                                                         const isRelevantStaff = (role === 'staff' && (isMySubject || isDemo)) || role === 'admin';
 

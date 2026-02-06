@@ -1558,12 +1558,18 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
 
         console.log("Determined updateField:", updateField);
 
-        if (!updateField || (!['office_status', 'staff_status', 'hod_status', 'principal_status'].includes(updateField) && !updateField.endsWith('_status'))) {
+        // Looser validation: allow any field that is either a standard stage or ends with _status
+        const isStandardStage = ['office_status', 'staff_status', 'hod_status', 'principal_status'].includes(updateField);
+        const isSubjectStatus = updateField.endsWith('_status');
+
+        if (!updateField || (!isStandardStage && !isSubjectStatus)) {
             console.log("❌ Invalid field/stage error");
-            console.log("❌ Full request body:", req.body);
-            console.log("❌ Field parameter:", field);
-            console.log("❌ Stage parameter:", req.body.stage);
-            return res.status(400).json({ message: 'Invalid field/stage', received: { field, stage: req.body.stage } });
+            console.log("❌ Received updateField:", updateField);
+            return res.status(400).json({
+                message: 'Invalid field/stage',
+                received: updateField,
+                details: "Field must be a standard stage or end with _status"
+            });
         }
 
         // Validate status
@@ -1576,11 +1582,13 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
         try {
             // Dynamic column check: Ensure the column exists before updating
             if (updateField.endsWith('_status') && !['office_status', 'staff_status', 'hod_status', 'principal_status'].includes(updateField)) {
-                await db.query(`ALTER TABLE no_dues ADD COLUMN IF NOT EXISTS ${updateField} VARCHAR(20) DEFAULT 'Pending'`);
-                console.log(`Verified column ${updateField} exists in no_dues table.`);
+                // Wrap in double quotes for SQL safety
+                await db.query(`ALTER TABLE no_dues ADD COLUMN IF NOT EXISTS "${updateField}" VARCHAR(20) DEFAULT 'Pending'`);
+                console.log(`Verified column "${updateField}" exists in no_dues table.`);
             }
 
-            const updateQuery = `UPDATE no_dues SET ${updateField} = $1, remarks = COALESCE($2, remarks) WHERE id = $3`;
+            // Wrap column name in double quotes to handle names starting with numbers or other special cases
+            const updateQuery = `UPDATE no_dues SET "${updateField}" = $1, remarks = COALESCE($2, remarks) WHERE id = $3`;
             console.log("Executing query:", updateQuery);
             console.log("Query params:", [status, remarks || null, id]);
 
@@ -1606,12 +1614,15 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
             await db.query("UPDATE no_dues SET status = 'Rejected' WHERE id = $1", [id]);
             console.log("Status set to Rejected");
         } else {
-            // Check if all subject columns are approved
-            const subjectColumns = [
-                'ccs336_status', 'ccs337_status', 'ccs338_status', 'ccs354_status',
-                'ccs356_status', 'cs3491_status', 'nm001_status', 'nm002_status',
-                'obt352_status', 'ss001_status'
-            ];
+            // DYNAMICALLY check for all subject approvals
+            // Instead of a hardcoded list, we look at all keys in the row that end in _status 
+            // but are NOT the major stages.
+            const subjectColumns = Object.keys(r).filter(col =>
+                col.endsWith('_status') &&
+                !['office_status', 'staff_status', 'hod_status', 'principal_status', 'status'].includes(col)
+            );
+
+            console.log("Calculated current subject columns from DB row:", subjectColumns);
 
             // Helper to create notification
             const createNotification = async (userId, title, message, type = 'info') => {
@@ -1858,7 +1869,7 @@ app.get('/api/student/subjects', async (req, res) => {
     const { year, section } = req.query;
     try {
         const result = await db.query(`
-            SELECT DISTINCT s.subject_code, s.subject_name, st.name as staff_name, s.credits
+            SELECT DISTINCT s.subject_code, s.subject_name, st.name as staff_name, st.id as staff_profile_id, s.credits
             FROM timetable t
             JOIN subjects s ON t.subject_id = s.id
             JOIN staff st ON t.staff_id = st.id
