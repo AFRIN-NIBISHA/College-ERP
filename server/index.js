@@ -1427,13 +1427,11 @@ app.get('/api/no-due', async (req, res) => {
     const { student_id, role, year, section } = req.query;
     try {
         let query = `
-            SELECT nd.id, nd.student_id, nd.semester, nd.office_status, 
-                   nd.staff_status, nd.hod_status, nd.principal_status, 
-                   nd.status as nodue_overall_status, nd.remarks, nd.created_at,
+            SELECT nd.*, nd.status as nodue_overall_status,
                    s.name, s.roll_no, s.year, s.section, s.department,
                    f.total_fee, f.paid_amount, f.status as fee_status
-            FROM students s
-            JOIN no_dues nd ON s.id = nd.student_id
+            FROM no_dues nd
+            JOIN students s ON nd.student_id = s.id
             LEFT JOIN fees f ON s.id = f.student_id
             WHERE 1=1
         `;
@@ -1684,6 +1682,10 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
             // 2. Subject Approval -> Check if All Done
             if (status === 'Approved' && updateField.endsWith('_status') && !['office_status', 'hod_status', 'principal_status'].includes(updateField)) {
                 if (allSubjectsApproved) {
+                    // Update overall staff_status to Approved
+                    await db.query("UPDATE no_dues SET staff_status = 'Approved' WHERE id = $1", [id]);
+                    console.log("Overall staff_status updated to Approved");
+
                     await createNotification(studentUserId, 'No Due Update', 'All subject staffs have approved. Sent to HOD.', 'info');
 
                     // Notify HOD

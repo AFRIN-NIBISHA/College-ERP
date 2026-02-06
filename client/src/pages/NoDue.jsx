@@ -211,12 +211,14 @@ const NoDue = () => {
 
             const hasPendingSubjectForThisStaff = req.subjects.some(subject => {
                 const staffName = subject.staff_name?.trim().toLowerCase();
-                if (!staffName || !userName) return false;
 
-                // Flexible name match
-                const isMySubject = userName === staffName ||
-                    userName.includes(staffName) ||
-                    staffName.includes(userName);
+                // Priority match: Profile ID comparison
+                const isIdMatch = user?.profileId && subject.staff_profile_id && (Number(user.profileId) === Number(subject.staff_profile_id));
+
+                // Fallback match: Name string comparison
+                const isNameMatch = userName && staffName && (userName === staffName || userName.includes(staffName) || staffName.includes(userName));
+
+                const isMySubject = isIdMatch || isNameMatch;
 
                 return isMySubject && subject.status === 'Pending';
             });
