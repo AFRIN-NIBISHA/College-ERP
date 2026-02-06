@@ -404,7 +404,7 @@ const NoDue = () => {
                                                 <div className="mb-3 p-2 bg-white rounded border border-slate-200 text-xs text-slate-600 space-y-1">
                                                     <div className="flex justify-between">
                                                         <span>Total Fees:</span>
-                                                        <span className="font-bold">₹{Number(req.total_amount || 0).toLocaleString()}</span>
+                                                        <span className="font-bold">₹{Number(req.total_fee || 0).toLocaleString()}</span>
                                                     </div>
                                                     <div className="flex justify-between">
                                                         <span>Paid:</span>
@@ -412,8 +412,8 @@ const NoDue = () => {
                                                     </div>
                                                     <div className="flex justify-between border-t border-slate-100 pt-1 mt-1">
                                                         <span>Pending:</span>
-                                                        <span className={`font-bold ${(req.total_amount - req.paid_amount) > 0 ? 'text-red-600' : 'text-slate-700'}`}>
-                                                            ₹{Number((req.total_amount || 0) - (req.paid_amount || 0)).toLocaleString()}
+                                                        <span className={`font-bold ${(Number(req.total_fee || 0) - Number(req.paid_amount || 0)) > 0 ? 'text-red-600' : 'text-slate-700'}`}>
+                                                            ₹{Number((req.total_fee || 0) - (req.paid_amount || 0)).toLocaleString()}
                                                         </span>
                                                     </div>
                                                     <div className="text-right mt-1">

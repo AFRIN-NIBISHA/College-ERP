@@ -115,6 +115,16 @@ const initDb = async () => {
                 UNIQUE(student_id, semester)
             );
 
+            CREATE TABLE IF NOT EXISTS notifications (
+                id SERIAL PRIMARY KEY,
+                user_id INT REFERENCES users(id) ON DELETE CASCADE,
+                title VARCHAR(200) NOT NULL,
+                message TEXT NOT NULL,
+                type VARCHAR(50) DEFAULT 'info',
+                is_read BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
              CREATE TABLE IF NOT EXISTS student_od (
                 id SERIAL PRIMARY KEY,
                 student_id INT REFERENCES students(id) ON DELETE CASCADE,
@@ -138,6 +148,14 @@ const initDb = async () => {
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS od_type VARCHAR(10) DEFAULT 'Day';
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS hours INT;
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS pending_with VARCHAR(20);
+
+            -- Ensure Fee Naming Consistency
+            ALTER TABLE fees RENAME COLUMN total_amount TO total_fee;
+            ALTER TABLE fees ADD COLUMN IF NOT EXISTS total_fee DECIMAL(10, 2) DEFAULT 0;
+
+            -- Ensure No Due Constraints
+            ALTER TABLE no_dues DROP CONSTRAINT IF EXISTS no_dues_student_id_semester_key;
+            ALTER TABLE no_dues ADD CONSTRAINT no_dues_student_id_semester_key UNIQUE (student_id, semester);
 
             CREATE TABLE IF NOT EXISTS attendance (
                 id SERIAL PRIMARY KEY,
@@ -1408,27 +1426,24 @@ app.post('/api/no-due/request', async (req, res) => {
 app.get('/api/no-due', async (req, res) => {
     const { student_id, role, year, section } = req.query;
     try {
-        // Updated query to include Fee Details and Support Filtering
         let query = `
-            SELECT nd.id as nodue_id, nd.student_id, nd.semester, nd.office_status, 
+            SELECT nd.id, nd.student_id, nd.semester, nd.office_status, 
                    nd.staff_status, nd.hod_status, nd.principal_status, 
                    nd.status as nodue_overall_status, nd.remarks, nd.created_at,
                    s.name, s.roll_no, s.year, s.section, s.department,
                    f.total_fee, f.paid_amount, f.status as fee_status
             FROM students s
-            LEFT JOIN no_dues nd ON s.id = nd.student_id
+            JOIN no_dues nd ON s.id = nd.student_id
             LEFT JOIN fees f ON s.id = f.student_id
             WHERE 1=1
         `;
         const params = [];
 
-        // Filter for specific student if provided
         if (student_id) {
             params.push(student_id);
             query += ` AND (s.id::text = $${params.length} OR s.roll_no ILIKE $${params.length})`;
         }
 
-        // Filter by Year and Section
         if (year) {
             params.push(year);
             query += ` AND s.year = $${params.length}`;
@@ -1438,13 +1453,11 @@ app.get('/api/no-due', async (req, res) => {
             query += ` AND s.section = $${params.length}`;
         }
 
-        // Office users can see all No Due requests
-        // Students can only see their own requests
         if (role === 'student' && !student_id) {
             return res.json([]);
         }
 
-        query += " ORDER BY s.roll_no";
+        query += " ORDER BY nd.created_at DESC";
         const result = await db.query(query, params);
         res.json(result.rows);
     } catch (err) {
