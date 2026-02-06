@@ -161,6 +161,32 @@ const createNotification = async (userId, title, message, type = 'info') => {
     }
 };
 
+// Get Notifications
+app.get('/api/notifications', async (req, res) => {
+    const { userId, role } = req.query;
+    try {
+        let query = "SELECT * FROM notifications WHERE 1=1";
+        const params = [];
+
+        if (role === 'student' && userId) {
+            params.push(userId);
+            query += ` AND user_id = $${params.length}`;
+        } else if (userId && role !== 'admin') {
+            // For staff/HOD/etc, they might want their specific notifications too
+            params.push(userId);
+            query += ` AND user_id = $${params.length}`;
+        }
+        // Admin gets all if no userId provided, or we can filter
+
+        query += " ORDER BY created_at DESC LIMIT 50";
+        const result = await db.query(query, params);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 // Helper: Get User ID from Student ID
 const getUserFromStudent = async (studentId) => {
     const res = await db.query("SELECT user_id FROM students WHERE id = $1", [studentId]);

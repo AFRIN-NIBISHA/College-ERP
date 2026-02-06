@@ -13,6 +13,7 @@ import Fees from './pages/Fees';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Notices from './pages/Notices';
+import Notifications from './pages/Notifications';
 import NoDue from './pages/NoDue';
 import Subjects from './pages/Subjects';
 import Profile from './pages/Profile';
@@ -114,6 +115,7 @@ function App() {
                                 <Route path="/timetable" element={<Timetable />} />
                                 <Route path="/no-due" element={<NoDue />} />
                                 <Route path="/notices" element={<Notices />} />
+                                <Route path="/notifications" element={<Notifications />} />
                                 <Route path="/subjects" element={<Subjects />} />
                                 <Route path="/profile" element={<Profile />} />
                                 <Route path="/od-requests" element={<StudentOD />} />

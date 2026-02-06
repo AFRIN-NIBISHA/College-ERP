@@ -38,11 +38,13 @@ const Dashboard = () => {
     const [showNoticeModal, setShowNoticeModal] = useState(false);
     const [noticeForm, setNoticeForm] = useState({ title: '', content: '' });
 
+    const [activities, setActivities] = useState([]);
     const [classInfo, setClassInfo] = useState({});
 
     useEffect(() => {
         fetchStats();
         fetchNotices();
+        fetchActivities();
     }, []);
 
     useEffect(() => {
@@ -50,6 +52,15 @@ const Dashboard = () => {
             fetchClassInfo();
         }
     }, [user]);
+
+    const fetchActivities = async () => {
+        try {
+            const res = await axios.get(`/api/notifications?userId=${user?.id || ''}&role=${user?.role || ''}`);
+            setActivities(res.data.slice(0, 4)); // Show only 4 latest
+        } catch (err) {
+            console.error("Failed to fetch activities", err);
+        }
+    };
 
     const fetchClassInfo = async () => {
         try {
@@ -94,7 +105,7 @@ const Dashboard = () => {
             <div className="flex justify-between items-end">
                 <div>
                     <h2 className="text-4xl font-bold text-slate-800 tracking-tight mb-2">Dashboard Overview</h2>
-                    <p className="text-slate-500 font-medium">Welcome back, Admin! Here's what's happening today.</p>
+                    <p className="text-slate-500 font-medium">Welcome back, {user?.role}! Here's what's happening today.</p>
                 </div>
                 <div className="flex gap-3">
                     <button
@@ -155,22 +166,35 @@ const Dashboard = () => {
                 <div className="lg:col-span-2 glass-card p-8 rounded-3xl">
                     <div className="flex items-center justify-between mb-8">
                         <h3 className="text-xl font-bold text-slate-800">Recent Activities</h3>
-                        <button className="text-sm text-blue-600 font-semibold hover:underline">View All</button>
+                        <button
+                            onClick={() => navigate('/notifications')}
+                            className="text-sm text-blue-600 font-semibold hover:underline"
+                        >
+                            View All
+                        </button>
                     </div>
 
                     <div className="space-y-6">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="flex items-center gap-5 p-4 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
-                                <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                                    <div className="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                        {activities.length === 0 ? (
+                            <div className="text-center py-10 text-slate-400 italic">No recent activities found.</div>
+                        ) : (
+                            activities.map((activity) => (
+                                <div key={activity.id} className="flex items-center gap-5 p-4 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
+                                    <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                                        <div className={`w-3 h-3 rounded-full ${activity.type === 'marks' ? 'bg-violet-500' : 'bg-blue-500'} shadow-[0_0_10px_rgba(59,130,246,0.5)]`}></div>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-base text-slate-800 font-semibold mb-0.5 truncate">{activity.title}</p>
+                                        <p className="text-xs text-slate-500 font-medium line-clamp-1">{activity.message}</p>
+                                    </div>
+                                    <p className="text-xs font-medium text-slate-400 whitespace-nowrap">
+                                        {new Date(activity.created_at).toLocaleDateString() === new Date().toLocaleDateString()
+                                            ? new Date(activity.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                            : new Date(activity.created_at).toLocaleDateString()}
+                                    </p>
                                 </div>
-                                <div className="flex-1">
-                                    <p className="text-base text-slate-800 font-semibold mb-0.5">New student registered in <span className="text-blue-600">Year 3</span></p>
-                                    <p className="text-xs text-slate-500 font-medium bg-slate-100 inline-block px-2 py-0.5 rounded-full">Registration</p>
-                                </div>
-                                <p className="text-xs font-medium text-slate-400">2h ago</p>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </div>
 
