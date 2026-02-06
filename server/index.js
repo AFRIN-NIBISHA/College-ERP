@@ -1737,30 +1737,48 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
 app.post('/api/od/apply', async (req, res) => {
     const { student_id, date_from, date_to, reason, no_of_days, hours, od_type } = req.body;
     try {
+        console.log('OD Apply Request:', { student_id, od_type, no_of_days, hours });
+
+        // Logic: Hour -> Staff, 1 Day -> HOD, >1 Day -> Principal
         let pendingWith = 'staff';
-        if (od_type === 'Day') {
-            if (parseFloat(no_of_days) === 1) {
-                pendingWith = 'hod';
-            } else if (parseFloat(no_of_days) > 1) {
-                pendingWith = 'principal';
-            }
-        } else if (od_type === 'Hour') {
+        if (od_type === 'Hour') {
             pendingWith = 'staff';
+        } else {
+            const daysCount = parseFloat(no_of_days || 0);
+            if (daysCount === 1) {
+                pendingWith = 'hod';
+            } else if (daysCount > 1) {
+                pendingWith = 'principal';
+            } else {
+                pendingWith = 'staff'; // Fallback for 0 or partial (though should be 1 or more for 'Day')
+            }
         }
+
+        // Sanitize for DB (Convert empty string to null to avoid INT conversion errors)
+        const sanitizedData = [
+            student_id,
+            date_from,
+            date_to,
+            reason || null,
+            (no_of_days === "" || no_of_days === undefined) ? null : no_of_days,
+            (hours === "" || hours === undefined) ? null : hours,
+            od_type || 'Day',
+            pendingWith
+        ];
 
         const result = await db.query(
             "INSERT INTO student_od (student_id, date_from, date_to, reason, no_of_days, hours, od_type, pending_with) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
-            [student_id, date_from, date_to, reason, no_of_days, hours, od_type, pendingWith]
+            sanitizedData
         );
 
         const newOD = result.rows[0];
+        console.log('OD Created Successfully:', newOD.id);
 
         // Notify relevant users
         let notificationQuery = "";
         let notificationParams = [];
 
         if (pendingWith === 'staff') {
-            // Get student info to find class staff
             const stud = await db.query("SELECT year, section FROM students WHERE id = $1", [student_id]);
             if (stud.rows.length > 0) {
                 const { year, section } = stud.rows[0];
@@ -1770,7 +1788,7 @@ app.post('/api/od/apply', async (req, res) => {
                     JOIN timetable t ON s.id = t.staff_id
                     WHERE t.year = $1 AND t.section = $2
                     UNION
-                    SELECT user_id FROM staff WHERE designation ILIKE '%Incharge%' -- Fallback/Specific
+                    SELECT user_id FROM staff WHERE designation ILIKE '%Incharge%'
                 `;
                 notificationParams = [year, section];
             }
@@ -1782,14 +1800,16 @@ app.post('/api/od/apply', async (req, res) => {
         if (notificationQuery) {
             const usersToNotify = await db.query(notificationQuery, notificationParams);
             for (const user of usersToNotify.rows) {
-                await createNotification(user.user_id, 'New OD Request', `A new ${od_type} OD request requires your approval.`);
+                if (user.user_id) {
+                    await createNotification(user.user_id, 'New OD Request', `A new ${od_type} OD request requires your approval.`, 'od');
+                }
             }
         }
 
-        res.json({ message: 'OD Request submitted successfully', pending_with: pendingWith });
+        res.json({ message: 'OD Request submitted successfully', pending_with: pendingWith, id: newOD.id });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        console.error("OD Apply Error:", err);
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
 
