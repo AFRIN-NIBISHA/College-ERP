@@ -118,6 +118,7 @@ const Faculty = () => {
                     <table className="w-full">
                         <thead className="bg-slate-50/80 border-b border-slate-200">
                             <tr>
+                                <th className="p-4 text-left text-slate-500 font-semibold text-sm">Staff ID</th>
                                 <th className="p-4 text-left text-slate-500 font-semibold text-sm">Staff Details</th>
                                 <th className="p-4 text-left text-slate-500 font-semibold text-sm">Designation</th>
                                 <th className="p-4 text-left text-slate-500 font-semibold text-sm">Contact</th>
@@ -126,12 +127,17 @@ const Faculty = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {isLoading ? (
-                                <tr><td colSpan="4" className="p-8 text-center text-slate-500">Loading...</td></tr>
+                                <tr><td colSpan="5" className="p-8 text-center text-slate-500">Loading...</td></tr>
                             ) : staffList.length === 0 ? (
-                                <tr><td colSpan="4" className="p-8 text-center text-slate-500">No faculty members found.</td></tr>
+                                <tr><td colSpan="5" className="p-8 text-center text-slate-500">No faculty members found.</td></tr>
                             ) : (
                                 staffList.map((staff) => (
                                     <tr key={staff.id} className="hover:bg-slate-50 transition-colors">
+                                        <td className="p-4">
+                                            <span className="font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded text-xs border border-blue-100 uppercase tracking-wider">
+                                                {staff.staff_id}
+                                            </span>
+                                        </td>
                                         <td className="p-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold">
@@ -139,12 +145,7 @@ const Faculty = () => {
                                                 </div>
                                                 <div>
                                                     <p className="font-semibold text-slate-800">{staff.name}</p>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded uppercase border border-slate-200">
-                                                            {staff.staff_id}
-                                                        </span>
-                                                        <span className="text-xs text-slate-500">{staff.email}</span>
-                                                    </div>
+                                                    <p className="text-xs text-slate-500">{staff.email}</p>
                                                 </div>
                                             </div>
                                         </td>
