@@ -11,6 +11,9 @@ const Students = () => {
     const [editingId, setEditingId] = useState(null);
     const [currentView, setCurrentView] = useState('CLASSES'); // CLASSES, LIST
     const [selectedClass, setSelectedClass] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [activeSection, setActiveSection] = useState('All');
+    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -233,14 +236,34 @@ const Students = () => {
                             <input
                                 type="text"
                                 placeholder="Search by name or roll no..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:border-blue-500 transition-colors shadow-sm"
                             />
                         </div>
-                        <div className="flex gap-2 w-full md:w-auto">
-                            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors shadow-sm">
+                        <div className="flex gap-2 w-full md:w-auto relative">
+                            <button
+                                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                                className={`flex items-center gap-2 px-4 py-2 bg-white border rounded-lg transition-colors shadow-sm ${activeSection !== 'All' ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'}`}
+                            >
                                 <Filter size={18} />
-                                Filters
+                                {activeSection === 'All' ? 'Filters' : `Section: ${activeSection}`}
                             </button>
+
+                            {showFilterDropdown && (
+                                <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 p-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 py-2">Filter by Section</p>
+                                    {['All', 'A', 'B', 'C'].map((sec) => (
+                                        <button
+                                            key={sec}
+                                            onClick={() => { setActiveSection(sec); setShowFilterDropdown(false); }}
+                                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${activeSection === sec ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50'}`}
+                                        >
+                                            {sec === 'All' ? 'All Sections' : `Section ${sec}`}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -262,10 +285,19 @@ const Students = () => {
                                 <tbody className="divide-y divide-slate-100 mobile-stack">
                                     {isLoading ? (
                                         <tr><td colSpan={canEditStudents ? 7 : 6} className="p-8 text-center text-slate-500">Loading...</td></tr>
-                                    ) : students.length === 0 ? (
-                                        <tr><td colSpan={canEditStudents ? 7 : 6} className="p-8 text-center text-slate-500">No students found in {selectedClass?.title}</td></tr>
-                                    ) : (
-                                        students.map((student) => (
+                                    ) : (() => {
+                                        const filteredStudents = students.filter(s => {
+                                            const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                                s.roll_no.toLowerCase().includes(searchTerm.toLowerCase());
+                                            const matchesSection = activeSection === 'All' || s.section === activeSection;
+                                            return matchesSearch && matchesSection;
+                                        });
+
+                                        if (filteredStudents.length === 0) {
+                                            return <tr><td colSpan={canEditStudents ? 7 : 6} className="p-8 text-center text-slate-500">No students matching your filters.</td></tr>;
+                                        }
+
+                                        return filteredStudents.map((student) => (
                                             <tr key={student.id} className="hover:bg-slate-50 transition-colors group">
                                                 <td className="p-4" data-label="Student">
                                                     <div className="flex items-center gap-3">
@@ -308,8 +340,8 @@ const Students = () => {
                                                     </td>
                                                 )}
                                             </tr>
-                                        ))
-                                    )}
+                                        ));
+                                    })()}
                                 </tbody>
                             </table>
                         </div>
