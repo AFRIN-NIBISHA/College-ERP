@@ -28,15 +28,7 @@ const Faculty = () => {
         setIsLoading(true);
         try {
             const res = await axios.get('/api/staff');
-            // Remove duplicate staff names - keep only the first occurrence of each name
-            const uniqueStaff = res.data.reduce((acc, current) => {
-                const existingIndex = acc.findIndex(staff => staff.name.toLowerCase() === current.name.toLowerCase());
-                if (existingIndex === -1) {
-                    acc.push(current);
-                }
-                return acc;
-            }, []);
-            setStaffList(uniqueStaff);
+            setStaffList(res.data);
         } catch (err) {
             console.error("Error fetching staff", err);
         } finally {
@@ -147,7 +139,12 @@ const Faculty = () => {
                                                 </div>
                                                 <div>
                                                     <p className="font-semibold text-slate-800">{staff.name}</p>
-                                                    <p className="text-xs text-slate-500">{staff.email}</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded uppercase border border-slate-200">
+                                                            {staff.staff_id}
+                                                        </span>
+                                                        <span className="text-xs text-slate-500">{staff.email}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>

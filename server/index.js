@@ -232,7 +232,7 @@ app.get('/api/subjects', async (req, res) => {
 });
 app.get('/api/staff', async (req, res) => {
     try {
-        const result = await db.query("SELECT DISTINCT ON (LOWER(name)) * FROM staff ORDER BY LOWER(name)");
+        const result = await db.query("SELECT * FROM staff ORDER BY staff_id");
         res.json(result.rows);
     } catch (err) {
         console.error(err);

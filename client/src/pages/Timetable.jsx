@@ -256,7 +256,7 @@ const Timetable = () => {
                                                 >
                                                     <option value="">Select Faculty</option>
                                                     {Array.isArray(staff) && staff.map(s => (
-                                                        <option key={s.id} value={s.id}>{s.name}</option>
+                                                        <option key={s.id} value={s.id}>{s.name} ({s.staff_id})</option>
                                                     ))}
                                                 </select>
                                             </div>

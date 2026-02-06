@@ -103,7 +103,12 @@ const FacultyAttendance = () => {
                             <tr><td colSpan="4" className="p-8 text-center text-slate-500">Loading staff...</td></tr>
                         ) : staff.map((s) => (
                             <tr key={s.id} className="hover:bg-slate-50/80 transition-colors">
-                                <td className="p-4 font-semibold text-slate-800">{s.name}</td>
+                                <td className="p-4">
+                                    <div className="flex flex-col">
+                                        <span className="font-semibold text-slate-800">{s.name}</span>
+                                        <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">{s.staff_id}</span>
+                                    </div>
+                                </td>
                                 <td className="p-4 text-slate-500 text-sm">{s.designation}</td>
                                 <td className="p-4">
                                     <div className="flex justify-center gap-2">
@@ -112,10 +117,10 @@ const FacultyAttendance = () => {
                                                 key={status}
                                                 onClick={() => handleStatusChange(s.id, status)}
                                                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${attendance[s.id]?.status === status
-                                                        ? status === 'Present' ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                                                            : status === 'Absent' ? 'bg-rose-100 text-rose-700 border-rose-200'
-                                                                : 'bg-amber-100 text-amber-700 border-amber-200' // OD
-                                                        : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-100'
+                                                    ? status === 'Present' ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                                                        : status === 'Absent' ? 'bg-rose-100 text-rose-700 border-rose-200'
+                                                            : 'bg-amber-100 text-amber-700 border-amber-200' // OD
+                                                    : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-100'
                                                     }`}
                                             >
                                                 {status}
@@ -132,7 +137,7 @@ const FacultyAttendance = () => {
                                         >
                                             <option value="">Select Substitute</option>
                                             {staff.filter(st => st.id !== s.id).map(st => (
-                                                <option key={st.id} value={st.id}>{st.name}</option>
+                                                <option key={st.id} value={st.id}>{st.name} ({st.staff_id})</option>
                                             ))}
                                         </select>
                                     ) : (
