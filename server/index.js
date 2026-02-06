@@ -1558,7 +1558,7 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
 
         console.log("Determined updateField:", updateField);
 
-        if (!updateField) {
+        if (!updateField || (!['office_status', 'staff_status', 'hod_status', 'principal_status'].includes(updateField) && !updateField.endsWith('_status'))) {
             console.log("❌ Invalid field/stage error");
             console.log("❌ Full request body:", req.body);
             console.log("❌ Field parameter:", field);
@@ -1573,11 +1573,17 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
         }
 
         // Update status and remarks
-        const updateQuery = `UPDATE no_dues SET ${updateField} = $1, remarks = COALESCE($2, remarks) WHERE id = $3`;
-        console.log("Executing query:", updateQuery);
-        console.log("Query params:", [status, remarks || null, id]);
-
         try {
+            // Dynamic column check: Ensure the column exists before updating
+            if (updateField.endsWith('_status') && !['office_status', 'staff_status', 'hod_status', 'principal_status'].includes(updateField)) {
+                await db.query(`ALTER TABLE no_dues ADD COLUMN IF NOT EXISTS ${updateField} VARCHAR(20) DEFAULT 'Pending'`);
+                console.log(`Verified column ${updateField} exists in no_dues table.`);
+            }
+
+            const updateQuery = `UPDATE no_dues SET ${updateField} = $1, remarks = COALESCE($2, remarks) WHERE id = $3`;
+            console.log("Executing query:", updateQuery);
+            console.log("Query params:", [status, remarks || null, id]);
+
             const result = await db.query(updateQuery, [status, remarks || null, id]);
             console.log("✅ Update successful. Rows affected:", result.rowCount);
 

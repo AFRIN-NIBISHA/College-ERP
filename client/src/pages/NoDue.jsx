@@ -148,10 +148,10 @@ const NoDue = () => {
         }
     };
 
-    const handleReject = (id, stage) => {
+    const handleReject = (id, stage, subjectCode = null) => {
         const reason = window.prompt("Enter rejection reason:");
         if (reason) {
-            handleUpdate(id, stage, 'Rejected', reason);
+            handleUpdate(id, stage, 'Rejected', reason, subjectCode);
         }
     };
 
@@ -458,7 +458,7 @@ const NoDue = () => {
                                                                     {sub.status === 'Pending' && isRelevantStaff ? (
                                                                         <>
                                                                             <button onClick={() => handleUpdate(req.id, null, 'Approved', null, sub.subject_code)} className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700">✓</button>
-                                                                            <button onClick={() => handleReject(req.id, null)} className="px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200">✕</button>
+                                                                            <button onClick={() => handleReject(req.id, null, sub.subject_code)} className="px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200">✕</button>
                                                                         </>
                                                                     ) : (
                                                                         <StatusBadge status={sub.status} />
