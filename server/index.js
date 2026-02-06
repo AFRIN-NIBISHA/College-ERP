@@ -1430,8 +1430,8 @@ app.get('/api/no-due', async (req, res) => {
             SELECT nd.*, nd.status as nodue_overall_status,
                    s.name, s.roll_no, s.year, s.section, s.department,
                    f.total_fee, f.paid_amount, f.status as fee_status
-            FROM no_dues nd
-            JOIN students s ON nd.student_id = s.id
+            FROM students s
+            LEFT JOIN no_dues nd ON s.id = nd.student_id
             LEFT JOIN fees f ON s.id = f.student_id
             WHERE 1=1
         `;
