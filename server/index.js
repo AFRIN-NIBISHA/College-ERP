@@ -64,7 +64,7 @@ const initDb = async () => {
                 staff_id INT REFERENCES staff(id) ON DELETE CASCADE,
                 date DATE NOT NULL,
                 status VARCHAR(20) CHECK (status IN ('Present', 'Absent', 'On Duty')),
-                substitute_id INT REFERENCES staff(id),
+                substitute_id INT REFERENCES staff(id) ON DELETE SET NULL,
                 UNIQUE(staff_id, date)
             );
             CREATE TABLE IF NOT EXISTS timetable (
@@ -73,8 +73,8 @@ const initDb = async () => {
                 section VARCHAR(10) NOT NULL,
                 day VARCHAR(15) NOT NULL,
                 period INT NOT NULL,
-                subject_id INT REFERENCES subjects(id),
-                staff_id INT REFERENCES staff(id),
+                subject_id INT REFERENCES subjects(id) ON DELETE CASCADE,
+                staff_id INT REFERENCES staff(id) ON DELETE SET NULL,
                 UNIQUE(year, section, day, period)
             );
             CREATE TABLE IF NOT EXISTS internal_marks (
@@ -138,6 +138,16 @@ const initDb = async () => {
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS od_type VARCHAR(10) DEFAULT 'Day';
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS hours INT;
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS pending_with VARCHAR(20);
+
+            -- Ensure Deletion Cascades
+            ALTER TABLE faculty_attendance DROP CONSTRAINT IF EXISTS faculty_attendance_substitute_id_fkey;
+            ALTER TABLE faculty_attendance ADD CONSTRAINT faculty_attendance_substitute_id_fkey FOREIGN KEY (substitute_id) REFERENCES staff(id) ON DELETE SET NULL;
+            
+            ALTER TABLE timetable DROP CONSTRAINT IF EXISTS timetable_staff_id_fkey;
+            ALTER TABLE timetable ADD CONSTRAINT timetable_staff_id_fkey FOREIGN KEY (staff_id) REFERENCES staff(id) ON DELETE SET NULL;
+
+            ALTER TABLE timetable DROP CONSTRAINT IF EXISTS timetable_subject_id_fkey;
+            ALTER TABLE timetable ADD CONSTRAINT timetable_subject_id_fkey FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE;
         `);
         console.log("Schema verified/updated.");
     } catch (err) {
@@ -248,11 +258,23 @@ app.put('/api/staff/:id', async (req, res) => {
 app.delete('/api/staff/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const result = await db.query("DELETE FROM staff WHERE id = $1 RETURNING *", [id]);
-        if (result.rows.length === 0) return res.status(404).json({ message: 'Staff not found' });
+        // Find user_id first to delete fully
+        const staffRes = await db.query("SELECT user_id FROM staff WHERE id = $1", [id]);
+        if (staffRes.rows.length === 0) return res.status(404).json({ message: 'Staff not found' });
+
+        const userId = staffRes.rows[0].user_id;
+
+        if (userId) {
+            // Deleting user will cascade to staff table
+            await db.query("DELETE FROM users WHERE id = $1", [userId]);
+        } else {
+            // Fallback for staff without users
+            await db.query("DELETE FROM staff WHERE id = $1", [id]);
+        }
+
         res.json({ message: 'Staff deleted successfully' });
     } catch (err) {
-        console.error(err);
+        console.error("Staff Delete Error:", err);
         res.status(500).json({ message: 'Server error' });
     }
 });
