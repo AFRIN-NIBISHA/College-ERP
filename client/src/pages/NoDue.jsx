@@ -359,25 +359,26 @@ const NoDue = () => {
                         </div>
                     ) : (
                         filteredRequests.map(req => (
-                            <div key={req.id} className={`bg-white p-6 rounded-2xl border transition-all ${selectedRequests.includes(req.id) ? 'border-blue-400 ring-1 ring-blue-100' : 'border-slate-200'} shadow-sm flex flex-col md:flex-row md:items-start justify-between gap-6`}>
+                            <div key={req.id} className={`bg-white p-4 md:p-6 rounded-2xl border transition-all ${selectedRequests.includes(req.id) ? 'border-blue-400 ring-1 ring-blue-100' : 'border-slate-200'} shadow-sm flex flex-col xl:flex-row xl:items-start justify-between gap-6`}>
 
                                 {/* Selection Checkbox */}
                                 {!isStudent && (
-                                    <div className="pt-1">
+                                    <div className="pt-1 flex items-center md:items-start gap-3">
                                         <input
                                             type="checkbox"
                                             className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                                             checked={selectedRequests.includes(req.id)}
                                             onChange={() => handleSelectRequest(req.id)}
                                         />
+                                        <span className="xl:hidden font-bold text-slate-700">Select this request</span>
                                     </div>
                                 )}
 
-                                <div className="min-w-[200px]">
-                                    <h3 className="text-xl font-bold text-slate-800">{req.name}</h3>
-                                    <p className="text-slate-500">{req.roll_no}</p>
+                                <div className="min-w-0 md:min-w-[200px]">
+                                    <h3 className="text-lg md:text-xl font-bold text-slate-800 break-words">{req.name}</h3>
+                                    <p className="text-slate-500 text-sm">{req.roll_no}</p>
                                     <p className="text-sm text-slate-400">{req.department} • Year {req.year}</p>
-                                    <p className="text-xs text-slate-400 mt-2">Requested on {new Date(req.created_at).toLocaleDateString()}</p>
+                                    <p className="text-xs text-slate-400 mt-2">Requested <span className="hide-on-mobile">on</span> {new Date(req.created_at).toLocaleDateString()}</p>
 
                                     {isStudent && (
                                         <button

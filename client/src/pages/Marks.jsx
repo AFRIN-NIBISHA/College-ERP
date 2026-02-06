@@ -34,7 +34,7 @@ const Marks = () => {
             const yearSemesters = year === '2' ? [3, 4] : year === '3' ? [5, 6] : year === '1' ? [1, 2] : [7, 8];
             const filteredSubjects = res.data.filter(s => yearSemesters.includes(s.semester));
             setSubjects(filteredSubjects);
-            
+
             // Set default subject if available
             if (filteredSubjects.length > 0 && !subject) {
                 setSubject(filteredSubjects[0].subject_code);
@@ -125,12 +125,12 @@ const Marks = () => {
 
             {/* Filters */}
             <div className="glass-card p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center bg-white/60">
-                <div className="flex items-center gap-2 w-full md:w-auto">
-                    <BookOpen size={20} className="text-slate-400" />
+                <div className="flex items-center gap-2 w-full lg:w-auto">
+                    <BookOpen size={20} className="text-slate-400 hide-on-mobile" />
                     <select
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
-                        className="bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500 w-full md:w-64 font-medium"
+                        className="bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500 w-full lg:w-64 font-medium"
                     >
                         {subjects.map(s => (
                             <option key={s.id} value={s.subject_code}>{s.subject_code} - {s.subject_name}</option>
@@ -138,13 +138,13 @@ const Marks = () => {
                     </select>
                 </div>
 
-                <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
+                <div className="h-6 w-px bg-slate-200 hidden lg:block"></div>
 
                 <div className="flex items-center gap-4 w-full md:w-auto">
                     <select
                         value={year}
                         onChange={(e) => setYear(e.target.value)}
-                        className="bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500"
+                        className="flex-1 md:flex-none bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500"
                     >
                         <option value="2">2nd Year</option>
                         <option value="3">3rd Year</option>
@@ -152,22 +152,27 @@ const Marks = () => {
                     <select
                         value={section}
                         onChange={(e) => setSection(e.target.value)}
-                        className="bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500"
+                        className="flex-1 md:flex-none bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500"
                     >
-                        <option value="A">Section A</option>
-                        <option value="B">Section B</option>
-                        <option value="C">Section C</option>
+                        <option value="A">Sec A</option>
+                        <option value="B">Sec B</option>
+                        <option value="C">Sec C</option>
                     </select>
                 </div>
 
-                <div className="ml-auto text-sm text-slate-500 font-medium">
-                    {students.length} Students Found
+                <div className="ml-auto text-sm text-slate-500 font-medium hidden md:block">
+                    {students.length} Students
                 </div>
             </div>
 
+            {/* Hint for mobile */}
+            <p className="md:hidden text-[10px] text-slate-400 text-center animate-pulse">
+                Scroll horizontally to view all marks →
+            </p>
+
             {/* Excel Grid Table */}
-            <div className="flex-1 glass-card rounded-2xl overflow-hidden bg-white/60 border border-slate-200 shadow-sm flex flex-col">
-                <div className="flex-1 overflow-auto">
+            <div className="flex-1 glass-card rounded-2xl overflow-hidden bg-white/60 border border-slate-200 shadow-sm flex flex-col table-container">
+                <div className="flex-1 scroll-hint">
                     <table className="w-full text-left border-collapse min-w-[1000px]">
                         <thead className="bg-slate-50/90 sticky top-0 z-10 shadow-sm">
                             <tr>

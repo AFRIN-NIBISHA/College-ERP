@@ -39,10 +39,6 @@ body::before {
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    opacity: 0.10;
-    /* 10% visible as requested (user said 30% but usually 30 is too strong, I will use 0.1 but can adjust) */
-    /* User specifically asked for 30% visible, let's try 0.15 first as 0.3 might be too distracting for text readability */
-    /* Actually user asked: "30% visible", which typically means opacity: 0.3 */
     opacity: 0.3;
     z-index: -1;
     pointer-events: none;
@@ -79,4 +75,74 @@ body::before {
         0 10px 10px -5px rgba(0, 0, 0, 0.04);
     transform: translateY(-5px);
     /* Pop up effect */
+}
+
+/* Responsive Table Enhancements */
+.scroll-hint {
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.scroll-hint::-webkit-scrollbar {
+    height: 4px;
+}
+
+.scroll-hint::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scroll-hint::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 20px;
+}
+
+@media (max-width: 640px) {
+    .hide-on-mobile {
+        display: none;
+    }
+
+    .table-container {
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+
+    /* Stacked card view for tables on mobile */
+    .mobile-stack tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        background: white;
+        padding: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .mobile-stack td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        border: none;
+        border-bottom: 1px solid #f1f5f9;
+        text-align: right;
+    }
+
+    .mobile-stack td:last-child {
+        border-bottom: none;
+    }
+
+    .mobile-stack thead {
+        display: none;
+    }
+
+    .mobile-stack td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #64748b;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        margin-right: 1rem;
+        text-align: left;
+    }
 }

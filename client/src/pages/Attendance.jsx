@@ -155,7 +155,7 @@ const Attendance = () => {
 
             {isStudent ? (
                 // Student Personal Attendance View
-                <div className="glass-card rounded-2xl overflow-hidden bg-white/60 border border-slate-200">
+                <div className="glass-card rounded-2xl overflow-hidden bg-white/60 border border-slate-200 table-container">
                     <div className="p-4 bg-slate-50/50 border-b border-slate-200 flex justify-between items-center">
                         <div className="flex items-center gap-3">
                             <User className="text-blue-600" size={20} />
@@ -163,7 +163,7 @@ const Attendance = () => {
                         </div>
                         <div className="flex items-center gap-2">
                             <Calendar className="text-slate-400" size={16} />
-                            <span className="text-sm text-slate-500">{new Date().toLocaleDateString()}</span>
+                            <span className="text-sm text-slate-500 hide-on-mobile">{new Date().toLocaleDateString()}</span>
                         </div>
                     </div>
 
@@ -172,21 +172,21 @@ const Attendance = () => {
                     ) : personalAttendance.length === 0 ? (
                         <div className="p-10 text-center text-slate-500">No attendance records found.</div>
                     ) : (
-                        <div className="overflow-x-auto">
+                        <div className="scroll-hint">
                             <table className="w-full">
                                 <thead>
                                     <tr className="bg-slate-50/50 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                         <th className="p-4">Date</th>
                                         <th className="p-4 text-center">Status</th>
-                                        <th className="p-4 text-center">Month</th>
+                                        <th className="p-4 text-center hide-on-mobile">Month</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
+                                <tbody className="divide-y divide-slate-100 mobile-stack">
                                     {personalAttendance.map((record, idx) => (
                                         <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                                            <td className="p-4">
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar className="text-slate-400" size={14} />
+                                            <td className="p-4" data-label="Date">
+                                                <div className="flex items-center gap-2 md:justify-start justify-end">
+                                                    <Calendar className="text-slate-400 hide-on-mobile" size={14} />
                                                     <span className="font-medium text-slate-700">
                                                         {new Date(record.date).toLocaleDateString('en-IN', {
                                                             weekday: 'short',
@@ -197,7 +197,7 @@ const Attendance = () => {
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td className="p-4 text-center">
+                                            <td className="p-4 text-center" data-label="Status">
                                                 <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${record.status === 'Present'
                                                     ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
                                                     : record.status === 'Absent'
@@ -213,7 +213,7 @@ const Attendance = () => {
                                                     )}
                                                 </span>
                                             </td>
-                                            <td className="p-4 text-center">
+                                            <td className="p-4 text-center hide-on-mobile" data-label="Month">
                                                 <span className="text-sm text-slate-600">
                                                     {new Date(record.date).toLocaleDateString('en-IN', { month: 'long' })}
                                                 </span>
@@ -262,7 +262,7 @@ const Attendance = () => {
             ) : (
                 // Detail View (Mark or Report)
                 <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                    <div className="glass-card rounded-2xl overflow-hidden bg-white/60 border border-slate-200">
+                    <div className="glass-card rounded-2xl overflow-hidden bg-white/60 border border-slate-200 table-container">
                         {mode === 'mark' ? (
                             // Mark Attendance Interface
                             <>
@@ -289,7 +289,7 @@ const Attendance = () => {
                                 ) : (
                                     <div className="divide-y divide-slate-100">
                                         {students.map((student) => (
-                                            <div key={student.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                                            <div key={student.id} className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between hover:bg-slate-50 transition-colors gap-4">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-semibold text-sm">
                                                         {student.roll_no.slice(-3)}
@@ -302,7 +302,7 @@ const Attendance = () => {
 
                                                 <button
                                                     onClick={() => toggleAttendance(student.id)}
-                                                    className={`px-4 py-2 rounded-xl flex items-center gap-2 font-medium transition-all ${attendance[student.id] === 'Present'
+                                                    className={`w-full sm:w-auto px-4 py-2 rounded-xl flex items-center justify-center gap-2 font-medium transition-all ${attendance[student.id] === 'Present'
                                                         ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200'
                                                         : 'bg-rose-100 text-rose-700 border border-rose-200 hover:bg-rose-200'
                                                         }`}
@@ -321,7 +321,7 @@ const Attendance = () => {
                         ) : (
                             // View Report Interface
                             <>
-                                <div className="p-4 bg-slate-50/50 border-b border-slate-200 flex justify-between items-center">
+                                <div className="p-4 bg-slate-50/50 border-b border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
                                     <span className="font-semibold text-slate-700">Attendance Report</span>
 
                                     <div className="flex items-center gap-2">
@@ -332,18 +332,18 @@ const Attendance = () => {
                                             className="bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-1.5 outline-none focus:border-blue-500 text-sm font-medium"
                                         >
                                             <option value="">All Time</option>
-                                            <option value="1">January</option>
-                                            <option value="2">February</option>
-                                            <option value="3">March</option>
-                                            <option value="4">April</option>
+                                            <option value="1">Jan</option>
+                                            <option value="2">Feb</option>
+                                            <option value="3">Mar</option>
+                                            <option value="4">Apr</option>
                                             <option value="5">May</option>
-                                            <option value="6">June</option>
-                                            <option value="7">July</option>
-                                            <option value="8">August</option>
-                                            <option value="9">September</option>
-                                            <option value="10">October</option>
-                                            <option value="11">November</option>
-                                            <option value="12">December</option>
+                                            <option value="6">Jun</option>
+                                            <option value="7">Jul</option>
+                                            <option value="8">Aug</option>
+                                            <option value="9">Sep</option>
+                                            <option value="10">Oct</option>
+                                            <option value="11">Nov</option>
+                                            <option value="12">Dec</option>
                                         </select>
                                     </div>
                                 </div>
@@ -353,32 +353,32 @@ const Attendance = () => {
                                 ) : attendanceReport.length === 0 ? (
                                     <div className="p-10 text-center text-slate-500">No attendance records found.</div>
                                 ) : (
-                                    <div className="overflow-x-auto">
+                                    <div className="scroll-hint">
                                         <table className="w-full">
                                             <thead>
                                                 <tr className="bg-slate-50/50 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                                     <th className="p-4">Student</th>
-                                                    <th className="p-4 text-center">Total Days</th>
-                                                    <th className="p-4 text-center text-emerald-600">Present</th>
-                                                    <th className="p-4 text-center text-rose-600">Absent</th>
-                                                    <th className="p-4 text-center">Percentage</th>
+                                                    <th className="p-4 text-center hide-on-mobile">Total</th>
+                                                    <th className="p-4 text-center text-emerald-600">Pres.</th>
+                                                    <th className="p-4 text-center text-rose-600 hide-on-mobile">Abs.</th>
+                                                    <th className="p-4 text-center">Perc.</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-slate-100">
+                                            <tbody className="divide-y divide-slate-100 mobile-stack">
                                                 {attendanceReport.map((student) => (
                                                     <tr key={student.id} className="hover:bg-slate-50 transition-colors">
-                                                        <td className="p-4">
-                                                            <div>
+                                                        <td className="p-4" data-label="Student">
+                                                            <div className="text-left md:text-left text-right">
                                                                 <p className="font-semibold text-slate-800">{student.name}</p>
                                                                 <p className="text-xs text-slate-500 font-mono">{student.roll_no}</p>
                                                             </div>
                                                         </td>
-                                                        <td className="p-4 text-center font-medium">{student.total_days}</td>
-                                                        <td className="p-4 text-center font-medium text-emerald-600">{student.present_days}</td>
-                                                        <td className="p-4 text-center font-medium text-rose-600">{student.absent_days}</td>
-                                                        <td className="p-4 text-center">
-                                                            <div className="flex items-center justify-center gap-2">
-                                                                <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                                        <td className="p-4 text-center font-medium hide-on-mobile" data-label="Total">{student.total_days}</td>
+                                                        <td className="p-4 text-center font-medium text-emerald-600" data-label="Present">{student.present_days}</td>
+                                                        <td className="p-4 text-center font-medium text-rose-600 hide-on-mobile" data-label="Absent">{student.absent_days}</td>
+                                                        <td className="p-4 text-center" data-label="Perc">
+                                                            <div className="flex items-center justify-center md:justify-center justify-end gap-2">
+                                                                <div className="w-12 h-1.5 bg-slate-200 rounded-full overflow-hidden hide-on-mobile">
                                                                     <div
                                                                         className={`h-full rounded-full ${parseFloat(student.percentage) >= 75 ? 'bg-emerald-500' : 'bg-rose-500'}`}
                                                                         style={{ width: `${student.percentage}%` }}

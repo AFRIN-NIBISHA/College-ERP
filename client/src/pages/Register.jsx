@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { ArrowLeft, User, Phone, Lock, CheckCircle, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import logo from '../assets/dmi_logo.png';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -66,12 +67,24 @@ const Register = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Background Decoration */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-400/10 rounded-full blur-[120px] mix-blend-multiply"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-400/10 rounded-full blur-[120px] mix-blend-multiply"></div>
+            </div>
+
+            <div className="w-full max-w-md bg-white/80 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/50 overflow-hidden relative z-10 animate-in fade-in zoom-in duration-300">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-center">
-                    <h2 className="text-2xl font-bold text-white">Staff Registration</h2>
-                    <p className="text-blue-200 text-sm mt-1">Create your account to access the portal</p>
+                <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-8 text-center relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16"></div>
+                    <div className="flex justify-center mb-4">
+                        <div className="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/20 shadow-xl">
+                            <img src={logo} alt="DMI Logo" className="w-16 h-16 object-contain" />
+                        </div>
+                    </div>
+                    <h2 className="text-2xl font-bold text-white tracking-tight">Staff Registration</h2>
+                    <p className="text-blue-100 text-sm mt-1 font-medium">Create your administrative account</p>
                 </div>
 
                 <div className="p-8">
@@ -82,8 +95,8 @@ const Register = () => {
                                 key={r}
                                 onClick={() => setFormData({ ...formData, role: r })}
                                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${formData.role === r
-                                        ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500'
-                                        : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                                    ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500'
+                                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                                     } capitalize`}
                             >
                                 {r}

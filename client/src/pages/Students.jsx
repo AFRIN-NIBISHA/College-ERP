@@ -245,21 +245,21 @@ const Students = () => {
                     </div>
 
                     {/* Table */}
-                    <div className="glass-card rounded-2xl overflow-hidden bg-white/60 border border-slate-200 shadow-sm">
-                        <div className="overflow-x-auto">
+                    <div className="glass-card rounded-2xl overflow-hidden bg-white/60 border border-slate-200 shadow-sm table-container">
+                        <div className="scroll-hint">
                             <table className="w-full">
                                 <thead>
                                     <tr className="bg-slate-50/80 border-b border-slate-200 text-left">
                                         <th className="p-4 text-slate-500 font-semibold text-sm">Student</th>
                                         <th className="p-4 text-slate-500 font-semibold text-sm">Roll No</th>
-                                        <th className="p-4 text-slate-500 font-semibold text-sm">Year/Sec</th>
-                                        <th className="p-4 text-slate-500 font-semibold text-sm">DOB</th>
-                                        <th className="p-4 text-slate-500 font-semibold text-sm">Email</th>
+                                        <th className="p-4 text-slate-500 font-semibold text-sm hide-on-mobile">Year/Sec</th>
+                                        <th className="p-4 text-slate-500 font-semibold text-sm hide-on-mobile">DOB</th>
+                                        <th className="p-4 text-slate-500 font-semibold text-sm hide-on-mobile">Email</th>
                                         <th className="p-4 text-slate-500 font-semibold text-sm">Status</th>
                                         {canEditStudents && <th className="p-4 text-slate-500 font-semibold text-sm">Actions</th>}
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
+                                <tbody className="divide-y divide-slate-100 mobile-stack">
                                     {isLoading ? (
                                         <tr><td colSpan={canEditStudents ? 7 : 6} className="p-8 text-center text-slate-500">Loading...</td></tr>
                                     ) : students.length === 0 ? (
@@ -267,7 +267,7 @@ const Students = () => {
                                     ) : (
                                         students.map((student) => (
                                             <tr key={student.id} className="hover:bg-slate-50 transition-colors group">
-                                                <td className="p-4">
+                                                <td className="p-4" data-label="Student">
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200">
                                                             <User size={20} />
@@ -278,17 +278,17 @@ const Students = () => {
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="p-4 text-slate-600 font-mono text-sm">{student.roll_no}</td>
-                                                <td className="p-4 text-slate-600 font-medium">{student.year} - {student.section}</td>
-                                                <td className="p-4 text-slate-500 text-sm">{student.dob ? new Date(student.dob).toLocaleDateString() : '-'}</td>
-                                                <td className="p-4 text-slate-500 text-sm">{student.email}</td>
-                                                <td className="p-4">
+                                                <td className="p-4 text-slate-600 font-mono text-sm" data-label="Roll No">{student.roll_no}</td>
+                                                <td className="p-4 text-slate-600 font-medium hide-on-mobile" data-label="Year/Sec">{student.year} - {student.section}</td>
+                                                <td className="p-4 text-slate-500 text-sm hide-on-mobile" data-label="DOB">{student.dob ? new Date(student.dob).toLocaleDateString() : '-'}</td>
+                                                <td className="p-4 text-slate-500 text-sm hide-on-mobile" data-label="Email">{student.email}</td>
+                                                <td className="p-4" data-label="Status">
                                                     <span className="px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
                                                         Active
                                                     </span>
                                                 </td>
                                                 {canEditStudents && (
-                                                    <td className="p-4">
+                                                    <td className="p-4" data-label="Actions">
                                                         <div className="flex items-center gap-2">
                                                             <button
                                                                 onClick={() => handleEdit(student)}

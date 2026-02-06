@@ -75,7 +75,7 @@ const Login = () => {
                 <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-400/20 rounded-full blur-[120px] mix-blend-multiply animate-pulse" style={{ animationDelay: '2s' }}></div>
             </div>
 
-            <div className="w-full max-w-5xl h-[85vh] m-4 bg-white/80 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/50 flex overflow-hidden relative z-10 transition-all duration-500 hover:shadow-blue-900/5">
+            <div className="w-full max-w-5xl lg:h-[85vh] h-auto m-4 bg-white/80 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/50 flex overflow-hidden relative z-10 transition-all duration-500 hover:shadow-blue-900/5">
 
                 {/* Left Side */}
                 <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-blue-600 to-indigo-700 relative flex-col justify-center items-center p-12 text-white overflow-hidden">
@@ -103,6 +103,12 @@ const Login = () => {
                     <div className="max-w-sm mx-auto w-full space-y-8">
 
                         <div className="text-center lg:text-left">
+                            {/* Logo for Mobile */}
+                            <div className="lg:hidden flex justify-center mb-8">
+                                <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                                    <img src={logo} alt="DMI Logo" className="w-20 h-20 object-contain" />
+                                </div>
+                            </div>
                             <h2 className="text-3xl font-bold text-slate-800">Welcome Back</h2>
                             <p className="text-slate-500 mt-2">Enter your credentials to access the portal.</p>
                         </div>
