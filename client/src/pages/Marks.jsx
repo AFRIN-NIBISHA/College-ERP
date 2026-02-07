@@ -19,6 +19,13 @@ const Marks = () => {
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
     useEffect(() => {
+        if (user?.role === 'student' && user.year && user.section) {
+            setYear(String(user.year));
+            setSection(user.section);
+        }
+    }, [user]);
+
+    useEffect(() => {
         fetchSubjects();
     }, [year]);
 
@@ -32,7 +39,7 @@ const Marks = () => {
         try {
             const res = await axios.get(`/api/subjects`);
             // Filter subjects based on year (2nd year = semester 3,4; 3rd year = semester 5,6)
-            const yearSemesters = year === '2' ? [3, 4] : year === '3' ? [5, 6] : year === '1' ? [1, 2] : [7, 8];
+            const yearSemesters = year === '2' ? [3, 4] : year === '3' ? [5, 6] : year === '1' ? [1, 2] : year === '4' ? [7, 8] : [];
             const filteredSubjects = res.data.filter(s => yearSemesters.includes(s.semester));
             setSubjects(filteredSubjects);
 

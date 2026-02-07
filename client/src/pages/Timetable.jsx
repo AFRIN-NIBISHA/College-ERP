@@ -6,8 +6,8 @@ import { useAuth } from '../context/AuthContext';
 const Timetable = () => {
     const { user } = useAuth();
     const isStudent = user?.role === 'student';
-    const [year, setYear] = useState(isStudent ? 2 : 2);
-    const [section, setSection] = useState(isStudent ? 'A' : 'A');
+    const [year, setYear] = useState('');
+    const [section, setSection] = useState('');
     const [timetable, setTimetable] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -37,6 +37,9 @@ const Timetable = () => {
         if (isStudent && user) {
             setYear(user.year);
             setSection(user.section);
+        } else if (!isStudent) {
+            setYear('2');
+            setSection('A');
         }
     }, [user, isStudent]);
 
