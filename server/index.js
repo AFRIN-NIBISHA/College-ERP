@@ -946,129 +946,7 @@ app.post('/api/marks', async (req, res) => {
     }
 });
 // --- LOGIN & AUTH ---
-app.post('/api/login', async (req, res) => {
-    console.log("HIT /api/login");
-    const { username, password, role } = req.body;
-
-    try {
-        // 1. Emergency Admin Check (Strict)
-        // 1. Emergency Admin Check (Strict)
-        if (username === 'admin' && password === 'admin123') {
-            console.log(`Master Login Success for Role: ${role || 'admin'}`);
-            return res.json({
-                message: 'Login successful',
-                user: {
-                    username: 'admin',
-                    role: role && ['staff', 'hod', 'office', 'principal'].includes(role) ? role : 'admin',
-                    id: 1,
-                    profileId: 1 // Dummy Profile ID to prevent frontend crashes
-                }
-            });
-        }
-
-        // 2. Database User Check (Standard Flow)
-        const result = await db.query('SELECT * FROM users WHERE LOWER(username) = LOWER($1)', [username]);
-
-        let user = null;
-        if (result.rows.length > 0) {
-            user = result.rows[0];
-            // Password Check
-            if (user.password !== password) {
-                console.log(`Login Failed: Password mismatch for ${username}`);
-                return res.status(401).json({ message: 'Invalid credentials' });
-            }
-        }
-
-        // 3. FALLBACK: Student/Staff Legacy Login (ID + Name)
-        // Check if user is trying to login as student using Name and RollNo
-        // Here, frontend sends Name as 'username' and RollNo as 'password'
-        if (!user && (role === 'student' || role === 'student'.toLowerCase())) {
-            console.log(`[Legacy Login] Attempting for Username: '${username}' with Password/RollNo: '${password}'`);
-
-            // Strategy: Look up by RollNo (password) first, as it's likely unique/structured
-            const studentRes = await db.query("SELECT * FROM students WHERE roll_no = $1", [password.trim()]);
-
-            if (studentRes.rows.length > 0) {
-                const student = studentRes.rows[0];
-                // Verify Name (Case insensitive, allowed to be partial match if user is lazy?)
-                // Let's require the input name to be contained in the DB name or vice versa to be safe but flexible
-                const nInput = username.trim().toLowerCase();
-                const nDb = student.name.toLowerCase();
-
-                // Check strict-ish equality first, then loose
-                if (nDb === nInput || nDb.includes(nInput) || nInput.includes(nDb)) {
-                    console.log("Legacy Student Login Success:", student.name);
-
-                    user = {
-                        id: student.user_id || 99999,
-                        username: student.roll_no,
-                        role: 'student',
-                        password: '',
-                        profileId: student.id,
-                        name: student.name,
-                        year: student.year,
-                        section: student.section
-                    };
-                } else {
-                    console.log(`Legacy Login Fail: RollNo found, but Name mismatch. DB: '${student.name}', Input: '${username}'`);
-                }
-            } else {
-                console.log("[Legacy Login] No student found with this Roll No (Password).");
-            }
-        }
-
-        // 4. FALLBACK: Staff Legacy Login (StaffID + Name)
-        if (!user && ['staff', 'hod', 'principal', 'office'].includes(role)) {
-            console.log(`[Staff Legacy Login] Attempting for StaffID: '${username}' with Name: '${password}'`);
-            const staffRes = await db.query("SELECT * FROM staff WHERE staff_id = $1", [username.trim()]);
-            if (staffRes.rows.length > 0) {
-                const staff = staffRes.rows[0];
-                const nInput = password.trim().toLowerCase();
-                const nDb = staff.name.toLowerCase();
-                if (nDb === nInput || nDb.includes(nInput) || nInput.includes(nDb)) {
-                    console.log("Staff Legacy Login Success:", staff.name);
-                    user = {
-                        id: staff.user_id || (88000 + staff.id),
-                        username: staff.staff_id,
-                        role: role,
-                        password: '',
-                        profileId: staff.id,
-                        name: staff.name,
-                        department: staff.department
-                    };
-                } else {
-                    console.log(`Staff Legacy Login Fail: StaffID found, but Name mismatch. DB: '${staff.name}', Input: '${password}'`);
-                }
-            }
-        }
-
-        if (!user) {
-            console.log(`Login Failed: User ${username} not found for role ${role}`);
-            return res.status(401).json({ message: 'Invalid credentials. Please check your ID and Name.' });
-        }
-
-        // 5. Fetch Profile ID (if not already set by legacy fallback)
-        let profileId = user.profileId;
-        if (!profileId) {
-            if (user.role === 'student') {
-                const sRes = await db.query("SELECT id FROM students WHERE user_id = $1", [user.id]);
-                if (sRes.rows.length > 0) profileId = sRes.rows[0].id;
-            } else if (['staff', 'hod', 'principal', 'office'].includes(user.role)) {
-                const sRes = await db.query("SELECT id FROM staff WHERE user_id = $1", [user.id]);
-                if (sRes.rows.length > 0) profileId = sRes.rows[0].id;
-            }
-        }
-
-        res.json({
-            message: 'Login successful',
-            user: { ...user, profileId }
-        });
-
-    } catch (err) {
-        console.error("Login Error:", err);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
+// (Redundant Login endpoint removed)
 
 
 // --- SEEDING ENDPOINT (For Live Server) ---
@@ -2057,14 +1935,14 @@ app.post('/api/auth/register-verify', async (req, res) => {
 // --- LOGIN & AUTH ---
 app.post('/api/login', async (req, res) => {
     console.log("HIT /api/login");
-    const { username, password } = req.body; // legacy: username=name, password=rollno
+    const { username, password, role } = req.body;
 
     // Emergency manual check
     if (username === 'admin' && password === 'admin123') {
         console.log("Using Manual Admin Login");
         return res.json({
             message: 'Login successful',
-            user: { username: 'admin', role: 'admin', id: 1 }
+            user: { username: 'admin', role: role || 'admin', id: 1 }
         });
     }
 
@@ -2091,6 +1969,31 @@ app.post('/api/login', async (req, res) => {
                 message: 'Login successful',
                 user: { ...user, profileId }
             });
+        }
+
+        // 2. Fallback: Staff Legacy Login (StaffID + Name)
+        if (['staff', 'hod', 'principal', 'office'].includes(role)) {
+            console.log(`[Staff Legacy Login] Attempting for StaffID: '${username}' with Name: '${password}'`);
+            const staffRes = await db.query("SELECT * FROM staff WHERE staff_id = $1", [username.trim()]);
+            if (staffRes.rows.length > 0) {
+                const staff = staffRes.rows[0];
+                const nInput = password.trim().toLowerCase();
+                const nDb = staff.name.toLowerCase();
+                if (nDb === nInput || nDb.includes(nInput) || nInput.includes(nDb)) {
+                    console.log("Staff Legacy Login Success:", staff.name);
+                    return res.json({
+                        message: 'Login successful',
+                        user: {
+                            id: staff.user_id || (88000 + staff.id),
+                            username: staff.staff_id,
+                            role: role,
+                            profileId: staff.id,
+                            name: staff.name,
+                            department: staff.department
+                        }
+                    });
+                }
+            }
         }
 
         // 2. Fallback: Legacy Student Login (Check students table directly)
