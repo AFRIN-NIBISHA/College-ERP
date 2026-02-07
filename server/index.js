@@ -2014,9 +2014,15 @@ app.post('/api/login', async (req, res) => {
             }
 
             let profileId = null;
+            let year = null;
+            let section = null;
             if (user.role === 'student') {
-                const sRes = await db.query("SELECT id FROM students WHERE user_id = $1", [user.id]);
-                if (sRes.rows.length > 0) profileId = sRes.rows[0].id;
+                const sRes = await db.query("SELECT id, year, section FROM students WHERE user_id = $1", [user.id]);
+                if (sRes.rows.length > 0) {
+                    profileId = sRes.rows[0].id;
+                    year = sRes.rows[0].year;
+                    section = sRes.rows[0].section;
+                }
             } else if (['staff', 'hod', 'principal', 'office'].includes(user.role)) {
                 const stRes = await db.query("SELECT id FROM staff WHERE user_id = $1", [user.id]);
                 if (stRes.rows.length > 0) profileId = stRes.rows[0].id;
@@ -2024,7 +2030,7 @@ app.post('/api/login', async (req, res) => {
 
             return res.json({
                 message: 'Login successful',
-                user: { ...user, profileId }
+                user: { ...user, profileId, year, section }
             });
         }
 
@@ -2071,7 +2077,9 @@ app.post('/api/login', async (req, res) => {
                     role: 'student',
                     profileId: student.id, // THE MOST IMPORTANT FIELD
                     is_legacy: true,
-                    name: student.name
+                    name: student.name,
+                    year: student.year,
+                    section: student.section
                 }
             });
         }

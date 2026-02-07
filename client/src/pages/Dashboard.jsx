@@ -48,9 +48,26 @@ const Dashboard = () => {
     }, []);
 
     useEffect(() => {
-        if (user?.role === 'student' && user.year && user.section) {
-            fetchClassInfo();
-        }
+        const prepareData = async () => {
+            if (user?.role === 'student') {
+                if (user.year && user.section) {
+                    fetchClassInfo();
+                } else if (user.profileId) {
+                    // Fallback: Fetch student profile to get year/section
+                    try {
+                        const res = await axios.get(`/api/students?id=${user.profileId}`);
+                        const student = res.data[0]; // /api/students returns an array
+                        if (student && student.year && student.section) {
+                            const resClass = await axios.get(`/api/class-details?year=${student.year}&section=${student.section}`);
+                            setClassInfo(resClass.data);
+                        }
+                    } catch (err) {
+                        console.error("Dashboard Profile Fallback Error", err);
+                    }
+                }
+            }
+        };
+        prepareData();
     }, [user]);
 
     const fetchActivities = async () => {
