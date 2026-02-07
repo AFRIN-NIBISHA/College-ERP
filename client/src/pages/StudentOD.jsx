@@ -29,8 +29,11 @@ const StudentOD = () => {
         setLoading(true);
         try {
             const params = new URLSearchParams();
+            if (user?.role) params.append('role', user.role);
+            if (user?.profileId) params.append('profile_id', user.profileId);
+
             if (isStudent && user.profileId) {
-                params.append('student_id', user.profileId);
+                params.set('student_id', user.profileId);
             }
             const res = await axios.get(`/api/od?${params.toString()}`);
             setRequests(res.data);

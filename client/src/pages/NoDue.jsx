@@ -27,6 +27,9 @@ const NoDue = () => {
         try {
             const params = new URLSearchParams();
             params.append('role', user.role);
+            if (user.profileId) {
+                params.append('profile_id', user.profileId);
+            }
             if (isStudent && user.profileId) {
                 params.append('student_id', user.profileId);
             }
@@ -202,30 +205,17 @@ const NoDue = () => {
 
         // Staff Logic: Only show if Office Approved AND Staff has pending subject
         if (role === 'staff') {
-            if (req.office_status !== 'Approved') return false; // Waiting for Office
-
-            // Demo/Debug: Allow 'admin' or 'staff' username to see all PENDING requests
-            const lowerUser = user?.username?.toLowerCase();
-            if (['admin', 'staff', 'hod', 'principal'].includes(lowerUser)) {
-                return req.subjects.some(s => s.status === 'Pending');
-            }
+            if (req.office_status !== 'Approved') return false;
 
             // Check if this staff has any pending subjects for this student
-            // We need to match logged-in staff to the subjects in the request
-            const userName = user?.name?.trim().toLowerCase() || user?.username?.trim().toLowerCase();
-
             const hasPendingSubjectForThisStaff = req.subjects.some(subject => {
+                const userName = user?.name?.trim().toLowerCase() || user?.username?.trim().toLowerCase();
                 const staffName = subject.staff_name?.trim().toLowerCase();
 
-                // Priority match: Profile ID comparison
                 const isIdMatch = user?.profileId && subject.staff_profile_id && (Number(user.profileId) === Number(subject.staff_profile_id));
-
-                // Fallback match: Name string comparison
                 const isNameMatch = userName && staffName && (userName === staffName || userName.includes(staffName) || staffName.includes(userName));
 
-                const isMySubject = isIdMatch || isNameMatch;
-
-                return isMySubject && subject.status === 'Pending';
+                return (isIdMatch || isNameMatch) && subject.status === 'Pending';
             });
 
             return hasPendingSubjectForThisStaff;
@@ -289,11 +279,13 @@ const NoDue = () => {
                     const isDemo = ['admin', 'staff', 'hod', 'principal'].includes(user?.username?.toLowerCase());
 
                     const mySubjects = req.subjects.filter(subject => {
-                        if (isDemo && subject.status === 'Pending') return true;
-
+                        const userName = user?.name?.trim().toLowerCase() || user?.username?.trim().toLowerCase();
                         const staffName = subject.staff_name?.trim().toLowerCase();
-                        if (!staffName || !userName) return false;
-                        return (userName === staffName || userName.includes(staffName) || staffName.includes(userName)) && subject.status === 'Pending';
+
+                        const isIdMatch = user?.profileId && subject.staff_profile_id && (Number(user.profileId) === Number(subject.staff_profile_id));
+                        const isNameMatch = userName && staffName && (userName === staffName || userName.includes(staffName) || staffName.includes(userName));
+
+                        return (isIdMatch || isNameMatch) && subject.status === 'Pending';
                     });
 
                     for (const sub of mySubjects) {

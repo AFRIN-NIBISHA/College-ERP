@@ -1332,7 +1332,7 @@ app.post('/api/no-due/request', async (req, res) => {
 });
 
 app.get('/api/no-due', async (req, res) => {
-    const { student_id, role, year, section } = req.query;
+    const { student_id, role, year, section, profile_id } = req.query;
     try {
         let query = `
             SELECT 
@@ -1369,11 +1369,18 @@ app.get('/api/no-due', async (req, res) => {
             query += ` AND s.section = $${params.length}`;
         }
 
+        // Staff Filtering: Only show students for whom the staff member has subjects in the timetable
+        if (role === 'staff' && profile_id) {
+            params.push(profile_id);
+            query += ` AND (s.year, s.section) IN (SELECT DISTINCT t.year, t.section FROM timetable t WHERE t.staff_id = $${params.length})`;
+            // Also, only show if Office has approved
+            query += ` AND nd.office_status = 'Approved'`;
+        }
+
         if (role === 'student' && !student_id) {
             return res.json([]);
         }
 
-        // Order by active status first, then date. Put 'Not Started' at the bottom.
         query += ` 
             ORDER BY 
                 CASE WHEN nd.status IS NULL THEN 1 ELSE 0 END,
@@ -1690,12 +1697,10 @@ app.post('/api/od/apply', async (req, res) => {
             } else if (daysCount > 1) {
                 pendingWith = 'principal';
             } else {
-                pendingWith = 'staff'; // Fallback for 0 or partial (though should be 1 or more for 'Day')
+                pendingWith = 'staff';
             }
         }
 
-        // Sanitize for DB (Convert empty string to null to avoid INT conversion errors)
-        // For Hour type, date_to should be same as date_from
         const effectiveDateTo = (od_type === 'Hour' || !date_to) ? date_from : date_to;
 
         const sanitizedData = [
@@ -1718,34 +1723,24 @@ app.post('/api/od/apply', async (req, res) => {
         console.log('OD Created Successfully:', newOD.id);
 
         // Notify relevant users
-        let notificationQuery = "";
-        let notificationParams = [];
-
         if (pendingWith === 'staff') {
+            // Find Class Incharge from class_details
             const stud = await db.query("SELECT year, section FROM students WHERE id = $1", [student_id]);
             if (stud.rows.length > 0) {
                 const { year, section } = stud.rows[0];
-                notificationQuery = `
-                    SELECT u.id as user_id FROM users u
-                    JOIN staff s ON u.id = s.user_id
-                    JOIN timetable t ON s.id = t.staff_id
-                    WHERE t.year = $1 AND t.section = $2
-                    UNION
-                    SELECT user_id FROM staff WHERE designation ILIKE '%Incharge%'
-                `;
-                notificationParams = [year, section];
+                const inchargeRes = await db.query("SELECT staff_id FROM class_details WHERE year = $1 AND section = $2", [year, section]);
+                if (inchargeRes.rows.length > 0) {
+                    const staffProfileId = inchargeRes.rows[0].staff_id;
+                    const staffUserRes = await db.query("SELECT user_id FROM staff WHERE id = $1", [staffProfileId]);
+                    if (staffUserRes.rows.length > 0) {
+                        await createNotification(staffUserRes.rows[0].user_id, 'New OD Request', `A student in your class has applied for ${od_type} OD.`, 'od');
+                    }
+                }
             }
         } else {
-            notificationQuery = "SELECT id as user_id FROM users WHERE role = $1";
-            notificationParams = [pendingWith];
-        }
-
-        if (notificationQuery) {
-            const usersToNotify = await db.query(notificationQuery, notificationParams);
+            const usersToNotify = await db.query("SELECT id as user_id FROM users WHERE role = $1", [pendingWith]);
             for (const user of usersToNotify.rows) {
-                if (user.user_id) {
-                    await createNotification(user.user_id, 'New OD Request', `A new ${od_type} OD request requires your approval.`, 'od');
-                }
+                await createNotification(user.user_id, 'New OD Request', `A new OD request requires ${pendingWith} approval.`, 'od');
             }
         }
 
@@ -1757,7 +1752,7 @@ app.post('/api/od/apply', async (req, res) => {
 });
 
 app.get('/api/od', async (req, res) => {
-    const { student_id } = req.query;
+    const { student_id, role, profile_id } = req.query;
     try {
         let query = `
             SELECT od.*, s.name, s.roll_no, s.department, s.year, s.section
@@ -1766,15 +1761,29 @@ app.get('/api/od', async (req, res) => {
             WHERE 1=1
         `;
         const params = [];
+
         if (student_id) {
             params.push(student_id);
             query += ` AND od.student_id = $${params.length}`;
         }
+
+        // New Filtering Logic for Staff/HOD/Principal
+        if (role === 'staff' && profile_id) {
+            // Only show requests from classes where this staff is the Class Incharge
+            // And pending with staff
+            params.push(profile_id);
+            query += ` AND (s.year, s.section) IN (SELECT year, section FROM class_details WHERE staff_id = $${params.length}) AND od.pending_with = 'staff'`;
+        } else if (role === 'hod') {
+            query += ` AND od.pending_with = 'hod'`;
+        } else if (role === 'principal') {
+            query += ` AND od.pending_with = 'principal'`;
+        }
+
         query += " ORDER BY od.created_at DESC";
         const result = await db.query(query, params);
         res.json(result.rows);
     } catch (err) {
-        console.error(err);
+        console.error("OD Fetch Error:", err);
         res.status(500).json({ message: 'Server error' });
     }
 });
