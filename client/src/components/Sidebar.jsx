@@ -75,9 +75,10 @@ const Sidebar = ({ isOpen, onClose }) => {
         ],
         hod: [
             { icon: LayoutDashboard, label: 'HOD Dashboard', path: '/' },
-            { icon: GraduationCap, label: 'Staff Mgmt', path: '/faculty' }, // Using /faculty path
+            { icon: ClipboardCheck, label: 'Faculty Attendance', path: '/attendance/faculty' }, // Added
+            { icon: GraduationCap, label: 'Staff Mgmt', path: '/faculty' },
             { icon: Users, label: 'Dept Students', path: '/students' },
-            { icon: ClipboardCheck, label: 'Monitor Attendance', path: '/attendance/report' }, // Report view
+            { icon: ClipboardCheck, label: 'Monitor Attendance', path: '/attendance/report' },
             { icon: CheckCircle, label: 'No Due Requests', path: '/no-due' },
             { icon: FileText, label: 'OD / Leave', path: '/od-requests' },
             { icon: BarChart, label: 'Dept Reports', path: '/reports' },
