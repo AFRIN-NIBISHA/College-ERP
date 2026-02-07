@@ -221,9 +221,11 @@ const StudentOD = () => {
                                                 <span className="px-2 py-0.5 bg-slate-100 rounded text-xs text-slate-500">
                                                     {req.od_type === 'Day' ? `${req.no_of_days} Day(s)` : `${req.hours} Hour(s)`}
                                                 </span>
-                                                <span className="px-2 py-0.5 bg-blue-50 rounded text-xs text-blue-600 border border-blue-100 italic">
-                                                    Pending: {req.pending_with?.toUpperCase()}
-                                                </span>
+                                                {req.status === 'Pending' && (
+                                                    <span className="px-2 py-0.5 bg-blue-50 rounded text-xs text-blue-600 border border-blue-100 italic">
+                                                        Pending: {req.pending_with?.toUpperCase()}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                         <StatusBadge status={req.status} />
