@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL, -- In production, hash this!
-    role VARCHAR(20) CHECK (role IN ('admin', 'staff', 'student')) NOT NULL
+    role VARCHAR(20) CHECK (role IN ('admin', 'staff', 'student', 'hod', 'principal', 'office')) NOT NULL
 );
 
 -- Students table
@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS students (
     section VARCHAR(10), -- A, B, C
     email VARCHAR(100),
     phone VARCHAR(15),
+    dob DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -71,13 +72,63 @@ CREATE TABLE IF NOT EXISTS marks (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Internal Marks Table
+CREATE TABLE IF NOT EXISTS internal_marks (
+    id SERIAL PRIMARY KEY,
+    student_id INT REFERENCES students(id) ON DELETE CASCADE,
+    subject_code VARCHAR(20) NOT NULL,
+    ia1 INT DEFAULT 0,
+    ia2 INT DEFAULT 0,
+    ia3 INT DEFAULT 0,
+    assign1 INT DEFAULT 0,
+    assign2 INT DEFAULT 0,
+    assign3 INT DEFAULT 0,
+    assign4 INT DEFAULT 0,
+    UNIQUE(student_id, subject_code)
+);
+
 -- Attendance table
 CREATE TABLE IF NOT EXISTS attendance (
     id SERIAL PRIMARY KEY,
     student_id INT REFERENCES students(id) ON DELETE CASCADE,
     date DATE NOT NULL,
-    status VARCHAR(10) CHECK (status IN ('Present', 'Absent', 'On Duty')),
+    status VARCHAR(20) DEFAULT 'Present',
+    period_1 VARCHAR(20),
+    period_2 VARCHAR(20),
+    period_3 VARCHAR(20),
+    period_4 VARCHAR(20),
+    period_5 VARCHAR(20),
+    period_6 VARCHAR(20),
+    period_7 VARCHAR(20),
+    period_8 VARCHAR(20),
     UNIQUE(student_id, date)
+);
+
+-- Fees Table
+CREATE TABLE IF NOT EXISTS fees (
+    id SERIAL PRIMARY KEY,
+    student_id INT REFERENCES students(id) ON DELETE CASCADE,
+    total_fee DECIMAL(10, 2) DEFAULT 0,
+    paid_amount DECIMAL(10, 2) DEFAULT 0,
+    payment_date DATE,
+    payment_mode VARCHAR(50),
+    receipt_no VARCHAR(50),
+    status VARCHAR(20) DEFAULT 'Pending'
+);
+
+-- No Due table
+CREATE TABLE IF NOT EXISTS no_dues (
+    id SERIAL PRIMARY KEY,
+    student_id INT REFERENCES students(id) ON DELETE CASCADE,
+    semester INT NOT NULL,
+    office_status VARCHAR(20) DEFAULT 'Pending',
+    staff_status VARCHAR(20) DEFAULT 'Pending',
+    hod_status VARCHAR(20) DEFAULT 'Pending',
+    principal_status VARCHAR(20) DEFAULT 'Pending',
+    status VARCHAR(20) DEFAULT 'Pending',
+    remarks TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(student_id, semester)
 );
 
 -- Notices/Announcements
@@ -94,7 +145,7 @@ CREATE TABLE IF NOT EXISTS faculty_attendance (
     staff_id INT REFERENCES staff(id) ON DELETE CASCADE,
     date DATE NOT NULL,
     status VARCHAR(20) CHECK (status IN ('Present', 'Absent', 'On Duty')),
-    substitute_id INT REFERENCES staff(id), -- If absent, who is the substitute?
+    substitute_id INT REFERENCES staff(id) ON DELETE SET NULL, -- If absent, who is the substitute?
     UNIQUE(staff_id, date)
 );
 
@@ -105,8 +156,8 @@ CREATE TABLE IF NOT EXISTS timetable (
     section VARCHAR(10) NOT NULL,
     day VARCHAR(15) NOT NULL, -- Monday, Tuesday...
     period INT NOT NULL, -- 1 to 8
-    subject_id INT REFERENCES subjects(id),
-    staff_id INT REFERENCES staff(id),
+    subject_id INT REFERENCES subjects(id) ON DELETE CASCADE,
+    staff_id INT REFERENCES staff(id) ON DELETE SET NULL,
     UNIQUE(year, section, day, period)
 );
 
