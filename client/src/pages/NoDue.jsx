@@ -88,10 +88,14 @@ const NoDue = () => {
             return;
         }
 
+        // Try to get year from the requests data if available
+        const studentYear = requests[0]?.year || 4;
+        const currentSemester = studentYear * 2;
+
         try {
             const res = await axios.post('/api/no-due/request', {
                 student_id: user.profileId,
-                semester: 8 // Assuming final sem, or fetch from student data
+                semester: currentSemester
             });
             console.log("Submit Response:", res.data);
             alert("No Due Request Submitted Successfully!");
@@ -175,6 +179,7 @@ const NoDue = () => {
     const StatusBadge = ({ status }) => {
         if (status === 'Approved') return <span className="flex items-center text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded-lg"><CheckCircle size={14} className="mr-1" /> Approved</span>;
         if (status === 'Rejected') return <span className="flex items-center text-red-600 font-bold bg-red-50 px-2 py-1 rounded-lg"><XCircle size={14} className="mr-1" /> Rejected</span>;
+        if (status === '-' || !status) return <span className="flex items-center text-slate-400 font-medium bg-slate-50 px-2 py-1 rounded-lg italic">Not Started</span>;
         return <span className="flex items-center text-amber-600 font-bold bg-amber-50 px-2 py-1 rounded-lg"><Clock size={14} className="mr-1" /> Pending</span>;
     };
 
@@ -318,7 +323,7 @@ const NoDue = () => {
                         {isStudent ? "Track your clearance progress" : `Manage ${role} clearance requests`}
                     </p>
                 </div>
-                {isStudent && requests.length === 0 && (
+                {isStudent && !requests.some(r => r.id) && (
                     <button
                         onClick={handleRequest}
                         className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30"
@@ -393,7 +398,15 @@ const NoDue = () => {
                                             )}
                                         </>
                                     ) : (
-                                        <p className="text-xs text-amber-500 font-medium mt-2 italic">Not Requested Yet</p>
+                                        <div className="mt-4">
+                                            <p className="text-xs text-amber-500 font-bold mb-2 uppercase tracking-wider">Action Required</p>
+                                            <button
+                                                onClick={handleRequest}
+                                                className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl text-sm font-bold hover:bg-amber-600 transition-all shadow-md shadow-amber-200"
+                                            >
+                                                <Send size={16} /> Start Request
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
 
@@ -484,7 +497,7 @@ const NoDue = () => {
                                                 </div>
                                             ) : (
                                                 <div className="h-full flex items-center justify-center p-4 bg-slate-50 border border-slate-100 rounded-xl text-xs text-slate-400 italic">
-                                                    Waiting for Office Clearance
+                                                    {req.id ? "Waiting for Office Clearance" : "Request Not Submitted"}
                                                 </div>
                                             )}
                                         </div>
