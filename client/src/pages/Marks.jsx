@@ -105,90 +105,88 @@ const Marks = () => {
     };
 
     return (
-        <div className="space-y-8 animate-fade-in flex flex-col h-full min-h-[600px]">
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="space-y-6 h-[calc(100vh-140px)] flex flex-col">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">
-                        Internal <span className="text-blue-600">Marks</span>
-                    </h2>
-                    <p className="text-slate-500 font-medium italic">Track academic performance across semesters</p>
+                    <h2 className="text-3xl font-bold text-slate-800">Internal Marks</h2>
+                    <p className="text-slate-500">Manage internal assessments & assignments</p>
                 </div>
                 {isStaff && (
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl shadow-blue-500/30 disabled:opacity-70 font-bold active:scale-95"
+                        className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-blue-500/25 disabled:opacity-70"
                     >
                         <Save size={20} />
-                        {isSaving ? 'Saving...' : 'Save Changes'}
+                        {isSaving ? 'Saving...' : 'Save Marks'}
                     </button>
                 )}
             </div>
 
-            {/* Filter Bar */}
-            <div className="glass-card p-4 lg:p-6 rounded-3xl flex flex-col md:flex-row gap-6 items-center bg-white/40 backdrop-blur-xl border border-white/60 shadow-inner">
-                <div className="flex gap-3 w-full md:w-auto relative">
+            {/* Filters */}
+            <div className="glass-card p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center bg-white/60 shadow-sm border border-slate-200">
+                <div className="flex gap-2 w-full md:w-auto relative">
                     <button
                         onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                        className={`group flex items-center gap-3 px-6 py-3 border rounded-2xl transition-all text-sm font-bold ${subject ? 'bg-slate-900 text-white border-slate-900 shadow-xl' : 'bg-white border-slate-200 text-slate-600 hover:border-blue-400'}`}
+                        className={`flex items-center gap-2 px-4 py-2 border rounded-xl transition-all text-sm font-medium ${subject || year || section ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                     >
-                        <Filter size={18} className={subject ? "text-blue-400" : "text-slate-400 group-hover:text-blue-500"} />
-                        {subject ? `Subject: ${subject}` : 'Filter Standards'}
+                        <Filter size={18} />
+                        {subject ? `Filtering: ${subject}` : 'Filter Students'}
                     </button>
 
                     {showFilterDropdown && (
                         <>
                             <div className="fixed inset-0 z-40" onClick={() => setShowFilterDropdown(false)}></div>
-                            <div className="absolute top-full left-0 mt-3 w-80 bg-white/95 backdrop-blur-2xl rounded-[2rem] shadow-2xl border border-slate-100 z-50 p-6 animate-in zoom-in-95 duration-200">
-                                <div className="space-y-5">
+                            <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-4 shadow-blue-900/10 scale-in-center overflow-hidden">
+                                <div className="space-y-4">
                                     <div>
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">Academic Year</label>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {['1', '2', '3', '4'].map(y => (
-                                                <button
-                                                    key={y} onClick={() => setYear(y)}
-                                                    className={`py-2 px-3 rounded-xl text-xs font-bold transition-all ${year === y ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
-                                                >
-                                                    {y}{y === '1' ? 'st' : y === '2' ? 'nd' : y === '3' ? 'rd' : 'th'} Year
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">Section</label>
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {['A', 'B', 'C'].map(s => (
-                                                <button
-                                                    key={s} onClick={() => setSection(s)}
-                                                    className={`py-2 px-3 rounded-xl text-xs font-bold transition-all ${section === s ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
-                                                >
-                                                    {s}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 block px-1">Target Subject</label>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Select Subject</p>
                                         <select
                                             value={subject}
                                             onChange={(e) => setSubject(e.target.value)}
-                                            className="w-full bg-slate-100 border-none text-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500/20 text-xs font-bold appearance-none cursor-pointer"
+                                            className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-xs font-medium"
                                         >
-                                            <option value="">Select Subject Code</option>
+                                            <option value="">Choose Subject</option>
                                             {subjects.map(s => (
                                                 <option key={s.id} value={s.subject_code}>{s.subject_code} - {s.subject_name}</option>
                                             ))}
                                         </select>
                                     </div>
 
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Year</p>
+                                            <select
+                                                value={year}
+                                                onChange={(e) => setYear(e.target.value)}
+                                                className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-xs"
+                                            >
+                                                <option value="1">1st Year</option>
+                                                <option value="2">2nd Year</option>
+                                                <option value="3">3rd Year</option>
+                                                <option value="4">4th Year</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Section</p>
+                                            <select
+                                                value={section}
+                                                onChange={(e) => setSection(e.target.value)}
+                                                className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-xs"
+                                            >
+                                                <option value="A">Sec A</option>
+                                                <option value="B">Sec B</option>
+                                                <option value="C">Sec C</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
                                     <button
                                         onClick={() => setShowFilterDropdown(false)}
-                                        className="w-full py-4 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-xl active:scale-95"
+                                        className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all font-bold"
                                     >
-                                        Apply Filters
+                                        Apply & View Marks
                                     </button>
                                 </div>
                             </div>
@@ -196,70 +194,79 @@ const Marks = () => {
                     )}
                 </div>
 
-                <div className="hidden md:block h-10 w-px bg-slate-200/60 mx-2"></div>
+                <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
 
-                <div className="flex-1 flex items-center gap-4 text-sm font-bold text-slate-400">
-                    <Search size={18} />
-                    <span>
-                        Viewing <span className="text-slate-700">{students.length}</span> students in <span className="text-blue-600">Year {year}{section}</span>
-                    </span>
+                <div className="text-sm text-slate-500 font-medium">
+                    Showing <span className="text-blue-600 font-bold">{students.length}</span> Students in <span className="text-slate-700 font-bold">Year {year}{section}</span>
                 </div>
             </div>
 
             {/* Hint for mobile */}
-            <div className="md:hidden flex items-center justify-center gap-2 py-2 bg-blue-50/50 rounded-xl border border-blue-100 text-[10px] font-bold text-blue-500 animate-pulse">
-                Scroll Table Horizontally <Filter size={10} />
-            </div>
+            <p className="md:hidden text-[10px] text-slate-400 text-center animate-pulse">
+                Scroll horizontally to view all marks →
+            </p>
 
-            {/* Data Grid */}
-            <div className="flex-1 bg-white rounded-[2.5rem] border border-slate-200 shadow-2xl shadow-slate-200/50 overflow-hidden flex flex-col">
-                <div className="overflow-x-auto scroll-hint flex-1">
-                    <table className="w-full text-left border-collapse min-w-[1200px]">
-                        <thead className="bg-slate-50/80 sticky top-0 z-10 backdrop-blur-md">
+            {/* Excel Grid Table */}
+            <div className="flex-1 glass-card rounded-2xl overflow-hidden bg-white/60 border border-slate-200 shadow-sm flex flex-col table-container">
+                <div className="flex-1 scroll-hint">
+                    <table className="w-full text-left border-collapse min-w-[1000px]">
+                        <thead className="bg-slate-50/90 sticky top-0 z-10 shadow-sm">
                             <tr>
-                                <th className="p-6 border-b border-slate-100 w-80 sticky left-0 bg-slate-50/95 z-20 text-slate-500 font-black text-[10px] uppercase tracking-widest">Student Information</th>
-                                <th className="p-4 border-b border-slate-100 text-center text-blue-600 font-black text-[10px] uppercase tracking-widest bg-blue-50/30">IA - 1 (50)</th>
-                                <th className="p-4 border-b border-slate-100 text-center text-blue-600 font-black text-[10px] uppercase tracking-widest bg-blue-50/40">IA - 2 (50)</th>
-                                <th className="p-4 border-b border-slate-100 text-center text-blue-600 font-black text-[10px] uppercase tracking-widest bg-blue-50/50">IA - 3 (50)</th>
-                                <th className="p-4 border-b border-slate-100 text-center text-amber-600 font-black text-[10px] uppercase tracking-widest bg-amber-50/30">Assign 1</th>
-                                <th className="p-4 border-b border-slate-100 text-center text-amber-600 font-black text-[10px] uppercase tracking-widest bg-amber-50/40">Assign 2</th>
-                                <th className="p-4 border-b border-slate-100 text-center text-amber-600 font-black text-[10px] uppercase tracking-widest bg-amber-50/50">Assign 3</th>
-                                <th className="p-4 border-b border-slate-100 text-center text-amber-600 font-black text-[10px] uppercase tracking-widest bg-amber-50/60">Assign 4</th>
+                                <th className="p-4 border-b border-r border-slate-200 w-64 sticky left-0 bg-slate-50 z-20 text-slate-600 font-semibold text-sm">Student</th>
+                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-semibold text-xs bg-blue-50/50">IA 1 (50)</th>
+                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-semibold text-xs bg-blue-50/50">IA 2 (50)</th>
+                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-semibold text-xs bg-blue-50/50">IA 3 (50)</th>
+                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-semibold text-xs bg-amber-50/50">Assign 1</th>
+                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-semibold text-xs bg-amber-50/50">Assign 2</th>
+                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-semibold text-xs bg-amber-50/50">Assign 3</th>
+                                <th className="p-2 border-b border-slate-200 w-24 text-center text-slate-600 font-semibold text-xs bg-amber-50/50">Assign 4</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-slate-100 bg-white">
                             {isLoading ? (
-                                <tr><td colSpan="8" className="p-32 text-center text-slate-300 font-bold italic">Gathering academic records...</td></tr>
+                                <tr><td colSpan="8" className="p-20 text-center text-slate-400">Loading marks data...</td></tr>
                             ) : students.length === 0 ? (
                                 <tr>
-                                    <td colSpan="8" className="p-32 text-center text-slate-400">
-                                        <div className="flex flex-col items-center gap-4">
-                                            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-200">
-                                                <BookOpen size={32} />
-                                            </div>
-                                            <p className="font-extrabold text-xl text-slate-300 uppercase tracking-tighter">No Classroom Data Found</p>
+                                    <td colSpan="8" className="p-20 text-center text-slate-500">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <p className="font-semibold text-lg">No students found</p>
+                                            <p className="text-sm">Try changing the filters or add students in the Students tab.</p>
                                         </div>
                                     </td>
                                 </tr>
                             ) : (
-                                students.map((stu) => (
-                                    <tr key={stu.id} className="group hover:bg-slate-50 transition-all">
-                                        <td className="p-4 lg:p-6 border-r border-slate-100 sticky left-0 bg-white group-hover:bg-slate-50 z-10">
-                                            <div className="flex flex-col">
-                                                <span className="font-extrabold text-slate-800 text-sm tracking-tight group-hover:text-blue-600 transition-colors uppercase">{stu.name}</span>
-                                                <span className="text-[10px] text-slate-400 font-mono font-bold mt-1 select-all">{stu.roll_no}</span>
+                                students.map((student) => (
+                                    <tr key={student.id} className="hover:bg-slate-50 transition-colors">
+                                        <td className="p-3 border-r border-slate-100 sticky left-0 bg-white group-hover:bg-slate-50 border-b">
+                                            <div>
+                                                <p className="font-semibold text-slate-800 text-sm">{student.name}</p>
+                                                <p className="text-xs text-slate-500 font-mono">{student.roll_no}</p>
                                             </div>
                                         </td>
 
-                                        {/* Inputs */}
-                                        {['ia1', 'ia2', 'ia3', 'assign1', 'assign2', 'assign3', 'assign4'].map((f) => (
-                                            <td key={f} className={`p-2 border-r border-slate-50 text-center ${f.includes('ia') ? 'bg-blue-50/5' : 'bg-amber-50/5'}`}>
+                                        {/* Internal Assessment Columns */}
+                                        {['ia1', 'ia2', 'ia3'].map((field) => (
+                                            <td key={field} className="p-1 border-r border-slate-100 text-center border-b">
                                                 <input
                                                     type="number"
-                                                    value={stu[f]}
-                                                    onChange={(e) => handleMarkChange(stu.id, f, e.target.value)}
+                                                    value={student[field]}
+                                                    onChange={(e) => handleMarkChange(student.id, field, e.target.value)}
                                                     disabled={!isStaff}
-                                                    className={`w-full h-12 text-center rounded-2xl border-2 transition-all font-black text-sm outline-none ${!isStaff ? 'bg-transparent border-transparent text-slate-600' : 'bg-white border-transparent focus:border-blue-500 hover:border-slate-200 shadow-sm focus:shadow-blue-500/10'}`}
+                                                    className={`w-full h-10 text-center rounded-lg focus:bg-blue-50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all font-medium ${!isStaff ? 'bg-transparent text-slate-600' : 'bg-slate-50/50 text-slate-800'}`}
+                                                    placeholder="-"
+                                                />
+                                            </td>
+                                        ))}
+
+                                        {/* Assignment Columns */}
+                                        {['assign1', 'assign2', 'assign3', 'assign4'].map((field) => (
+                                            <td key={field} className="p-1 border-r border-slate-100 text-center border-b last:border-r-0">
+                                                <input
+                                                    type="number"
+                                                    value={student[field]}
+                                                    onChange={(e) => handleMarkChange(student.id, field, e.target.value)}
+                                                    disabled={!isStaff}
+                                                    className={`w-full h-10 text-center rounded-lg focus:bg-amber-50 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all font-medium ${!isStaff ? 'bg-transparent text-slate-600' : 'bg-slate-50/50 text-slate-800'}`}
                                                     placeholder="-"
                                                 />
                                             </td>

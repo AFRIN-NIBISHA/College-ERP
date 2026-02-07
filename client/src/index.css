@@ -110,85 +110,39 @@ body::before {
     /* Stacked card view for tables on mobile */
     .mobile-stack tr {
         display: block;
-        margin-bottom: 1rem !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 1.25rem !important;
-        background: white !important;
-        padding: 0.5rem !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+        margin-bottom: 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        background: white;
+        padding: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
     .mobile-stack td {
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        padding: 0.75rem 1rem !important;
-        border: none !important;
-        border-bottom: 1px solid #f1f5f9 !important;
-        text-align: right !important;
-        width: 100% !important;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        border: none;
+        border-bottom: 1px solid #f1f5f9;
+        text-align: right;
     }
 
     .mobile-stack td:last-child {
-        border-bottom: none !important;
+        border-bottom: none;
     }
 
     .mobile-stack thead {
-        display: none !important;
+        display: none;
     }
 
     .mobile-stack td::before {
         content: attr(data-label);
-        font-weight: 700;
+        font-weight: 600;
         color: #64748b;
-        font-size: 0.7rem;
+        font-size: 0.75rem;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
         margin-right: 1rem;
         text-align: left;
     }
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.animate-fade-in {
-    animation: fadeIn 0.4s ease-out forwards;
-}
-
-/* Custom Scrollbar for Desktop */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
-
-/* Gradient Text */
-.text-gradient {
-    background: linear-gradient(135deg, #2563eb, #7c3aed);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
 }
