@@ -262,24 +262,12 @@ const StudentOD = () => {
                                         </div>
                                     )}
 
-                                    {/* Delete Button for Students (Pending and Approved) */}
-                                    {isStudent && (req.status === 'Pending' || req.status === 'Approved') && (
-                                        <div className="flex gap-3 pt-4 border-t border-slate-100">
+                                    {/* Delete Button for Students (Allow for all statuses) */}
+                                    {isStudent && (
+                                        <div className="flex justify-end pt-4 border-t border-slate-100">
                                             <button
-                                                onClick={() => {
-                                                    console.log("OD Delete Button Clicked - req:", req);
-                                                    console.log("All req fields:", Object.keys(req));
-                                                    // Check all possible ID field names
-                                                    const requestId = req.id || req.student_od_id || req.student_od || req.od_id || req.request_id;
-                                                    console.log("Using request ID:", requestId);
-                                                    if (!requestId) {
-                                                        console.error("No valid ID found in request object");
-                                                        alert("Error: Cannot delete request - no valid ID found");
-                                                        return;
-                                                    }
-                                                    handleDelete(requestId);
-                                                }}
-                                                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition"
+                                                onClick={() => handleDelete(req.id)}
+                                                className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 text-sm font-bold rounded-xl hover:bg-red-100 transition-all border border-red-100 shadow-sm"
                                             >
                                                 <Trash2 size={16} />
                                                 Delete Request
