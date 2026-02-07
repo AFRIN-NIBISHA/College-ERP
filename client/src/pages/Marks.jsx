@@ -105,47 +105,47 @@ const Marks = () => {
     };
 
     return (
-        <div className="space-y-6 h-[calc(100vh-140px)] flex flex-col">
+        <div className="space-y-4 md:space-y-6 h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] flex flex-col pb-4">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-slate-800">Internal Marks</h2>
-                    <p className="text-slate-500">Manage internal assessments & assignments</p>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">Internal Marks</h2>
+                    <p className="text-xs sm:text-sm text-slate-500">Manage internal assessments & assignments</p>
                 </div>
                 {isStaff && (
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-blue-500/25 disabled:opacity-70"
+                        className="bg-blue-600 hover:bg-blue-500 text-white px-5 sm:px-6 py-2 sm:py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/25 disabled:opacity-70 text-sm sm:text-base font-semibold"
                     >
-                        <Save size={20} />
+                        <Save size={18} className="sm:w-5 sm:h-5" />
                         {isSaving ? 'Saving...' : 'Save Marks'}
                     </button>
                 )}
             </div>
 
             {/* Filters */}
-            <div className="glass-card p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center bg-white/60 shadow-sm border border-slate-200">
+            <div className="glass-card p-3 sm:p-4 rounded-xl flex flex-col md:flex-row gap-3 sm:gap-4 items-center bg-white/60 shadow-sm border border-slate-200">
                 <div className="flex gap-2 w-full md:w-auto relative">
                     <button
                         onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                        className={`flex items-center gap-2 px-4 py-2 border rounded-xl transition-all text-sm font-medium ${subject || year || section ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                        className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 border rounded-xl transition-all text-sm font-semibold ${subject || year || section ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                     >
-                        <Filter size={18} />
-                        {subject ? `Filtering: ${subject}` : 'Filter Students'}
+                        <Filter size={16} />
+                        <span className="truncate max-w-[150px]">{subject ? `Filter: ${subject}` : 'Filter Students'}</span>
                     </button>
 
                     {showFilterDropdown && (
                         <>
                             <div className="fixed inset-0 z-40" onClick={() => setShowFilterDropdown(false)}></div>
-                            <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-4 shadow-blue-900/10 scale-in-center overflow-hidden">
+                            <div className="absolute top-full left-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-4 sm:p-5 shadow-blue-900/10 scale-in-center">
                                 <div className="space-y-4">
                                     <div>
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Select Subject</p>
                                         <select
                                             value={subject}
                                             onChange={(e) => setSubject(e.target.value)}
-                                            className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-xs font-medium"
+                                            className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-3 py-2.5 outline-none focus:border-blue-500 text-sm font-medium"
                                         >
                                             <option value="">Choose Subject</option>
                                             {subjects.map(s => (
@@ -154,13 +154,13 @@ const Marks = () => {
                                         </select>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                         <div>
                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Year</p>
                                             <select
                                                 value={year}
                                                 onChange={(e) => setYear(e.target.value)}
-                                                className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-xs"
+                                                className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-3 py-2.5 outline-none focus:border-blue-500 text-sm font-medium"
                                             >
                                                 <option value="1">1st Year</option>
                                                 <option value="2">2nd Year</option>
@@ -173,7 +173,7 @@ const Marks = () => {
                                             <select
                                                 value={section}
                                                 onChange={(e) => setSection(e.target.value)}
-                                                className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-xs"
+                                                className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-3 py-2.5 outline-none focus:border-blue-500 text-sm font-medium"
                                             >
                                                 <option value="A">Sec A</option>
                                                 <option value="B">Sec B</option>
@@ -184,9 +184,9 @@ const Marks = () => {
 
                                     <button
                                         onClick={() => setShowFilterDropdown(false)}
-                                        className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all font-bold"
+                                        className="w-full py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98]"
                                     >
-                                        Apply & View Marks
+                                        Apply Filters
                                     </button>
                                 </div>
                             </div>
@@ -194,53 +194,67 @@ const Marks = () => {
                     )}
                 </div>
 
-                <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
+                <div className="h-4 md:h-6 w-px bg-slate-200 hidden md:block"></div>
 
-                <div className="text-sm text-slate-500 font-medium">
+                <div className="text-xs sm:text-sm text-slate-500 font-medium text-center md:text-left">
                     Showing <span className="text-blue-600 font-bold">{students.length}</span> Students in <span className="text-slate-700 font-bold">Year {year}{section}</span>
                 </div>
             </div>
 
             {/* Hint for mobile */}
-            <p className="md:hidden text-[10px] text-slate-400 text-center animate-pulse">
-                Scroll horizontally to view all marks →
-            </p>
+            <div className="md:hidden flex items-center justify-center gap-2 py-1">
+                <div className="w-8 h-px bg-slate-200"></div>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider animate-pulse flex items-center gap-1">
+                    <BookOpen size={12} /> Scroll right to view marks
+                </p>
+                <div className="w-8 h-px bg-slate-200"></div>
+            </div>
 
             {/* Excel Grid Table */}
-            <div className="flex-1 glass-card rounded-2xl overflow-hidden bg-white/60 border border-slate-200 shadow-sm flex flex-col table-container">
-                <div className="flex-1 scroll-hint">
-                    <table className="w-full text-left border-collapse min-w-[1000px]">
-                        <thead className="bg-slate-50/90 sticky top-0 z-10 shadow-sm">
+            <div className="flex-1 glass-card rounded-2xl overflow-hidden bg-white/80 border border-slate-200 shadow-sm flex flex-col min-h-0">
+                <div className="flex-1 overflow-x-auto scroll-hint">
+                    <table className="w-full text-left border-collapse min-w-[900px]">
+                        <thead className="bg-slate-50/90 sticky top-0 z-30 shadow-sm">
                             <tr>
-                                <th className="p-4 border-b border-r border-slate-200 w-64 sticky left-0 bg-slate-50 z-20 text-slate-600 font-semibold text-sm">Student</th>
-                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-semibold text-xs bg-blue-50/50">IA 1 (50)</th>
-                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-semibold text-xs bg-blue-50/50">IA 2 (50)</th>
-                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-semibold text-xs bg-blue-50/50">IA 3 (50)</th>
-                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-semibold text-xs bg-amber-50/50">Assign 1</th>
-                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-semibold text-xs bg-amber-50/50">Assign 2</th>
-                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-semibold text-xs bg-amber-50/50">Assign 3</th>
-                                <th className="p-2 border-b border-slate-200 w-24 text-center text-slate-600 font-semibold text-xs bg-amber-50/50">Assign 4</th>
+                                <th className="p-3 sm:p-4 border-b border-r border-slate-200 w-48 sm:w-64 sticky left-0 bg-slate-50 z-40 text-slate-600 font-bold text-xs sm:text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <Search size={14} className="text-slate-400" />
+                                        Student Info
+                                    </div>
+                                </th>
+                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-bold text-[10px] sm:text-xs bg-blue-50/50 uppercase tracking-wider">IA 1 (50)</th>
+                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-bold text-[10px] sm:text-xs bg-blue-50/50 uppercase tracking-wider">IA 2 (50)</th>
+                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-bold text-[10px] sm:text-xs bg-blue-50/50 uppercase tracking-wider">IA 3 (50)</th>
+                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-bold text-[10px] sm:text-xs bg-amber-50/50 uppercase tracking-wider">Assign 1</th>
+                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-bold text-[10px] sm:text-xs bg-amber-50/50 uppercase tracking-wider">Assign 2</th>
+                                <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-bold text-[10px] sm:text-xs bg-amber-50/50 uppercase tracking-wider">Assign 3</th>
+                                <th className="p-2 border-b border-slate-200 w-24 text-center text-slate-600 font-bold text-[10px] sm:text-xs bg-amber-50/50 uppercase tracking-wider">Assign 4</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 bg-white">
                             {isLoading ? (
-                                <tr><td colSpan="8" className="p-20 text-center text-slate-400">Loading marks data...</td></tr>
+                                <tr><td colSpan="8" className="p-20 text-center text-slate-400 font-medium">Loading marks data...</td></tr>
                             ) : students.length === 0 ? (
                                 <tr>
-                                    <td colSpan="8" className="p-20 text-center text-slate-500">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <p className="font-semibold text-lg">No students found</p>
-                                            <p className="text-sm">Try changing the filters or add students in the Students tab.</p>
+                                    <td colSpan="8" className="p-20 text-center text-slate-500 bg-slate-50/30">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center">
+                                                <Search size={32} className="text-slate-300" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="font-bold text-slate-800 text-lg">No students found</p>
+                                                <p className="text-sm text-slate-400">Try changing the filters or check student records.</p>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
                             ) : (
                                 students.map((student) => (
-                                    <tr key={student.id} className="hover:bg-slate-50 transition-colors">
-                                        <td className="p-3 border-r border-slate-100 sticky left-0 bg-white group-hover:bg-slate-50 border-b">
-                                            <div>
-                                                <p className="font-semibold text-slate-800 text-sm">{student.name}</p>
-                                                <p className="text-xs text-slate-500 font-mono">{student.roll_no}</p>
+                                    <tr key={student.id} className="hover:bg-blue-50/30 transition-colors group">
+                                        <td className="p-3 border-r border-slate-100 sticky left-0 bg-white group-hover:bg-blue-50/30 z-20 border-b">
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-slate-800 text-sm truncate max-w-[150px] sm:max-w-full">{student.name}</span>
+                                                <span className="text-[10px] sm:text-xs text-slate-400 font-mono tracking-tighter">{student.roll_no}</span>
                                             </div>
                                         </td>
 
@@ -252,7 +266,7 @@ const Marks = () => {
                                                     value={student[field]}
                                                     onChange={(e) => handleMarkChange(student.id, field, e.target.value)}
                                                     disabled={!isStaff}
-                                                    className={`w-full h-10 text-center rounded-lg focus:bg-blue-50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all font-medium ${!isStaff ? 'bg-transparent text-slate-600' : 'bg-slate-50/50 text-slate-800'}`}
+                                                    className={`w-full h-10 text-center text-sm rounded-lg focus:bg-blue-50 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all font-bold ${!isStaff ? 'bg-transparent text-slate-600' : 'bg-slate-50/50 text-slate-800 focus:shadow-inner'}`}
                                                     placeholder="-"
                                                 />
                                             </td>
@@ -266,7 +280,7 @@ const Marks = () => {
                                                     value={student[field]}
                                                     onChange={(e) => handleMarkChange(student.id, field, e.target.value)}
                                                     disabled={!isStaff}
-                                                    className={`w-full h-10 text-center rounded-lg focus:bg-amber-50 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all font-medium ${!isStaff ? 'bg-transparent text-slate-600' : 'bg-slate-50/50 text-slate-800'}`}
+                                                    className={`w-full h-10 text-center text-sm rounded-lg focus:bg-amber-50 focus:ring-2 focus:ring-amber-500/20 outline-none transition-all font-bold ${!isStaff ? 'bg-transparent text-slate-600' : 'bg-slate-50/50 text-slate-800 focus:shadow-inner'}`}
                                                     placeholder="-"
                                                 />
                                             </td>
