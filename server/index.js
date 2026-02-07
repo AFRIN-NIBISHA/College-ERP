@@ -149,8 +149,13 @@ const initDb = async () => {
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS hours INT;
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS pending_with VARCHAR(20);
 
-            -- Ensure Fee Naming Consistency
-            ALTER TABLE fees RENAME COLUMN total_amount TO total_fee;
+            -- Ensure Fee Naming Consistency safely
+            DO $$ 
+            BEGIN 
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='fees' AND column_name='total_amount') THEN
+                    ALTER TABLE fees RENAME COLUMN total_amount TO total_fee;
+                END IF;
+            END $$;
             ALTER TABLE fees ADD COLUMN IF NOT EXISTS total_fee DECIMAL(10, 2) DEFAULT 0;
 
             -- Ensure No Due Constraints

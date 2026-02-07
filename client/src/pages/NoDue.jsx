@@ -380,15 +380,20 @@ const NoDue = () => {
                                     <h3 className="text-lg md:text-xl font-bold text-slate-800 break-words">{req.name}</h3>
                                     <p className="text-slate-500 text-sm">{req.roll_no}</p>
                                     <p className="text-sm text-slate-400">{req.department} • Year {req.year}</p>
-                                    <p className="text-xs text-slate-400 mt-2">Requested <span className="hide-on-mobile">on</span> {new Date(req.created_at).toLocaleDateString()}</p>
-
-                                    {isStudent && (
-                                        <button
-                                            onClick={() => handleDeleteRequest(req.id)}
-                                            className="mt-3 flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors"
-                                        >
-                                            <Trash2 size={14} /> Delete Request
-                                        </button>
+                                    {req.id ? (
+                                        <>
+                                            <p className="text-xs text-slate-400 mt-2">Requested <span className="hide-on-mobile">on</span> {new Date(req.created_at).toLocaleDateString()}</p>
+                                            {isStudent && (
+                                                <button
+                                                    onClick={() => handleDeleteRequest(req.id)}
+                                                    className="mt-3 flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors"
+                                                >
+                                                    <Trash2 size={14} /> Delete Request
+                                                </button>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <p className="text-xs text-amber-500 font-medium mt-2 italic">Not Requested Yet</p>
                                     )}
                                 </div>
 
