@@ -171,3 +171,13 @@ CREATE TABLE IF NOT EXISTS notifications (
     is_read BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Class Details / Incharge Table
+CREATE TABLE IF NOT EXISTS class_details (
+    id SERIAL PRIMARY KEY,
+    year INT NOT NULL,
+    section VARCHAR(10) NOT NULL,
+    staff_id INT REFERENCES staff(id) ON DELETE SET NULL,
+    rep_name VARCHAR(100),
+    UNIQUE(year, section)
+);
