@@ -108,12 +108,14 @@ const Dashboard = () => {
                     <p className="text-slate-500 font-medium">Welcome back, {user?.role}! Here's what's happening today.</p>
                 </div>
                 <div className="flex gap-3">
-                    <button
-                        onClick={handleDownloadReport}
-                        className="px-5 py-2.5 bg-white text-slate-600 font-semibold rounded-xl shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"
-                    >
-                        Download Report
-                    </button>
+                    {['admin', 'staff', 'hod', 'principal', 'office'].includes(user?.role) && (
+                        <button
+                            onClick={handleDownloadReport}
+                            className="px-5 py-2.5 bg-white text-slate-600 font-semibold rounded-xl shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"
+                        >
+                            Download Report
+                        </button>
+                    )}
                     {user?.role !== 'student' && (
                         <button
                             onClick={() => setShowNoticeModal(true)}

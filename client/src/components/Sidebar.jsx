@@ -97,6 +97,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: IndianRupee, label: 'Fees Management', path: '/fees' },
             { icon: CheckCircle, label: 'No Due (Office)', path: '/no-due' },
             { icon: Users, label: 'Student Records', path: '/students' },
+            { icon: BarChart, label: 'Reports', path: '/reports' },
         ],
         admin: [
             { icon: LayoutDashboard, label: 'Dashboard', path: '/' },

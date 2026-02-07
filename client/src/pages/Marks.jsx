@@ -16,6 +16,7 @@ const Marks = () => {
     const [subjects, setSubjects] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
     useEffect(() => {
         fetchSubjects();
@@ -124,44 +125,79 @@ const Marks = () => {
             </div>
 
             {/* Filters */}
-            <div className="glass-card p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center bg-white/60">
-                <div className="flex items-center gap-2 w-full lg:w-auto">
-                    <BookOpen size={20} className="text-slate-400 hide-on-mobile" />
-                    <select
-                        value={subject}
-                        onChange={(e) => setSubject(e.target.value)}
-                        className="bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500 w-full lg:w-64 font-medium"
+            <div className="glass-card p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center bg-white/60 shadow-sm border border-slate-200">
+                <div className="flex gap-2 w-full md:w-auto relative">
+                    <button
+                        onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                        className={`flex items-center gap-2 px-4 py-2 border rounded-xl transition-all text-sm font-medium ${subject || year || section ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                     >
-                        {subjects.map(s => (
-                            <option key={s.id} value={s.subject_code}>{s.subject_code} - {s.subject_name}</option>
-                        ))}
-                    </select>
+                        <Filter size={18} />
+                        {subject ? `Filtering: ${subject}` : 'Filter Students'}
+                    </button>
+
+                    {showFilterDropdown && (
+                        <>
+                            <div className="fixed inset-0 z-40" onClick={() => setShowFilterDropdown(false)}></div>
+                            <div className="absolute top-full left-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-4 shadow-blue-900/10 scale-in-center overflow-hidden">
+                                <div className="space-y-4">
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Select Subject</p>
+                                        <select
+                                            value={subject}
+                                            onChange={(e) => setSubject(e.target.value)}
+                                            className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-xs font-medium"
+                                        >
+                                            <option value="">Choose Subject</option>
+                                            {subjects.map(s => (
+                                                <option key={s.id} value={s.subject_code}>{s.subject_code} - {s.subject_name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Year</p>
+                                            <select
+                                                value={year}
+                                                onChange={(e) => setYear(e.target.value)}
+                                                className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-xs"
+                                            >
+                                                <option value="1">1st Year</option>
+                                                <option value="2">2nd Year</option>
+                                                <option value="3">3rd Year</option>
+                                                <option value="4">4th Year</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Section</p>
+                                            <select
+                                                value={section}
+                                                onChange={(e) => setSection(e.target.value)}
+                                                className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-xs"
+                                            >
+                                                <option value="A">Sec A</option>
+                                                <option value="B">Sec B</option>
+                                                <option value="C">Sec C</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        onClick={() => setShowFilterDropdown(false)}
+                                        className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all font-bold"
+                                    >
+                                        Apply & View Marks
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
 
-                <div className="h-6 w-px bg-slate-200 hidden lg:block"></div>
+                <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
 
-                <div className="flex items-center gap-4 w-full md:w-auto">
-                    <select
-                        value={year}
-                        onChange={(e) => setYear(e.target.value)}
-                        className="flex-1 md:flex-none bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500"
-                    >
-                        <option value="2">2nd Year</option>
-                        <option value="3">3rd Year</option>
-                    </select>
-                    <select
-                        value={section}
-                        onChange={(e) => setSection(e.target.value)}
-                        className="flex-1 md:flex-none bg-white border border-slate-200 text-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500"
-                    >
-                        <option value="A">Sec A</option>
-                        <option value="B">Sec B</option>
-                        <option value="C">Sec C</option>
-                    </select>
-                </div>
-
-                <div className="ml-auto text-sm text-slate-500 font-medium hidden md:block">
-                    {students.length} Students
+                <div className="text-sm text-slate-500 font-medium">
+                    Showing <span className="text-blue-600 font-bold">{students.length}</span> Students in <span className="text-slate-700 font-bold">Year {year}{section}</span>
                 </div>
             </div>
 

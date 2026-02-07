@@ -17,6 +17,7 @@ const Reports = () => {
     const [statusFilter, setStatusFilter] = useState('All'); // For No Due: All, Completed, Pending
     const [studentSearch, setStudentSearch] = useState('');
     const [selectedStudentId, setSelectedStudentId] = useState('');
+    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -235,45 +236,86 @@ const Reports = () => {
                 </div>
 
                 {activeTab !== 'staff' && (
-                    <div className="flex items-center gap-3 w-full lg:w-auto">
-                        <Filter size={18} className="text-slate-400" />
-                        <select value={year} onChange={(e) => setYear(e.target.value)} disabled={!isStaff} className="bg-white border rounded-lg px-3 py-2 text-sm">
-                            <option value="1">1st Year</option>
-                            <option value="2">2nd Year</option>
-                            <option value="3">3rd Year</option>
-                            <option value="4">4th Year</option>
-                        </select>
-                        <select value={section} onChange={(e) => setSection(e.target.value)} disabled={!isStaff} className="bg-white border rounded-lg px-3 py-2 text-sm">
-                            <option value="A">Section A</option>
-                            <option value="B">Section B</option>
-                            <option value="C">Section C</option>
-                        </select>
-                        {activeTab === 'attendance' && (
-                            <select value={month} onChange={(e) => setMonth(e.target.value)} className="bg-white border rounded-lg px-3 py-2 text-sm">
-                                <option value="">All Months</option>
-                                <option value="1">January</option>
-                                <option value="2">February</option>
-                            </select>
-                        )}
-                        {activeTab === 'no_due' && (
-                            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-white border rounded-lg px-3 py-2 text-sm">
-                                <option value="All">All Status</option>
-                                <option value="Completed">Approved (Completed)</option>
-                                <option value="Pending">Pending / In Progress</option>
-                                <option value="Not Started">Not Started</option>
-                            </select>
-                        )}
-                        {isStaff && activeTab !== 'staff' && (
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    placeholder="Roll No (Filter)"
-                                    className="bg-white border rounded-lg px-3 py-2 text-sm w-32"
-                                    value={selectedStudentId}
-                                    onChange={(e) => setSelectedStudentId(e.target.value)}
-                                    title="Enter student ID/Roll No to filter"
-                                />
-                            </div>
+                    <div className="flex items-center gap-3 w-full lg:w-auto relative">
+                        <button
+                            onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                            className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-all text-sm font-medium ${year || section || month || statusFilter !== 'All' ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                        >
+                            <Filter size={18} />
+                            {year || section ? `Filtering: Year ${year}${section}` : 'More Filters'}
+                        </button>
+
+                        {showFilterDropdown && (
+                            <>
+                                <div className="fixed inset-0 z-40" onClick={() => setShowFilterDropdown(false)}></div>
+                                <div className="absolute top-full right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-4 shadow-blue-900/10 scale-in-center">
+                                    <div className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-1">Year</p>
+                                                <select value={year} onChange={(e) => setYear(e.target.value)} disabled={!isStaff} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs">
+                                                    <option value="1">1st Year</option>
+                                                    <option value="2">2nd Year</option>
+                                                    <option value="3">3rd Year</option>
+                                                    <option value="4">4th Year</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-1">Section</p>
+                                                <select value={section} onChange={(e) => setSection(e.target.value)} disabled={!isStaff} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs">
+                                                    <option value="A">Sec A</option>
+                                                    <option value="B">Sec B</option>
+                                                    <option value="C">Sec C</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        {activeTab === 'attendance' && (
+                                            <div>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-1">Month</p>
+                                                <select value={month} onChange={(e) => setMonth(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs">
+                                                    <option value="">All Months</option>
+                                                    <option value="1">January</option>
+                                                    <option value="2">February</option>
+                                                    {/* ... continue internal if needed or keep compact */}
+                                                </select>
+                                            </div>
+                                        )}
+
+                                        {activeTab === 'no_due' && (
+                                            <div>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-1">Status</p>
+                                                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs">
+                                                    <option value="All">All Status</option>
+                                                    <option value="Completed">Approved (Completed)</option>
+                                                    <option value="Pending">Pending / In Progress</option>
+                                                    <option value="Not Started">Not Started</option>
+                                                </select>
+                                            </div>
+                                        )}
+
+                                        {isStaff && (
+                                            <div>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-1">Specific Student (Roll No)</p>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter Roll No..."
+                                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs"
+                                                    value={selectedStudentId}
+                                                    onChange={(e) => setSelectedStudentId(e.target.value)}
+                                                />
+                                            </div>
+                                        )}
+
+                                        <button
+                                            onClick={() => setShowFilterDropdown(false)}
+                                            className="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors shadow-lg shadow-blue-500/10"
+                                        >
+                                            Apply Filters
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
                         )}
                     </div>
                 )}

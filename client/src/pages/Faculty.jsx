@@ -9,6 +9,9 @@ const Faculty = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [editingId, setEditingId] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [activeDesignation, setActiveDesignation] = useState('All');
+    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -96,6 +99,13 @@ const Faculty = () => {
         }
     };
 
+    const filteredStaff = staffList.filter(s => {
+        const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            s.staff_id.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesDesignation = activeDesignation === 'All' || s.designation === activeDesignation;
+        return matchesSearch && matchesDesignation;
+    });
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -110,6 +120,47 @@ const Faculty = () => {
                     <Plus size={20} />
                     Add Faculty
                 </button>
+            </div>
+
+            {/* Filters & Search */}
+            <div className="glass-card p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center justify-between bg-white/60 shadow-sm border border-slate-200">
+                <div className="relative w-full md:w-96">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <input
+                        type="text"
+                        placeholder="Search faculty..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:border-blue-500 transition-all text-sm outline-none"
+                    />
+                </div>
+                <div className="flex gap-2 w-full md:w-auto relative">
+                    <button
+                        onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                        className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-all text-sm font-medium ${activeDesignation !== 'All' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                    >
+                        <Filter size={16} />
+                        {activeDesignation === 'All' ? 'All Roles' : activeDesignation}
+                    </button>
+
+                    {showFilterDropdown && (
+                        <>
+                            <div className="fixed inset-0 z-40" onClick={() => setShowFilterDropdown(false)}></div>
+                            <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 p-2 overflow-hidden shadow-blue-900/10">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 py-2 border-b border-slate-50 mb-1">Filter by Role</p>
+                                {['All', 'Assistant Professor', 'Associate Professor', 'Professor', 'Lab Assistant', 'HOD'].map((role) => (
+                                    <button
+                                        key={role}
+                                        onClick={() => { setActiveDesignation(role); setShowFilterDropdown(false); }}
+                                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${activeDesignation === role ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-600 hover:bg-slate-50'}`}
+                                    >
+                                        {role === 'All' ? 'All Roles' : role}
+                                    </button>
+                                ))}
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* List */}
@@ -131,7 +182,7 @@ const Faculty = () => {
                             ) : staffList.length === 0 ? (
                                 <tr><td colSpan="5" className="p-8 text-center text-slate-500">No faculty members found.</td></tr>
                             ) : (
-                                staffList.map((staff) => (
+                                filteredStaff.map((staff) => (
                                     <tr key={staff.id} className="hover:bg-slate-50 transition-colors">
                                         <td className="p-4">
                                             <span className="font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded text-xs border border-blue-100 uppercase tracking-wider">

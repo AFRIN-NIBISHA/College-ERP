@@ -230,39 +230,42 @@ const Students = () => {
                     </div>
 
                     {/* Filters & Search */}
-                    <div className="glass-card p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center justify-between bg-white/60">
+                    <div className="glass-card p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center justify-between bg-white/60 shadow-sm border border-slate-200">
                         <div className="relative w-full md:w-96">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                             <input
                                 type="text"
-                                placeholder="Search by name or roll no..."
+                                placeholder="Search students..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:border-blue-500 transition-colors shadow-sm"
+                                className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:border-blue-500 transition-all text-sm outline-none"
                             />
                         </div>
                         <div className="flex gap-2 w-full md:w-auto relative">
                             <button
                                 onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                                className={`flex items-center gap-2 px-4 py-2 bg-white border rounded-lg transition-colors shadow-sm ${activeSection !== 'All' ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'}`}
+                                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-all text-sm font-medium ${activeSection !== 'All' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                             >
-                                <Filter size={18} />
-                                {activeSection === 'All' ? 'Filters' : `Section: ${activeSection}`}
+                                <Filter size={16} />
+                                {activeSection === 'All' ? 'All Sections' : `Section ${activeSection}`}
                             </button>
 
                             {showFilterDropdown && (
-                                <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-50 p-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 py-2">Filter by Section</p>
-                                    {['All', 'A', 'B', 'C'].map((sec) => (
-                                        <button
-                                            key={sec}
-                                            onClick={() => { setActiveSection(sec); setShowFilterDropdown(false); }}
-                                            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${activeSection === sec ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-50'}`}
-                                        >
-                                            {sec === 'All' ? 'All Sections' : `Section ${sec}`}
-                                        </button>
-                                    ))}
-                                </div>
+                                <>
+                                    <div className="fixed inset-0 z-40" onClick={() => setShowFilterDropdown(false)}></div>
+                                    <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 p-2 overflow-hidden shadow-blue-900/10">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 py-2 border-b border-slate-50 mb-1">Filter by Section</p>
+                                        {['All', 'A', 'B', 'C'].map((sec) => (
+                                            <button
+                                                key={sec}
+                                                onClick={() => { setActiveSection(sec); setShowFilterDropdown(false); }}
+                                                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${activeSection === sec ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-600 hover:bg-slate-50'}`}
+                                            >
+                                                {sec === 'All' ? 'All Sections' : `Section ${sec}`}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </>
                             )}
                         </div>
                     </div>
