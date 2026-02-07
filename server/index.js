@@ -1623,6 +1623,32 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
             return res.status(400).json({ message: 'Invalid status', received: status });
         }
 
+        // --- ENFORCE SEQUENTIAL APPROVAL ---
+        const currentCheck = await db.query("SELECT * FROM no_dues WHERE id = $1", [id]);
+        if (currentCheck.rows.length === 0) return res.status(404).json({ message: 'Request not found' });
+        const requestRow = currentCheck.rows[0];
+
+        if (status === 'Approved') {
+            if (updateField === 'staff_status') {
+                if (requestRow.office_status !== 'Approved') {
+                    return res.status(400).json({ message: 'Cannot approve Staff stage before Office approval' });
+                }
+            } else if (updateField === 'hod_status') {
+                if (requestRow.staff_status !== 'Approved') {
+                    return res.status(400).json({ message: 'Cannot approve HOD stage before Staff approval' });
+                }
+            } else if (updateField === 'principal_status') {
+                if (requestRow.hod_status !== 'Approved') {
+                    return res.status(400).json({ message: 'Cannot approve Principal stage before HOD approval' });
+                }
+            } else if (updateField.endsWith('_status') && !isStandardStage) {
+                // Subject wise approval
+                if (requestRow.office_status !== 'Approved') {
+                    return res.status(400).json({ message: 'Cannot approve subjects before Office approval' });
+                }
+            }
+        }
+
         // Update status and remarks
         try {
             // Dynamic column check: Ensure the column exists before updating
@@ -1659,43 +1685,6 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
             await db.query("UPDATE no_dues SET status = 'Rejected' WHERE id = $1", [id]);
             console.log("Status set to Rejected");
         } else {
-            // DYNAMICALLY check for all subject approvals
-            // Instead of a hardcoded list, we look at all keys in the row that end in _status 
-            // but are NOT the major stages.
-            const subjectColumns = Object.keys(r).filter(col =>
-                col.endsWith('_status') &&
-                !['office_status', 'staff_status', 'hod_status', 'principal_status', 'status'].includes(col)
-            );
-
-            console.log("Calculated current subject columns from DB row:", subjectColumns);
-
-            // Helper to create notification
-            const createNotification = async (userId, title, message, type = 'info') => {
-                try {
-                    if (!userId) return;
-                    await db.query(
-                        "INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)",
-                        [userId, title, message, type]
-                    );
-                } catch (err) {
-                    console.error("Notification Error:", err);
-                }
-            };
-
-            // ... Code to update status ...
-            // Fetch Student User ID for notification
-            const studentUserId = await getUserFromStudent(r.student_id);
-
-            // Notify Student on Rejection
-            if (status === 'Rejected') {
-                await createNotification(
-                    studentUserId,
-                    'No Due Request Rejected',
-                    `Your No Due request has been rejected by ${updateField.replace('_status', '').toUpperCase()}. Remarks: ${remarks || 'None'}`,
-                    'alert'
-                );
-            }
-
             // 1. Office Approved -> Notify Staff & Student
             if (updateField === 'office_status' && status === 'Approved') {
                 await createNotification(studentUserId, 'No Due Update', 'Office has approved your No Due request. Now awaiting Subject Staff approvals.', 'info');
@@ -1705,12 +1694,12 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
                 if (studRes.rows.length > 0) {
                     const { year, section } = studRes.rows[0];
                     const staffRes = await db.query(`
-                       SELECT DISTINCT st.user_id 
-                       FROM timetable t
-                       JOIN staff st ON t.staff_id = st.id
-                       WHERE t.year = $1 AND t.section = $2
-                       AND st.user_id IS NOT NULL
-                   `, [year, section]);
+                        SELECT DISTINCT st.user_id 
+                        FROM timetable t
+                        JOIN staff st ON t.staff_id = st.id
+                        WHERE t.year = $1 AND t.section = $2
+                        AND st.user_id IS NOT NULL
+                    `, [year, section]);
 
                     for (const row of staffRes.rows) {
                         await createNotification(
@@ -1723,27 +1712,53 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
                 }
             }
 
-            // Check if all subject approvals are done
-            const allSubjectsApproved = subjectColumns.every(col => r[col] === 'Approved');
+            // 2. Subject Approval -> Check if All Relevant Subjects are Done
+            const isSubjectField = updateField.endsWith('_status') && !['office_status', 'staff_status', 'hod_status', 'principal_status', 'status'].includes(updateField);
 
-            // 2. Subject Approval -> Check if All Done
-            if (status === 'Approved' && updateField.endsWith('_status') && !['office_status', 'hod_status', 'principal_status'].includes(updateField)) {
-                if (allSubjectsApproved) {
-                    // Update overall staff_status to Approved
-                    await db.query("UPDATE no_dues SET staff_status = 'Approved' WHERE id = $1", [id]);
-                    console.log("Overall staff_status updated to Approved");
+            if (status === 'Approved' && isSubjectField) {
+                // Get relevant subjects for THIS student's year/section
+                const studInfo = await db.query("SELECT year, section FROM students WHERE id = $1", [r.student_id]);
+                if (studInfo.rows.length > 0) {
+                    const { year, section } = studInfo.rows[0];
 
-                    await createNotification(studentUserId, 'No Due Update', 'All subject staffs have approved. Sent to HOD.', 'info');
+                    // Fetch subjects from timetable (matching frontend filtering logic)
+                    const subjectsRes = await db.query(`
+                        SELECT DISTINCT s.subject_code, s.subject_name 
+                        FROM timetable t 
+                        JOIN subjects s ON t.subject_id = s.id 
+                        WHERE t.year = $1 AND t.section = $2
+                    `, [year, section]);
 
-                    // Notify HOD
-                    const hodRes = await db.query("SELECT id FROM users WHERE role = 'hod'");
-                    for (const row of hodRes.rows) {
-                        await createNotification(
-                            row.id,
-                            'No Due Request',
-                            `All subjects approved for a student. HOD approval pending.`,
-                            'info'
-                        );
+                    const filteredSubjects = subjectsRes.rows.filter(sub => {
+                        const name = sub.subject_name.toLowerCase();
+                        return !name.includes('soft skill') && !name.includes('softskill') && !name.includes('nptel');
+                    });
+
+                    const relevantFields = filteredSubjects.map(sub =>
+                        sub.subject_code.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_status'
+                    );
+
+                    console.log(`Checking completion for student (${year}-${section}). Relevant subjects:`, relevantFields);
+
+                    const allApproved = relevantFields.every(f => r[f] === 'Approved' || f === updateField); // include current if not yet updated in 'r'
+
+                    if (allApproved && relevantFields.length > 0) {
+                        // Update overall staff_status to Approved
+                        await db.query("UPDATE no_dues SET staff_status = 'Approved' WHERE id = $1", [id]);
+                        console.log("Overall staff_status updated to Approved (Timetable-based check)");
+
+                        await createNotification(studentUserId, 'No Due Update', 'All subject staffs have approved. Sent to HOD.', 'info');
+
+                        // Notify HOD
+                        const hodRes = await db.query("SELECT id FROM users WHERE role = 'hod'");
+                        for (const row of hodRes.rows) {
+                            await createNotification(
+                                row.id,
+                                'No Due Request',
+                                `All subjects approved for a student. HOD approval pending.`,
+                                'info'
+                            );
+                        }
                     }
                 }
             }
