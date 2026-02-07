@@ -8,10 +8,10 @@ import { FileText, Download, Filter, Printer, FileSpreadsheet } from 'lucide-rea
 
 const Reports = () => {
     const { user } = useAuth();
-    const isStaff = user?.role === 'staff' || user?.role === 'admin';
+    const isStaff = ['staff', 'admin', 'hod', 'principal', 'office'].includes(user?.role);
 
-    const [activeTab, setActiveTab] = useState('students'); // no_due, students, attendance, marks, fees, staff
-    const [year, setYear] = useState(isStaff ? '3' : user?.year || '3'); // Default to 3rd year
+    const [activeTab, setActiveTab] = useState('no_due'); // Default to No Due
+    const [year, setYear] = useState(isStaff ? '3' : user?.year?.toString() || '1');
     const [section, setSection] = useState(isStaff ? 'A' : user?.section || 'A');
     const [month, setMonth] = useState('');
     const [statusFilter, setStatusFilter] = useState('All'); // For No Due: All, Completed, Pending
@@ -277,7 +277,16 @@ const Reports = () => {
                                                     <option value="">All Months</option>
                                                     <option value="1">January</option>
                                                     <option value="2">February</option>
-                                                    {/* ... continue internal if needed or keep compact */}
+                                                    <option value="3">March</option>
+                                                    <option value="4">April</option>
+                                                    <option value="5">May</option>
+                                                    <option value="6">June</option>
+                                                    <option value="7">July</option>
+                                                    <option value="8">August</option>
+                                                    <option value="9">September</option>
+                                                    <option value="10">October</option>
+                                                    <option value="11">November</option>
+                                                    <option value="12">December</option>
                                                 </select>
                                             </div>
                                         )}

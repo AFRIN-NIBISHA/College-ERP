@@ -1802,10 +1802,13 @@ app.post('/api/od/apply', async (req, res) => {
         }
 
         // Sanitize for DB (Convert empty string to null to avoid INT conversion errors)
+        // For Hour type, date_to should be same as date_from
+        const effectiveDateTo = (od_type === 'Hour' || !date_to) ? date_from : date_to;
+
         const sanitizedData = [
             student_id,
-            date_from,
-            date_to,
+            date_from || null,
+            effectiveDateTo || null,
             reason || null,
             (no_of_days === "" || no_of_days === undefined) ? null : no_of_days,
             (hours === "" || hours === undefined) ? null : hours,
