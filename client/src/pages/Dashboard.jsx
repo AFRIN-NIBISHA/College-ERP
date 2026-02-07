@@ -143,7 +143,13 @@ const Dashboard = () => {
                     {user?.role === 'student' && classInfo?.in_charge_name && (
                         <div className="relative z-10 text-right bg-white/10 p-3 rounded-2xl backdrop-blur-md border border-white/10 sm:bg-transparent sm:p-0 sm:border-none sm:backdrop-blur-none">
                             <p className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-wide mb-1">Class In-Charge</p>
-                            <p className="text-base sm:text-xl font-bold text-white mb-1 group-hover:text-blue-200 transition-colors truncate max-w-[150px] sm:max-w-full ml-auto">{classInfo.in_charge_name}</p>
+                            <p className="text-base sm:text-xl font-bold text-white mb-0.5 truncate max-w-[150px] sm:max-w-full ml-auto">{classInfo.in_charge_name}</p>
+                            <div className="flex items-center gap-1.5 justify-end mb-1">
+                                <div className={`w-1.5 h-1.5 rounded-full ${classInfo.live_status?.includes('Class') ? 'bg-emerald-400 animate-pulse' : classInfo.live_status === 'Absent' ? 'bg-rose-400' : 'bg-blue-300'}`}></div>
+                                <span className={`text-[10px] font-bold uppercase tracking-widest ${classInfo.live_status?.includes('Class') ? 'text-emerald-400' : classInfo.live_status === 'Absent' ? 'text-rose-400' : 'text-slate-300'}`}>
+                                    {classInfo.live_status || 'In Staffroom'}
+                                </span>
+                            </div>
                             <p className="text-xs sm:text-sm text-emerald-300 font-mono tracking-wide">{classInfo.in_charge_phone || 'Contact via Office'}</p>
                         </div>
                     )}

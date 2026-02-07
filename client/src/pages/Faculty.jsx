@@ -201,10 +201,16 @@ const Faculty = () => {
                                             </div>
                                         </td>
                                         <td className="p-4">
-                                            <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium border border-blue-100">
+                                            <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold border border-blue-100 italic">
                                                 {staff.designation}
                                             </span>
-                                            <p className="text-xs text-slate-400 mt-1">{staff.department}</p>
+                                            <div className="mt-2.5 flex items-center gap-2">
+                                                <div className={`w-2 h-2 rounded-full ${staff.live_status?.includes('Class') ? 'bg-emerald-500 animate-pulse' : staff.live_status === 'Absent' ? 'bg-rose-500' : 'bg-slate-300'}`}></div>
+                                                <span className={`text-[11px] font-bold ${staff.live_status?.includes('Class') ? 'text-emerald-600' : staff.live_status === 'Absent' ? 'text-rose-600' : 'text-slate-500'}`}>
+                                                    {staff.live_status || 'In Staffroom'}
+                                                </span>
+                                            </div>
+                                            <p className="text-[10px] text-slate-400 mt-1 font-medium">{staff.department}</p>
                                         </td>
                                         <td className="p-4">
                                             <div className="flex flex-col gap-1">

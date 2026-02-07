@@ -255,10 +255,58 @@ app.get('/api/subjects', async (req, res) => {
 });
 app.get('/api/staff', async (req, res) => {
     try {
-        const result = await db.query("SELECT * FROM staff ORDER BY staff_id");
-        res.json(result.rows);
+        const now = new Date();
+        const istOffset = 5.5 * 60 * 60 * 1000;
+        const istTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + istOffset);
+
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const currentDay = days[istTime.getDay()];
+        const hours = istTime.getHours();
+        const minutes = istTime.getMinutes();
+        const timeVal = hours * 60 + minutes;
+
+        let currentPeriod = null;
+        if (timeVal >= 525 && timeVal < 600) currentPeriod = 1; // 8:45 - 10:00 (Adjusted based on standard slots)
+        else if (timeVal >= 600 && timeVal < 650) currentPeriod = 2; // 10:00 - 10:50
+        else if (timeVal >= 660 && timeVal < 710) currentPeriod = 3; // 11:00 - 11:50
+        else if (timeVal >= 710 && timeVal < 765) currentPeriod = 4; // 11:50 - 12:45
+        else if (timeVal >= 810 && timeVal < 860) currentPeriod = 5; // 1:30 - 2:20
+        else if (timeVal >= 860 && timeVal < 910) currentPeriod = 6; // 2:20 - 3:10
+        else if (timeVal >= 910 && timeVal < 960) currentPeriod = 7; // 3:10 - 4:00
+        else if (timeVal >= 960 && timeVal < 1010) currentPeriod = 8; // 4:00 - 4:50
+
+        const query = `
+            SELECT 
+                s.*,
+                fa.status as attendance_status,
+                t.year as current_year,
+                t.section as current_section,
+                sub.subject_code as current_subject
+            FROM staff s
+            LEFT JOIN faculty_attendance fa ON s.id = fa.staff_id AND fa.date = CURRENT_DATE
+            LEFT JOIN timetable t ON s.id = t.staff_id AND t.day = $1 AND t.period = $2
+            LEFT JOIN subjects sub ON t.subject_id = sub.id
+            ORDER BY s.staff_id
+        `;
+
+        const result = await db.query(query, [currentDay, currentPeriod || 0]);
+
+        // Add a "live_status" field for frontend convenience
+        const enrichedRows = result.rows.map(row => {
+            let status = 'In Staffroom';
+            if (row.attendance_status === 'Absent') {
+                status = 'Absent';
+            } else if (row.current_year) {
+                status = `In Class (${row.current_year}${row.current_section})`;
+            } else if (row.attendance_status === 'On Duty') {
+                status = 'On Duty';
+            }
+            return { ...row, live_status: status };
+        });
+
+        res.json(enrichedRows);
     } catch (err) {
-        console.error(err);
+        console.error("Staff Fetch Error:", err);
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -2053,14 +2101,51 @@ app.get('/api/notifications', async (req, res) => {
 app.get('/api/class-details', async (req, res) => {
     const { year, section } = req.query;
     try {
+        const now = new Date();
+        const istOffset = 5.5 * 60 * 60 * 1000;
+        const istTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + istOffset);
+
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const currentDay = days[istTime.getDay()];
+        const hours = istTime.getHours();
+        const minutes = istTime.getMinutes();
+        const timeVal = hours * 60 + minutes;
+
+        let currentPeriod = 0;
+        if (timeVal >= 525 && timeVal < 600) currentPeriod = 1;
+        else if (timeVal >= 600 && timeVal < 650) currentPeriod = 2;
+        else if (timeVal >= 660 && timeVal < 710) currentPeriod = 3;
+        else if (timeVal >= 710 && timeVal < 765) currentPeriod = 4;
+        else if (timeVal >= 810 && timeVal < 860) currentPeriod = 5;
+        else if (timeVal >= 860 && timeVal < 910) currentPeriod = 6;
+        else if (timeVal >= 910 && timeVal < 960) currentPeriod = 7;
+        else if (timeVal >= 960 && timeVal < 1010) currentPeriod = 8;
+
         const result = await db.query(
-            `SELECT cd.*, s.name as in_charge_name, s.phone_number as in_charge_phone 
+            `SELECT cd.*, s.name as in_charge_name, s.phone_number as in_charge_phone,
+                    fa.status as attendance_status,
+                    t.year as current_year,
+                    t.section as current_section
              FROM class_details cd
              LEFT JOIN staff s ON cd.staff_id = s.id
-             WHERE cd.year = $1 AND cd.section = $2`,
-            [year, section]
+             LEFT JOIN faculty_attendance fa ON s.id = fa.staff_id AND fa.date = CURRENT_DATE
+             LEFT JOIN timetable t ON s.id = t.staff_id AND t.day = $1 AND t.period = $2
+             WHERE cd.year = $3 AND cd.section = $4`,
+            [currentDay, currentPeriod, year, section]
         );
-        res.json(result.rows[0] || {});
+
+        if (result.rows.length > 0) {
+            const row = result.rows[0];
+            let status = 'In Staffroom';
+            if (row.attendance_status === 'Absent') status = 'Absent';
+            else if (row.current_year) status = `In Class (${row.current_year}${row.current_section})`;
+            else if (row.attendance_status === 'On Duty') status = 'On Duty';
+
+            row.live_status = status;
+            res.json(row);
+        } else {
+            res.json({});
+        }
     } catch (err) {
         console.error("Class Details Error:", err);
         res.status(500).json({ message: 'Server error' });
