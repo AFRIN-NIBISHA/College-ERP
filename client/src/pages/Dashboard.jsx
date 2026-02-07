@@ -141,10 +141,10 @@ const Dashboard = () => {
 
                     {/* Only for Student: Show In-Charge Info */}
                     {user?.role === 'student' && classInfo?.in_charge_name && (
-                        <div className="relative z-10 hidden sm:block text-right">
-                            <p className="text-slate-400 text-xs font-bold uppercase tracking-wide mb-1">Class In-Charge</p>
-                            <p className="text-xl font-bold text-white mb-1">{classInfo.in_charge_name}</p>
-                            <p className="text-sm text-emerald-300 font-mono tracking-wide">{classInfo.in_charge_phone}</p>
+                        <div className="relative z-10 text-right bg-white/10 p-3 rounded-2xl backdrop-blur-md border border-white/10 sm:bg-transparent sm:p-0 sm:border-none sm:backdrop-blur-none">
+                            <p className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-wide mb-1">Class In-Charge</p>
+                            <p className="text-base sm:text-xl font-bold text-white mb-1 group-hover:text-blue-200 transition-colors truncate max-w-[150px] sm:max-w-full ml-auto">{classInfo.in_charge_name}</p>
+                            <p className="text-xs sm:text-sm text-emerald-300 font-mono tracking-wide">{classInfo.in_charge_phone || 'Contact via Office'}</p>
                         </div>
                     )}
 

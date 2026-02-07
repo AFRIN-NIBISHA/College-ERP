@@ -2054,7 +2054,10 @@ app.get('/api/class-details', async (req, res) => {
     const { year, section } = req.query;
     try {
         const result = await db.query(
-            "SELECT * FROM class_details WHERE year = $1 AND section = $2",
+            `SELECT cd.*, s.name as in_charge_name, s.phone_number as in_charge_phone 
+             FROM class_details cd
+             LEFT JOIN staff s ON cd.staff_id = s.id
+             WHERE cd.year = $1 AND cd.section = $2`,
             [year, section]
         );
         res.json(result.rows[0] || {});
