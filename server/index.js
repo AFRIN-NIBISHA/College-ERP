@@ -2020,8 +2020,8 @@ app.post('/api/login', async (req, res) => {
                 const sRes = await db.query("SELECT id, year, section FROM students WHERE user_id = $1", [user.id]);
                 if (sRes.rows.length > 0) {
                     profileId = sRes.rows[0].id;
-                    year = sRes.rows[0].year;
-                    section = sRes.rows[0].section;
+                    year = sRes.rows[0].year?.toString().trim();
+                    section = sRes.rows[0].section?.toString().trim().toUpperCase();
                 }
             } else if (['staff', 'hod', 'principal', 'office'].includes(user.role)) {
                 const stRes = await db.query("SELECT id FROM staff WHERE user_id = $1", [user.id]);
@@ -2078,8 +2078,8 @@ app.post('/api/login', async (req, res) => {
                     profileId: student.id, // THE MOST IMPORTANT FIELD
                     is_legacy: true,
                     name: student.name,
-                    year: student.year,
-                    section: student.section
+                    year: student.year?.toString().trim(),
+                    section: student.section?.toString().trim().toUpperCase()
                 }
             });
         }
@@ -2107,7 +2107,9 @@ app.get('/api/notifications', async (req, res) => {
 
 // --- CLASS DETAILS ---
 app.get('/api/class-details', async (req, res) => {
-    const { year, section } = req.query;
+    let { year, section } = req.query;
+    if (!year || !section) return res.json({});
+
     try {
         const now = new Date();
         const istOffset = 5.5 * 60 * 60 * 1000;
@@ -2130,7 +2132,8 @@ app.get('/api/class-details', async (req, res) => {
         else if (timeVal >= 960 && timeVal < 1010) currentPeriod = 8;
 
         const result = await db.query(
-            `SELECT cd.*, s.name as in_charge_name, s.phone_number as in_charge_phone,
+            `SELECT DISTINCT ON (cd.id)
+                    cd.*, s.name as in_charge_name, s.phone_number as in_charge_phone,
                     fa.status as attendance_status,
                     t.year as current_year,
                     t.section as current_section
@@ -2138,8 +2141,9 @@ app.get('/api/class-details', async (req, res) => {
              LEFT JOIN staff s ON cd.staff_id = s.id
              LEFT JOIN faculty_attendance fa ON s.id = fa.staff_id AND fa.date = CURRENT_DATE
              LEFT JOIN timetable t ON s.id = t.staff_id AND t.day = $1 AND t.period = $2
-             WHERE cd.year = $3 AND cd.section = $4`,
-            [currentDay, currentPeriod, year, section]
+             WHERE TRIM(cd.year::text) = TRIM($3::text) AND TRIM(LOWER(cd.section)) = TRIM(LOWER($4))
+             ORDER BY cd.id`,
+            [currentDay, currentPeriod, year.toString(), section]
         );
 
         if (result.rows.length > 0) {

@@ -50,19 +50,30 @@ const Dashboard = () => {
     useEffect(() => {
         const prepareData = async () => {
             if (user?.role === 'student') {
+                // If year/section are already in user object (from login)
                 if (user.year && user.section) {
-                    fetchClassInfo();
-                } else if (user.profileId) {
-                    // Fallback: Fetch student profile to get year/section
+                    try {
+                        const resClass = await axios.get(`/api/class-details?year=${user.year}&section=${user.section}`);
+                        if (resClass.data?.in_charge_name) {
+                            setClassInfo(resClass.data);
+                            return; // Success
+                        }
+                    } catch (err) {
+                        console.error("Initial fetch error", err);
+                    }
+                }
+
+                // Fallback: If year/section missing OR first fetch returned nothing
+                if (user.profileId) {
                     try {
                         const res = await axios.get(`/api/students?id=${user.profileId}`);
-                        const student = res.data[0]; // /api/students returns an array
+                        const student = res.data[0];
                         if (student && student.year && student.section) {
                             const resClass = await axios.get(`/api/class-details?year=${student.year}&section=${student.section}`);
                             setClassInfo(resClass.data);
                         }
                     } catch (err) {
-                        console.error("Dashboard Profile Fallback Error", err);
+                        console.error("Dashboard fallback error", err);
                     }
                 }
             }
