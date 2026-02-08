@@ -3,6 +3,7 @@ import { Users, GraduationCap, BookOpen, TrendingUp, X, Bell } from 'lucide-reac
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import PushNotificationManager from '../components/PushNotificationManager';
 
 const StatCard = ({ title, value, icon: Icon, color, trend }) => (
     <div className="glass-card p-6 rounded-3xl relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
@@ -130,6 +131,7 @@ const Dashboard = () => {
 
     return (
         <div className="space-y-10">
+            <PushNotificationManager />
             <div className="flex justify-between items-end">
                 <div>
                     <h2 className="text-4xl font-bold text-slate-800 tracking-tight mb-2">Dashboard Overview</h2>

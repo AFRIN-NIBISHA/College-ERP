@@ -4,7 +4,15 @@ const cors = require('cors');
 const db = require('./db');
 const cron = require('node-cron');
 const promoteYear = require('./promote_year');
+const webpush = require('web-push');
 require('dotenv').config();
+
+// Web Push Setup
+webpush.setVapidDetails(
+    process.env.VAPID_EMAIL || 'mailto:admin@example.com',
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -229,12 +237,37 @@ app.post('/api/admin/promote-students', async (req, res) => {
 // Helper: Create Notification
 const createNotification = async (userId, title, message, type = 'info') => {
     try {
-        if (!userId) return; // Can't notify if no user ID
+        if (!userId) return;
+
+        // 1. Save to Database
         await db.query(
             "INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)",
             [userId, title, message, type]
         );
         console.log(`Notification created for User ${userId}: ${title}`);
+
+        // 2. Send Push Notification to all registered devices for this user
+        const subRes = await db.query("SELECT subscription FROM push_subscriptions WHERE user_id = $1", [userId]);
+
+        const payload = JSON.stringify({
+            title: title,
+            body: message,
+            icon: '/logo192.png', // Optional: link to your app logo
+            data: { url: '/notifications' }
+        });
+
+        for (const row of subRes.rows) {
+            try {
+                await webpush.sendNotification(row.subscription, payload);
+                console.log(`Push sent to User ${userId}`);
+            } catch (pushErr) {
+                console.error(`Failed to send push to User ${userId}:`, pushErr.statusCode);
+                if (pushErr.statusCode === 410 || pushErr.statusCode === 404) {
+                    // Subscription expired or gone - remove it
+                    await db.query("DELETE FROM push_subscriptions WHERE subscription = $1", [JSON.stringify(row.subscription)]);
+                }
+            }
+        }
     } catch (err) {
         console.error("Error creating notification:", err);
     }
@@ -1483,13 +1516,8 @@ app.get('/api/no-due', async (req, res) => {
     try {
         let query = `
             SELECT 
-                nd.id, 
-                nd.semester, 
-                COALESCE(nd.office_status, '-') as office_status,
-                COALESCE(nd.staff_status, '-') as staff_status,
-                COALESCE(nd.hod_status, '-') as hod_status,
-                COALESCE(nd.principal_status, '-') as principal_status,
-                COALESCE(nd.status, 'Not Started') as nodue_overall_status,
+                nd.*, 
+                nd.status as nodue_overall_status,
                 COALESCE(nd.created_at, s.created_at) as created_at,
                 s.name, s.roll_no, s.year, s.section, s.department,
                 COALESCE(f.total_fee, 50000) as total_fee, 
@@ -1712,6 +1740,7 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
         // Check if all subject approvals are done for HOD eligibility
         const check = await db.query("SELECT * FROM no_dues WHERE id = $1", [id]);
         const r = check.rows[0];
+        const studentUserId = await getUserFromStudent(r.student_id);
 
         if (status === 'Rejected') {
             await db.query("UPDATE no_dues SET status = 'Rejected' WHERE id = $1", [id]);
@@ -2262,6 +2291,45 @@ app.get('/api/class-details', async (req, res) => {
     } catch (err) {
         console.error("Class Details Error:", err);
         res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// --- PUSH NOTIFICATION SUBSCRIPTION ---
+app.post('/api/notifications/subscribe', async (req, res) => {
+    const { userId, subscription } = req.body;
+    try {
+        if (!userId || !subscription) {
+            return res.status(400).json({ message: 'Missing userId or subscription' });
+        }
+
+        // Check if subscription already exists for this user to avoid duplicates
+        const check = await db.query(
+            "SELECT id FROM push_subscriptions WHERE user_id = $1 AND subscription = $2",
+            [userId, JSON.stringify(subscription)]
+        );
+
+        if (check.rows.length === 0) {
+            await db.query(
+                "INSERT INTO push_subscriptions (user_id, subscription) VALUES ($1, $2)",
+                [userId, JSON.stringify(subscription)]
+            );
+        }
+
+        res.status(201).json({ message: 'Subscribed successfully' });
+    } catch (err) {
+        console.error("Subscription Error:", err);
+        res.status(500).json({ message: 'Failed to subscribe' });
+    }
+});
+
+// TEST PUSH
+app.post('/api/test-push', async (req, res) => {
+    const { userId, title, message } = req.body;
+    try {
+        await createNotification(userId, title || 'Test Notification', message || 'This is a test push notification from ERP!');
+        res.json({ message: 'Push sent' });
+    } catch (err) {
+        res.status(500).json({ message: 'Failed', error: err.message });
     }
 });
 
