@@ -918,7 +918,7 @@ app.get('/api/marks', async (req, res) => {
     const { year, section, subject_code, student_id } = req.query;
     try {
         // 1. Get Students (Filter by ID if provided, otherwise Year/Section)
-        let sQuery = "SELECT id, name, roll_no FROM students WHERE 1=1";
+        let sQuery = "SELECT id, name, roll_no, year FROM students WHERE 1=1";
         const sParams = [];
 
         if (student_id) {
@@ -978,23 +978,31 @@ app.get('/api/marks', async (req, res) => {
             // If it's a single student, return their subject-wise marks
             if (student_id && students.rows.length === 1) {
                 // Return all subjects for this student
-                // First get all relevant subjects for this year to show even empty ones
-                const yearSemesters = students.rows[0].year === 2 ? [3, 4] : students.rows[0].year === 3 ? [5, 6] : students.rows[0].year === 1 ? [1, 2] : [7, 8];
-                const allSubjects = await db.query("SELECT * FROM subjects WHERE semester = ANY($1)", [yearSemesters]);
+                const student = students.rows[0];
+                const studentYear = parseInt(student.year);
+
+                // Determine relevant semesters
+                let yearSemesters = [1, 2, 3, 4, 5, 6, 7, 8]; // Default
+                if (studentYear === 1) yearSemesters = [1, 2];
+                else if (studentYear === 2) yearSemesters = [3, 4];
+                else if (studentYear === 3) yearSemesters = [5, 6];
+                else if (studentYear === 4) yearSemesters = [7, 8];
+
+                const allSubjects = await db.query("SELECT * FROM subjects WHERE semester = ANY($1) ORDER BY subject_code", [yearSemesters]);
 
                 const result = allSubjects.rows.map(sub => {
                     const markEntry = marks.rows.find(m => m.subject_code === sub.subject_code) || {};
                     return {
-                        ...students.rows[0],
+                        ...student,
                         subject_code: sub.subject_code,
                         subject_name: sub.subject_name,
-                        ia1: markEntry.ia1 || '',
-                        ia2: markEntry.ia2 || '',
-                        ia3: markEntry.ia3 || '',
-                        assign1: markEntry.assign1 || '',
-                        assign2: markEntry.assign2 || '',
-                        assign3: markEntry.assign3 || '',
-                        assign4: markEntry.assign4 || ''
+                        ia1: markEntry.ia1 ?? '',
+                        ia2: markEntry.ia2 ?? '',
+                        ia3: markEntry.ia3 ?? '',
+                        assign1: markEntry.assign1 ?? '',
+                        assign2: markEntry.assign2 ?? '',
+                        assign3: markEntry.assign3 ?? '',
+                        assign4: markEntry.assign4 ?? ''
                     };
                 });
                 return res.json(result);
