@@ -905,38 +905,83 @@ app.get('/api/marks', async (req, res) => {
         if (students.rows.length === 0) return res.json([]);
 
         // 2. Get Marks
-        let mQuery = "SELECT * FROM internal_marks WHERE subject_code = $1";
-        const mParams = [subject_code];
+        let mQuery = "SELECT m.*, s.subject_name FROM internal_marks m JOIN subjects s ON m.subject_code = s.subject_code WHERE 1=1";
+        const mParams = [];
+
+        if (subject_code) {
+            mParams.push(subject_code);
+            mQuery += ` AND m.subject_code = $${mParams.length}`;
+        }
 
         if (student_id) {
             mParams.push(student_id);
-            mQuery += ` AND student_id = $${mParams.length}`;
+            mQuery += ` AND m.student_id = $${mParams.length}`;
         } else {
             if (year && section) {
                 mParams.push(year);
                 mParams.push(section);
-                mQuery += ` AND student_id IN (SELECT id FROM students WHERE year = $${mParams.length - 1} AND section = $${mParams.length})`;
+                mQuery += ` AND m.student_id IN (SELECT id FROM students WHERE year = $${mParams.length - 1} AND section = $${mParams.length})`;
             }
         }
 
         const marks = await db.query(mQuery, mParams);
 
         // 3. Merge
-        const result = students.rows.map(student => {
-            const markEntry = marks.rows.find(m => m.student_id === student.id) || {};
-            return {
-                ...student,
-                ia1: markEntry.ia1 || '',
-                ia2: markEntry.ia2 || '',
-                ia3: markEntry.ia3 || '',
-                assign1: markEntry.assign1 || '',
-                assign2: markEntry.assign2 || '',
-                assign3: markEntry.assign3 || '',
-                assign4: markEntry.assign4 || ''
-            };
-        });
+        // If subject_code is provided, return student-centric list (original behavior)
+        if (subject_code) {
+            const result = students.rows.map(student => {
+                const markEntry = marks.rows.find(m => m.student_id === student.id) || {};
+                return {
+                    ...student,
+                    ia1: markEntry.ia1 || '',
+                    ia2: markEntry.ia2 || '',
+                    ia3: markEntry.ia3 || '',
+                    assign1: markEntry.assign1 || '',
+                    assign2: markEntry.assign2 || '',
+                    assign3: markEntry.assign3 || '',
+                    assign4: markEntry.assign4 || ''
+                };
+            });
+            return res.json(result);
+        } else {
+            // If no subject_code, return mark-centric list (for "all subjects" view)
+            // If it's a single student, return their subject-wise marks
+            if (student_id && students.rows.length === 1) {
+                // Return all subjects for this student
+                // First get all relevant subjects for this year to show even empty ones
+                const yearSemesters = students.rows[0].year === 2 ? [3, 4] : students.rows[0].year === 3 ? [5, 6] : students.rows[0].year === 1 ? [1, 2] : [7, 8];
+                const allSubjects = await db.query("SELECT * FROM subjects WHERE semester = ANY($1)", [yearSemesters]);
 
-        res.json(result);
+                const result = allSubjects.rows.map(sub => {
+                    const markEntry = marks.rows.find(m => m.subject_code === sub.subject_code) || {};
+                    return {
+                        ...students.rows[0],
+                        subject_code: sub.subject_code,
+                        subject_name: sub.subject_name,
+                        ia1: markEntry.ia1 || '',
+                        ia2: markEntry.ia2 || '',
+                        ia3: markEntry.ia3 || '',
+                        assign1: markEntry.assign1 || '',
+                        assign2: markEntry.assign2 || '',
+                        assign3: markEntry.assign3 || '',
+                        assign4: markEntry.assign4 || ''
+                    };
+                });
+                return res.json(result);
+            } else {
+                // If it's for a class, return everything (maybe not used yet, but good to have)
+                // Flatten: Student Name, Subject Name, Marks
+                const result = marks.rows.map(m => {
+                    const student = students.rows.find(s => s.id === m.student_id);
+                    return {
+                        ...m,
+                        name: student?.name,
+                        roll_no: student?.roll_no
+                    };
+                });
+                return res.json(result);
+            }
+        }
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Server error" });

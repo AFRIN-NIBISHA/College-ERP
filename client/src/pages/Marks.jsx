@@ -30,7 +30,7 @@ const Marks = () => {
     }, [year]);
 
     useEffect(() => {
-        if (subject) {
+        if (subject || user?.role === 'student') {
             fetchMarks();
         }
     }, [year, section, subject]);
@@ -55,7 +55,11 @@ const Marks = () => {
     const fetchMarks = async () => {
         setIsLoading(true);
         try {
-            let url = `/api/marks?year=${year}&section=${section}&subject_code=${subject}`;
+            let url = `/api/marks?year=${year}&section=${section}`;
+
+            if (subject) {
+                url += `&subject_code=${subject}`;
+            }
 
             // Privacy: Student sees only own marks
             if (user?.role === 'student' && user?.profileId) {
@@ -122,8 +126,9 @@ const Marks = () => {
                 {isStaff && (
                     <button
                         onClick={handleSave}
-                        disabled={isSaving}
-                        className="bg-blue-600 hover:bg-blue-500 text-white px-5 sm:px-6 py-2 sm:py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/25 disabled:opacity-70 text-sm sm:text-base font-semibold"
+                        disabled={isSaving || !subject}
+                        className="bg-blue-600 hover:bg-blue-500 text-white px-5 sm:px-6 py-2 sm:py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/25 disabled:opacity-50 text-sm sm:text-base font-semibold"
+                        title={!subject ? "Select a subject to enable saving" : ""}
                     >
                         <Save size={18} className="sm:w-5 sm:h-5" />
                         {isSaving ? 'Saving...' : 'Save Marks'}
@@ -139,7 +144,7 @@ const Marks = () => {
                         className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 border rounded-xl transition-all text-sm font-semibold ${subject || year || section ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                     >
                         <Filter size={16} />
-                        <span className="truncate max-w-[150px]">{subject ? `Filter: ${subject}` : 'Filter Students'}</span>
+                        <span className="truncate max-w-[150px]">{subject ? `Filter: ${subject}` : 'All Subjects'}</span>
                     </button>
 
                     {showFilterDropdown && (
@@ -154,7 +159,7 @@ const Marks = () => {
                                             onChange={(e) => setSubject(e.target.value)}
                                             className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-3 py-2.5 outline-none focus:border-blue-500 text-sm font-medium"
                                         >
-                                            <option value="">Choose Subject</option>
+                                            <option value="">All Subjects (View Only)</option>
                                             {subjects.map(s => (
                                                 <option key={s.id} value={s.subject_code}>{s.subject_code} - {s.subject_name}</option>
                                             ))}
@@ -204,7 +209,11 @@ const Marks = () => {
                 <div className="h-4 md:h-6 w-px bg-slate-200 hidden md:block"></div>
 
                 <div className="text-xs sm:text-sm text-slate-500 font-medium text-center md:text-left">
-                    Showing <span className="text-blue-600 font-bold">{students.length}</span> Students in <span className="text-slate-700 font-bold">Year {year}{section}</span>
+                    {subject ? (
+                        <>Showing <span className="text-blue-600 font-bold">{students.length}</span> Students in <span className="text-slate-700 font-bold">Year {year}{section}</span></>
+                    ) : (
+                        <>Showing <span className="text-blue-600 font-bold">All Subject</span> Marks</>
+                    )}
                 </div>
             </div>
 
@@ -225,8 +234,8 @@ const Marks = () => {
                             <tr>
                                 <th className="p-3 sm:p-4 border-b border-r border-slate-200 w-48 sm:w-64 sticky left-0 bg-slate-50 z-40 text-slate-600 font-bold text-xs sm:text-sm">
                                     <div className="flex items-center gap-2">
-                                        <Search size={14} className="text-slate-400" />
-                                        Student Info
+                                        <BookOpen size={14} className="text-slate-400" />
+                                        {subject ? 'Student Info' : 'Subject Info'}
                                     </div>
                                 </th>
                                 <th className="p-2 border-b border-r border-slate-200 w-24 text-center text-slate-600 font-bold text-[10px] sm:text-xs bg-blue-50/50 uppercase tracking-wider">IA 1 (50)</th>
@@ -260,8 +269,12 @@ const Marks = () => {
                                     <tr key={student.id} className="hover:bg-blue-50/30 transition-colors group">
                                         <td className="p-3 border-r border-slate-100 sticky left-0 bg-white group-hover:bg-blue-50/30 z-20 border-b">
                                             <div className="flex flex-col">
-                                                <span className="font-bold text-slate-800 text-sm truncate max-w-[150px] sm:max-w-full">{student.name}</span>
-                                                <span className="text-[10px] sm:text-xs text-slate-400 font-mono tracking-tighter">{student.roll_no}</span>
+                                                <span className="font-bold text-slate-800 text-sm truncate max-w-[150px] sm:max-w-full">
+                                                    {subject ? student.name : student.subject_name}
+                                                </span>
+                                                <span className="text-[10px] sm:text-xs text-slate-400 font-mono tracking-tighter">
+                                                    {subject ? student.roll_no : student.subject_code}
+                                                </span>
                                             </div>
                                         </td>
 
