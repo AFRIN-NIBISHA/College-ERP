@@ -199,6 +199,25 @@ const initDb = async () => {
             ALTER TABLE timetable ADD CONSTRAINT timetable_subject_id_fkey FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE;
         `);
         console.log("Schema verified/updated.");
+
+        // Ensure all students have user accounts for push notifications
+        const orphanStudents = await db.query("SELECT id, roll_no, name FROM students WHERE user_id IS NULL");
+        if (orphanStudents.rows.length > 0) {
+            console.log(`Fixing ${orphanStudents.rows.length} orphan students...`);
+            for (const s of orphanStudents.rows) {
+                const username = s.roll_no.toLowerCase();
+                const studentUser = await db.query("SELECT id FROM users WHERE username = $1", [username]);
+                let uid;
+                if (studentUser.rows.length > 0) {
+                    uid = studentUser.rows[0].id;
+                } else {
+                    const newUser = await db.query("INSERT INTO users (username, password, role) VALUES ($1, $2, 'student') RETURNING id", [username, s.roll_no]);
+                    uid = newUser.rows[0].id;
+                }
+                await db.query("UPDATE students SET user_id = $1 WHERE id = $2", [uid, s.id]);
+            }
+            console.log("All orphan students fixed.");
+        }
     } catch (err) {
         console.error("Schema init error:", err);
     }
