@@ -1150,13 +1150,17 @@ app.post('/api/admin/seed', async (req, res) => {
             { code: "CS3481", name: "DBMS LABORATORY", sem: 4 },
             { code: "CS3401_LAB", name: "ALGORITHMS LABORATORY", sem: 4 },
             { code: "SOFTSKILL", name: "SOFTSKILL TRAINING", sem: 4 },
-            { code: "CCS336_STA", name: "SOFTWARE TESTING AND AUTOMATION", sem: 6 },
-            { code: "CCS336_CSM", name: "CLOUD SERVICE MANAGEMENT", sem: 6 },
+            { code: "CCS336", name: "SOFTWARE TESTING AND AUTOMATION", sem: 6 },
             { code: "CCS356", name: "OBJECT ORIENTED SOFTWARE ENGINEERING", sem: 6 },
             { code: "OBT352", name: "FOOD NUTRIENTS AND HEALTH", sem: 6 },
             { code: "CCS354", name: "NETWORK SECURITY", sem: 6 },
-            { code: "CS3691_LAB", name: "EMBEDDED SYSTEMS AND IOT LAB", sem: 6 },
-            { code: "CCS356_LAB", name: "OOSE LABORATORY", sem: 6 }
+            { code: "CS3491_2", name: "EMBEDDED SYSTEMS AND IOT", sem: 6 },
+            { code: "LAB4", name: "OBJECT ORIENTED SOFTWARE ENGINEERING LAB", sem: 6 },
+            { code: "LIB", name: "LIBRARY", sem: 6 },
+            { code: "SEM", name: "SEMINAR", sem: 6 },
+            { code: "CO", name: "COUNSELING", sem: 6 },
+            { code: "PL", name: "PLACEMENT", sem: 6 },
+            { code: "NPTEL", name: "NPTEL", sem: 4 }
         ];
 
         let subjectCount = 0;
@@ -1247,15 +1251,22 @@ app.post('/api/admin/seed-timetable', async (req, res) => {
             { code: "CS3492", name: "DATABASE MANAGEMENT SYSTEM", sem: 4 },
             { code: "GE3451", name: "ENVIRONMENTAL SCIENCES AND SUSTAINABILITY", sem: 4 },
             { code: "NM", name: "NAAN MUDHALVAN", sem: 4 },
-            { code: "LAB1", name: "DATABASE MANAGEMENT SYSTEM LABORATORY", sem: 4 },
-            { code: "LAB2", name: "OPERATING SYSTEMS LABORATORY", sem: 4 },
-            { code: "LAB3", name: "SOFTSKILL TRAINING", sem: 4 },
+            { code: "CS3491_LAB", name: "AIML LABORATORY", sem: 4 },
+            { code: "CS3461", name: "OPERATING SYSTEMS LABORATORY", sem: 4 },
+            { code: "CS3481", name: "DBMS LABORATORY", sem: 4 },
+            { code: "CS3401_LAB", name: "ALGORITHMS LABORATORY", sem: 4 },
+            { code: "SOFTSKILL", name: "SOFTSKILL TRAINING", sem: 4 },
             { code: "CCS336", name: "SOFTWARE TESTING AND AUTOMATION", sem: 6 },
             { code: "CCS356", name: "OBJECT ORIENTED SOFTWARE ENGINEERING", sem: 6 },
             { code: "OBT352", name: "FOOD NUTRIENTS AND HEALTH", sem: 6 },
             { code: "CCS354", name: "NETWORK SECURITY", sem: 6 },
             { code: "CS3491_2", name: "EMBEDDED SYSTEMS AND IOT", sem: 6 },
-            { code: "LAB4", name: "OBJECT ORIENTED SOFTWARE ENGINEERING LAB", sem: 6 }
+            { code: "LAB4", name: "OBJECT ORIENTED SOFTWARE ENGINEERING LAB", sem: 6 },
+            { code: "LIB", name: "LIBRARY", sem: 6 },
+            { code: "SEM", name: "SEMINAR", sem: 6 },
+            { code: "CO", name: "COUNSELING", sem: 6 },
+            { code: "PL", name: "PLACEMENT", sem: 6 },
+            { code: "NPTEL", name: "NPTEL", sem: 4 }
         ];
 
         let subjectAdded = 0;
@@ -1296,23 +1307,23 @@ app.post('/api/admin/seed-timetable', async (req, res) => {
 
         // Year 3 (Sem 6) - Based on Image 3 (Section A)
         const patternYear3 = {
-            'Monday': ['CCS336_STA', 'CCS354', 'CCS336_STA', 'CCS336_STA', 'OBT352', 'NM', 'CCS356', 'CS3691'],
-            'Tuesday': ['CS3691', 'CCS356', 'CCS336_STA', 'LAB3', 'CCS354', 'CCS336_STA', 'CCS356', 'CS3691'],
-            'Wednesday': ['CCS354', 'CCS336_STA', 'CCS356', 'CS3691', 'CS3691', 'CCS336_STA', 'OBT352', 'LAB4'],
-            'Thursday': ['OBT352', 'CCS354', 'CS3691', 'CCS336_STA', 'CCS336_STA', 'OBT352', 'CS3691', 'CCS356'],
-            'Friday': ['CCS356', 'CCS336_STA', 'CCS354', 'CCS336_STA', 'CCS336_STA', 'CCS336_STA', 'CCS336_STA', 'OBT352']
+            'Monday': ['CCS336', 'CCS354', 'CCS336', 'CCS336', 'CO', 'NM', 'CCS356', 'CS3491_2'],
+            'Tuesday': ['CS3491_2', 'CCS356', 'CCS336', 'LIB', 'CCS354', 'CCS336', 'CCS356', 'CS3491_2'],
+            'Wednesday': ['CCS354', 'CCS336', 'CCS356', 'CS3491_2', 'CS3491_2', 'CCS336', 'SEM', 'LAB4'],
+            'Thursday': ['LIB', 'CCS354', 'CS3491_2', 'CCS336', 'CCS336', 'CO', 'CS3491_2', 'CCS356'],
+            'Friday': ['CCS356', 'CCS336', 'CCS354', 'LIB', 'PL', 'CCS336', 'CCS336', 'OBT352']
         };
 
         const staffMap = {
             'CS3452': 'EDWIN', 'CS3491': 'STEPHY', 'CS3451': 'RAJU',
             'CS3401': 'SAHAYA', 'CS3492': 'MONISHA', 'GE3451': 'JEBA',
-            'NM': 'DHANYA', 'LAB1': 'MONISHA', 'LAB1_ALG': 'SAHAYA',
-            'LAB1_AIML': 'STEPHY', 'LAB2': 'RAJU', 'LAB3': 'Bobby',
+            'NM': 'DHANYA', 'LAB1': 'MONISHA', 'LAB2': 'RAJU', 'LAB3': 'Bobby',
             'NPTEL': 'MONISHA',
 
-            'CCS336': 'BINISHA', 'CCS356': 'SHEEBA', 'OBT352': 'ARUN',
+            'CCS336': 'BINISHA', 'CCS356': 'SHEEBA', 'OBT352': 'ARUN VENKADESH',
             'CCS354': 'RAJA', 'CS3491_2': 'ABISHA', 'CS3691': 'ABISHA',
-            'LAB4': 'ANTO', 'Softskill': 'Bobby'
+            'LAB4': 'ANTO', 'LIB': 'Demo Staff', 'SEM': 'Demo Staff',
+            'CO': 'Demo Staff', 'PL': 'Demo Staff'
         };
 
         let count = 0;
