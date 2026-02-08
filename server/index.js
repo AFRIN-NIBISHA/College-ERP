@@ -256,7 +256,10 @@ app.post('/api/admin/promote-students', async (req, res) => {
 // Helper: Create Notification
 const createNotification = async (userId, title, message, type = 'info') => {
     try {
-        if (!userId) return;
+        if (!userId) {
+            console.log(`Skipping notification: No userId provided for "${title}"`);
+            return;
+        }
 
         // 1. Save to Database
         await db.query(
@@ -1782,12 +1785,18 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
                     `, [year, section]);
 
                     for (const row of staffRes.rows) {
-                        await createNotification(
-                            row.user_id,
-                            'No Due Request',
-                            `Clearance request for Class ${year}-${section} is ready for subject approval.`,
-                            'info'
-                        );
+                        try {
+                            if (row.user_id) {
+                                await createNotification(
+                                    row.user_id,
+                                    'No Due Request',
+                                    `Clearance request for Class ${year}-${section} is ready for subject approval.`,
+                                    'info'
+                                );
+                            }
+                        } catch (notifErr) {
+                            console.error("Failed to notify staff:", notifErr);
+                        }
                     }
                 }
             }
