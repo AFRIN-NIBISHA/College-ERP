@@ -5,7 +5,8 @@ import { Save, Search, Filter, BookOpen } from 'lucide-react';
 
 const Marks = () => {
     const { user } = useAuth();
-    const isStaff = user?.role === 'staff' || user?.role === 'admin';
+    const isStaff = user?.role !== 'student';
+    const isStudent = user?.role === 'student';
 
     // Filters
     const [year, setYear] = useState('2');
@@ -43,8 +44,8 @@ const Marks = () => {
             const filteredSubjects = res.data.filter(s => yearSemesters.includes(s.semester));
             setSubjects(filteredSubjects);
 
-            // Set default subject if available
-            if (filteredSubjects.length > 0 && !subject) {
+            // Set default subject if available (only for staff who need to enter marks)
+            if (filteredSubjects.length > 0 && !subject && isStaff) {
                 setSubject(filteredSubjects[0].subject_code);
             }
         } catch (err) {
@@ -121,7 +122,9 @@ const Marks = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">Internal Marks</h2>
-                    <p className="text-xs sm:text-sm text-slate-500">Manage internal assessments & assignments</p>
+                    <p className="text-xs sm:text-sm text-slate-500">
+                        {isStudent ? `Academic Record for ${user.name} (${user.username})` : 'Manage internal assessments & assignments'}
+                    </p>
                 </div>
                 {isStaff && (
                     <button
@@ -136,86 +139,88 @@ const Marks = () => {
                 )}
             </div>
 
-            {/* Filters */}
-            <div className="glass-card p-3 sm:p-4 rounded-xl flex flex-col md:flex-row gap-3 sm:gap-4 items-center bg-white/60 shadow-sm border border-slate-200">
-                <div className="flex gap-2 w-full md:w-auto relative">
-                    <button
-                        onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                        className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 border rounded-xl transition-all text-sm font-semibold ${subject || year || section ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-                    >
-                        <Filter size={16} />
-                        <span className="truncate max-w-[150px]">{subject ? `Filter: ${subject}` : 'All Subjects'}</span>
-                    </button>
+            {/* Filters - Only for Staff */}
+            {isStaff && (
+                <div className="glass-card p-3 sm:p-4 rounded-xl flex flex-col md:flex-row gap-3 sm:gap-4 items-center bg-white/60 shadow-sm border border-slate-200">
+                    <div className="flex gap-2 w-full md:w-auto relative">
+                        <button
+                            onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 border rounded-xl transition-all text-sm font-semibold ${subject || year || section ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                        >
+                            <Filter size={16} />
+                            <span className="truncate max-w-[150px]">{subject ? `Filter: ${subject}` : 'All Subjects'}</span>
+                        </button>
 
-                    {showFilterDropdown && (
-                        <>
-                            <div className="fixed inset-0 z-40" onClick={() => setShowFilterDropdown(false)}></div>
-                            <div className="absolute top-full left-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-4 sm:p-5 shadow-blue-900/10 scale-in-center">
-                                <div className="space-y-4">
-                                    <div>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Select Subject</p>
-                                        <select
-                                            value={subject}
-                                            onChange={(e) => setSubject(e.target.value)}
-                                            className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-3 py-2.5 outline-none focus:border-blue-500 text-sm font-medium"
+                        {showFilterDropdown && (
+                            <>
+                                <div className="fixed inset-0 z-40" onClick={() => setShowFilterDropdown(false)}></div>
+                                <div className="absolute top-full left-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-4 sm:p-5 shadow-blue-900/10 scale-in-center">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Select Subject</p>
+                                            <select
+                                                value={subject}
+                                                onChange={(e) => setSubject(e.target.value)}
+                                                className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-3 py-2.5 outline-none focus:border-blue-500 text-sm font-medium"
+                                            >
+                                                <option value="">All Subjects (View Only)</option>
+                                                {subjects.map(s => (
+                                                    <option key={s.id} value={s.subject_code}>{s.subject_code} - {s.subject_name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                                            <div>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Year</p>
+                                                <select
+                                                    value={year}
+                                                    onChange={(e) => setYear(e.target.value)}
+                                                    className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-3 py-2.5 outline-none focus:border-blue-500 text-sm font-medium"
+                                                >
+                                                    <option value="1">1st Year</option>
+                                                    <option value="2">2nd Year</option>
+                                                    <option value="3">3rd Year</option>
+                                                    <option value="4">4th Year</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Section</p>
+                                                <select
+                                                    value={section}
+                                                    onChange={(e) => setSection(e.target.value)}
+                                                    className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-3 py-2.5 outline-none focus:border-blue-500 text-sm font-medium"
+                                                >
+                                                    <option value="A">Sec A</option>
+                                                    <option value="B">Sec B</option>
+                                                    <option value="C">Sec C</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            onClick={() => setShowFilterDropdown(false)}
+                                            className="w-full py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98]"
                                         >
-                                            <option value="">All Subjects (View Only)</option>
-                                            {subjects.map(s => (
-                                                <option key={s.id} value={s.subject_code}>{s.subject_code} - {s.subject_name}</option>
-                                            ))}
-                                        </select>
+                                            Apply Filters
+                                        </button>
                                     </div>
-
-                                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Year</p>
-                                            <select
-                                                value={year}
-                                                onChange={(e) => setYear(e.target.value)}
-                                                className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-3 py-2.5 outline-none focus:border-blue-500 text-sm font-medium"
-                                            >
-                                                <option value="1">1st Year</option>
-                                                <option value="2">2nd Year</option>
-                                                <option value="3">3rd Year</option>
-                                                <option value="4">4th Year</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Section</p>
-                                            <select
-                                                value={section}
-                                                onChange={(e) => setSection(e.target.value)}
-                                                className="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-3 py-2.5 outline-none focus:border-blue-500 text-sm font-medium"
-                                            >
-                                                <option value="A">Sec A</option>
-                                                <option value="B">Sec B</option>
-                                                <option value="C">Sec C</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        onClick={() => setShowFilterDropdown(false)}
-                                        className="w-full py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98]"
-                                    >
-                                        Apply Filters
-                                    </button>
                                 </div>
-                            </div>
-                        </>
-                    )}
-                </div>
+                            </>
+                        )}
+                    </div>
 
-                <div className="h-4 md:h-6 w-px bg-slate-200 hidden md:block"></div>
+                    <div className="h-4 md:h-6 w-px bg-slate-200 hidden md:block"></div>
 
-                <div className="text-xs sm:text-sm text-slate-500 font-medium text-center md:text-left">
-                    {subject ? (
-                        <>Showing <span className="text-blue-600 font-bold">{students.length}</span> Students in <span className="text-slate-700 font-bold">Year {year}{section}</span></>
-                    ) : (
-                        <>Showing <span className="text-blue-600 font-bold">All Subject</span> Marks</>
-                    )}
+                    <div className="text-xs sm:text-sm text-slate-500 font-medium text-center md:text-left">
+                        {subject ? (
+                            <>Showing <span className="text-blue-600 font-bold">{students.length}</span> Students in <span className="text-slate-700 font-bold">Year {year}{section}</span></>
+                        ) : (
+                            <>Showing <span className="text-blue-600 font-bold">All Subject</span> Marks</>
+                        )}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Hint for mobile */}
             <div className="md:hidden flex items-center justify-center gap-2 py-1">
