@@ -291,12 +291,15 @@ const Timetable = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {(() => {
-                                // Calculate unique subjects currently in the timetable
-                                const visibleSubjectIds = [...new Set(timetable.filter(t => t.subject_id || t.subjectId).map(t => t.subject_id || t.subjectId))];
+                                // Determine current semester based on year
+                                const currentSem = parseInt(year) * 2;
+
+                                // Filter subjects for this year's sem
+                                const relevantSubjects = subjects.filter(s => s.semester === currentSem);
 
                                 // Map to subject details
-                                const summaryData = visibleSubjectIds.map((subId, index) => {
-                                    const subject = subjects.find(s => s.id == subId) || {};
+                                const summaryData = relevantSubjects.map((subject, index) => {
+                                    const subId = subject.id;
 
                                     // Find staff assigned to this subject in the current timetable
                                     const assignedStaffIds = [...new Set(timetable
@@ -309,14 +312,13 @@ const Timetable = () => {
                                     }).filter(Boolean).join(', ');
 
                                     return {
-                                        code: subject.code || 'N/A',
-                                        name: subject.name || 'Unknown Subject',
-                                        staff: staffNames || 'Not Assigned',
-                                        credits: 3, // Default
-                                        isValid: !!subject.id // Mark layout
+                                        code: subject.code || subject.subject_code || 'N/A',
+                                        name: subject.name || subject.subject_name || 'Unknown Subject',
+                                        staff: staffNames || 'TBA',
+                                        credits: subject.credits || 3,
+                                        isValid: true
                                     };
                                 })
-                                    .filter(item => item.isValid) // Hide N/A rows
                                     .sort((a, b) => a.code.localeCompare(b.code));
 
                                 if (summaryData.length === 0) {

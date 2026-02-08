@@ -1282,30 +1282,32 @@ app.post('/api/admin/seed-timetable', async (req, res) => {
 
         const sections = ['A', 'B'];
 
-        // Year 2 (Sem 4)
+        // Year 2 (Sem 4) - Based on Image 1 (Section B)
         const patternYear2 = {
-            'Monday': ['CS3401', 'CS3492', 'CS3452', 'CS3451', 'LAB1', 'LAB1', 'LAB3', 'CS3491'],
-            'Tuesday': ['CS3452', 'NM', 'NM', 'CS3491', 'LAB1', 'NM', 'CS3452', 'CS3401'],
-            'Wednesday': ['CS3491', 'GE3451', 'CS3401', 'CS3492', 'LAB2', 'LAB2', 'CS3452', 'NM'],
-            'Thursday': ['CS3451', 'CS3492', 'CS3401', 'CS3491', 'CS3452', 'LAB3', 'CS3451', 'GE3451'],
-            'Friday': ['CS3492', 'CS3451', 'CS3492', 'CS3452', 'CS3401', 'GE3451', 'CS3451', 'CS3491']
+            'Monday': ['CS3401', 'CS3492', 'CS3452', 'CS3451', 'CS3401', 'CS3451', 'LAB3', 'CS3491'],
+            'Tuesday': ['CS3452', 'NM', 'NM', 'NM', 'LAB1_AIML', 'LAB1_AIML', 'CS3452', 'CS3401'],
+            'Wednesday': ['CS3492', 'GE3451', 'CS3491', 'CS3492', 'LAB1_ALG', 'LAB1_ALG', 'CS3452', 'NPTEL'],
+            'Thursday': ['CS3451', 'CS3492', 'CS3401', 'CS3491', 'CS3452', 'LAB2', 'LAB2', 'LAB2'],
+            'Friday': ['CS3491', 'CS3451', 'CS3492', 'GE3451', 'CS3451', 'LAB1', 'LAB1', 'LAB1']
         };
 
-        // Year 3 (Sem 6)
+        // Year 3 (Sem 6) - Based on Image 3 (Section A)
         const patternYear3 = {
-            'Monday': ['CCS336', 'CCS354', 'CCS336', 'CCS336', 'OBT352', 'NM', 'CCS356', 'CS3691'],
-            'Tuesday': ['CS3691', 'CCS356', 'CCS336', 'Softskill', 'CCS354', 'CCS336', 'CCS356', 'CS3691'],
-            'Wednesday': ['CCS354', 'CCS336', 'CCS356', 'CS3691', 'CS3691', 'CCS336', 'OBT352', 'LAB4'],
-            'Thursday': ['OBT352', 'CCS354', 'CS3691', 'CCS336', 'CCS336', 'OBT352', 'CS3691', 'CCS356'],
-            'Friday': ['CCS356', 'CCS336', 'CCS354', 'NS', 'CCS336', 'CCS336', 'CCS336', 'OBT352']
+            'Monday': ['CCS336_STA', 'CCS354', 'CCS336_STA', 'CCS336_STA', 'OBT352', 'NM', 'CCS356', 'CS3691'],
+            'Tuesday': ['CS3691', 'CCS356', 'CCS336_STA', 'LAB3', 'CCS354', 'CCS336_STA', 'CCS356', 'CS3691'],
+            'Wednesday': ['CCS354', 'CCS336_STA', 'CCS356', 'CS3691', 'CS3691', 'CCS336_STA', 'OBT352', 'LAB4'],
+            'Thursday': ['OBT352', 'CCS354', 'CS3691', 'CCS336_STA', 'CCS336_STA', 'OBT352', 'CS3691', 'CCS356'],
+            'Friday': ['CCS356', 'CCS336_STA', 'CCS354', 'CCS336_STA', 'CCS336_STA', 'CCS336_STA', 'CCS336_STA', 'OBT352']
         };
 
         const staffMap = {
-            'CS3452': 'ARUN', 'CS3491': 'STEPHY', 'CS3451': 'RAJU',
-            'CS3401': 'SAHAYA', 'CS3492': 'MONISHA', 'GE3451': 'JOHNCY',
-            'NM': 'DHANYA', 'LAB1': 'MONISHA', 'LAB2': 'RAJU', 'LAB3': 'Bobby',
+            'CS3452': 'EDWIN', 'CS3491': 'STEPHY', 'CS3451': 'RAJU',
+            'CS3401': 'SAHAYA', 'CS3492': 'MONISHA', 'GE3451': 'JEBA',
+            'NM': 'DHANYA', 'LAB1': 'MONISHA', 'LAB1_ALG': 'SAHAYA',
+            'LAB1_AIML': 'STEPHY', 'LAB2': 'RAJU', 'LAB3': 'Bobby',
+            'NPTEL': 'MONISHA',
 
-            'CCS336': 'BINISHA', 'CCS356': 'SHEEBA', 'OBT352': 'SINDU',
+            'CCS336': 'BINISHA', 'CCS356': 'SHEEBA', 'OBT352': 'ARUN',
             'CCS354': 'RAJA', 'CS3491_2': 'ABISHA', 'CS3691': 'ABISHA',
             'LAB4': 'ANTO', 'Softskill': 'Bobby'
         };
