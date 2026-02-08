@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const db = require('./db');
+const cron = require('node-cron');
+const promoteYear = require('./promote_year');
 require('dotenv').config();
 
 const app = express();
@@ -195,6 +197,34 @@ const initDb = async () => {
 };
 
 initDb();
+
+// --- AUTOMATION: Annual Student Promotion ---
+// Runs at 00:00 on June 1st every year
+cron.schedule('0 0 1 6 *', async () => {
+    console.log('[CRON] Running scheduled annual promotion...');
+    try {
+        await promoteYear();
+        console.log('[CRON] Annual promotion completed successfully.');
+    } catch (err) {
+        console.error('[CRON] Annual promotion failed:', err);
+    }
+});
+
+// Admin-only Manual Promotion Trigger
+app.post('/api/admin/promote-students', async (req, res) => {
+    const { auth_key } = req.body;
+    // Simple safety check - in production use proper middleware
+    if (auth_key !== 'DMI_ADMIN_PROMOTE_2026') {
+        return res.status(403).json({ message: 'Unauthorized. Invalid security key.' });
+    }
+
+    try {
+        await promoteYear();
+        res.json({ message: 'Manual promotion completed successfully.' });
+    } catch (err) {
+        res.status(500).json({ message: 'Promotion failed.', error: err.message });
+    }
+});
 
 // Helper: Create Notification
 const createNotification = async (userId, title, message, type = 'info') => {

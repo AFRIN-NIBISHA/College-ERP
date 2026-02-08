@@ -49,6 +49,10 @@ async function promoteStudents() {
     }
 }
 
-// Security Check: Ask before running or just provide the script
-console.log("Script loaded. Run this only when the current academic year is officially over.");
-promoteStudents();
+// Security Check: Run only when the academic year is officially over.
+module.exports = promoteStudents;
+
+// To run manually: node -e "require('./promote_year')()"
+if (require.main === module) {
+    promoteStudents().then(() => process.exit(0));
+}
