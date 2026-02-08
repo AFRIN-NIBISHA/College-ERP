@@ -28,7 +28,9 @@ const Timetable = () => {
             setSubjects(subjectRes.data.map(s => ({
                 id: s.id,
                 name: s.subject_name,
-                code: s.subject_code
+                code: s.subject_code,
+                semester: s.semester,
+                credits: s.credits
             })));
         } catch (e) { console.error("Metadata Fetch Error", e); }
     };

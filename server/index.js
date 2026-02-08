@@ -1145,15 +1145,18 @@ app.post('/api/admin/seed', async (req, res) => {
             { code: "CS3492", name: "DATABASE MANAGEMENT SYSTEM", sem: 4 },
             { code: "GE3451", name: "ENVIRONMENTAL SCIENCES AND SUSTAINABILITY", sem: 4 },
             { code: "NM", name: "NAAN MUDHALVAN", sem: 4 },
-            { code: "LAB1", name: "DATABASE MANAGEMENT SYSTEM LABORATORY", sem: 4 },
-            { code: "LAB2", name: "OPERATING SYSTEMS LABORATORY", sem: 4 },
-            { code: "LAB3", name: "SOFTSKILL TRAINING", sem: 4 },
-            { code: "CCS336", name: "SOFTWARE TESTING AND AUTOMATION", sem: 6 },
+            { code: "CS3491_LAB", name: "AIML LABORATORY", sem: 4 },
+            { code: "CS3461", name: "OPERATING SYSTEMS LABORATORY", sem: 4 },
+            { code: "CS3481", name: "DBMS LABORATORY", sem: 4 },
+            { code: "CS3401_LAB", name: "ALGORITHMS LABORATORY", sem: 4 },
+            { code: "SOFTSKILL", name: "SOFTSKILL TRAINING", sem: 4 },
+            { code: "CCS336_STA", name: "SOFTWARE TESTING AND AUTOMATION", sem: 6 },
+            { code: "CCS336_CSM", name: "CLOUD SERVICE MANAGEMENT", sem: 6 },
             { code: "CCS356", name: "OBJECT ORIENTED SOFTWARE ENGINEERING", sem: 6 },
             { code: "OBT352", name: "FOOD NUTRIENTS AND HEALTH", sem: 6 },
             { code: "CCS354", name: "NETWORK SECURITY", sem: 6 },
-            { code: "CS3491_2", name: "EMBEDDED SYSTEMS AND IOT", sem: 6 },
-            { code: "LAB4", name: "OBJECT ORIENTED SOFTWARE ENGINEERING LAB", sem: 6 }
+            { code: "CS3691_LAB", name: "EMBEDDED SYSTEMS AND IOT LAB", sem: 6 },
+            { code: "CCS356_LAB", name: "OOSE LABORATORY", sem: 6 }
         ];
 
         let subjectCount = 0;
