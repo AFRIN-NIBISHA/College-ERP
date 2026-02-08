@@ -2104,29 +2104,31 @@ app.post('/api/login', async (req, res) => {
             }
         }
 
-        // 2. Fallback: Legacy Student Login (Check students table directly)
-        // Assume username=RollNo, password=DOB (YYYY-MM-DD)
-        console.log("Checking Legacy Student Login:", username);
-        const sRes = await db.query("SELECT * FROM students WHERE roll_no = $1 AND dob = $2", [username, password]);
+        // 3. Fallback: Legacy Student Login (Check students table directly)
+        // ONLY if role is student to avoid casting errors with staff names into DOB dates
+        if (role === 'student') {
+            console.log("Checking Legacy Student Login:", username);
+            const sRes = await db.query("SELECT * FROM students WHERE roll_no = $1 AND dob = $2", [username, password]);
 
-        if (sRes.rows.length > 0) {
-            const student = sRes.rows[0];
-            console.log("Legacy Student Found:", student.name);
+            if (sRes.rows.length > 0) {
+                const student = sRes.rows[0];
+                console.log("Legacy Student Found:", student.name);
 
-            // Create a virtual user object
-            return res.json({
-                message: 'Login successful',
-                user: {
-                    id: student.user_id || 999999, // Fallback ID if not linked
-                    username: student.roll_no,
-                    role: 'student',
-                    profileId: student.id, // THE MOST IMPORTANT FIELD
-                    is_legacy: true,
-                    name: student.name,
-                    year: student.year?.toString().trim(),
-                    section: student.section?.toString().trim().toUpperCase()
-                }
-            });
+                // Create a virtual user object
+                return res.json({
+                    message: 'Login successful',
+                    user: {
+                        id: student.user_id || 999999, // Fallback ID if not linked
+                        username: student.roll_no,
+                        role: 'student',
+                        profileId: student.id, // THE MOST IMPORTANT FIELD
+                        is_legacy: true,
+                        name: student.name,
+                        year: student.year?.toString().trim(),
+                        section: student.section?.toString().trim().toUpperCase()
+                    }
+                });
+            }
         }
 
         console.log("User not found in DB (Standard or Legacy)");
