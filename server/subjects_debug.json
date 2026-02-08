@@ -1,0 +1,56 @@
+[
+  {
+    "subject_code": "OBT352",
+    "subject_name": "Food Nutrients and Health",
+    "staff_name": "Mr. Arun Venkatesh",
+    "staff_username": null
+  },
+  {
+    "subject_code": "CCS356",
+    "subject_name": "Object Oriented Software Engineering",
+    "staff_name": "Mrs. SHEEBA D",
+    "staff_username": "staff18"
+  },
+  {
+    "subject_code": "CS3691_LAB",
+    "subject_name": "Embedded Systems and IOT Lab",
+    "staff_name": "Dr. ABISHA MANO",
+    "staff_username": "staff17"
+  },
+  {
+    "subject_code": "CCS336_STA",
+    "subject_name": "Software Testing and Automation",
+    "staff_name": "Mrs. BINISHA",
+    "staff_username": "staff14"
+  },
+  {
+    "subject_code": "CCS354_LAB",
+    "subject_name": "Network Security Lab",
+    "staff_name": "Mrs. RAJA KALA",
+    "staff_username": "staff16"
+  },
+  {
+    "subject_code": "SOFTSKILL",
+    "subject_name": "Softskill Training",
+    "staff_name": "Dr.Bobby Denis",
+    "staff_username": "staff13"
+  },
+  {
+    "subject_code": "CCS356_LAB",
+    "subject_name": "OOSE Lab",
+    "staff_name": "Mrs. SHEEBA D",
+    "staff_username": "staff18"
+  },
+  {
+    "subject_code": "NM",
+    "subject_name": "Naan Mudhalvan",
+    "staff_name": "Mrs. SHEEBA D",
+    "staff_username": "staff18"
+  },
+  {
+    "subject_code": "CCS354",
+    "subject_name": "Network Security",
+    "staff_name": "Mrs. RAJA KALA",
+    "staff_username": "staff16"
+  }
+]

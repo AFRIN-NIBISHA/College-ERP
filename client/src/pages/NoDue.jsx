@@ -445,8 +445,8 @@ const NoDue = () => {
                                         </div>
                                     )}
 
-                                    {/* Staff - Show subject details if Office Approved (Hidden for HOD/Principal) */}
-                                    {((role !== 'hod' && role !== 'principal') && (role === 'staff' || role === 'admin' || isStudent || (req.office_status === 'Approved' && role !== 'office'))) && (
+                                    {/* Staff - Show subject details for Everyone if Office Approved */}
+                                    {((role === 'staff' || role === 'admin' || role === 'hod' || role === 'principal' || isStudent || (req.office_status === 'Approved' && role !== 'office'))) && (
                                         <div className="md:col-span-2">
                                             {req.office_status === 'Approved' ? (
                                                 <div className="space-y-2">
@@ -465,7 +465,7 @@ const NoDue = () => {
 
                                                         // Demo Mode Check - admin or specific demo usernames get all buttons
                                                         const isDemo = ['admin', 'staff', 'hod', 'principal'].includes(user?.username?.toLowerCase());
-                                                        const isRelevantStaff = (role === 'staff' && (isMySubject || isDemo)) || role === 'admin';
+                                                        const isRelevantStaff = (role === 'staff' && (isMySubject || isDemo)) || ['admin', 'hod', 'principal'].includes(role);
 
                                                         return (
                                                             <div key={idx} className={`flex items-center justify-between p-2 rounded-lg border text-xs ${isRelevantStaff && sub.status === 'Pending' ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-100'}`}>
