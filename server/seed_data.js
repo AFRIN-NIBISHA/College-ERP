@@ -103,7 +103,20 @@ async function seedData() {
             { code: "OBT352", name: "FOOD NUTRIENTS AND HEALTH", sem: 6 },
             { code: "CCS354", name: "NETWORK SECURITY", sem: 6 },
             { code: "CS3491_2", name: "EMBEDDED SYSTEMS AND IOT", sem: 6 }, // CS3491 is duplicated in list? Using alias.
-            { code: "LAB4", name: "OBJECT ORIENTED SOFTWARE ENGINEERING LAB", sem: 6 }
+
+            // Labs (Sem 4)
+            { code: "CS3491_LAB", name: "ARTIFICIAL INTELLIGENCE AND MACHINE LEARNING LABORATORY", sem: 4 },
+            { code: "CS3481", name: "DATABASE MANAGEMENT SYSTEM LABORATORY", sem: 4 }, // Replaces LAB1
+            { code: "CS3461", name: "OPERATING SYSTEMS LABORATORY", sem: 4 }, // Replaces LAB2
+            { code: "CS3401_LAB", name: "ALGORITHMS LABORATORY", sem: 4 },
+            { code: "SOFTSKILL", name: "SOFTSKILL TRAINING", sem: 4 }, // Replaces LAB3/SS
+
+            // Labs (Sem 6)
+            { code: "CCS336_LAB", name: "SOFTWARE TESTING LABORATORY", sem: 6 },
+            { code: "CCS356_LAB", name: "OBJECT ORIENTED SOFTWARE ENGINEERING LABORATORY", sem: 6 }, // Replaces LAB4
+            { code: "CCS354_LAB", name: "NETWORK SECURITY LABORATORY", sem: 6 },
+            { code: "CS3691_LAB", name: "EMBEDDED SYSTEMS AND IOT LABORATORY", sem: 6 },
+            { code: "NM_LAB", name: "NAAN MUDHALVAN LAB", sem: 6 }
         ];
 
         for (const sub of subjects) {

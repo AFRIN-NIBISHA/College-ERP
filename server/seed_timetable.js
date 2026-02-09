@@ -88,18 +88,18 @@ const seed = async () => {
         // MONDAY
         await add('Monday', 1, 'CCS336-STA', 'Mrs. Binisha');
         await add('Monday', 2, 'CCS354', 'Mrs. Raja Kala');
-        await add('Monday', 3, 'CCS336-STA', 'Mrs. Binisha'); // Lab
-        await add('Monday', 4, 'CCS336-STA', 'Mrs. Binisha'); // Lab
+        await add('Monday', 3, 'CCS336_LAB', 'Mrs. Binisha'); // Lab - Software Testing
+        await add('Monday', 4, 'CCS336_LAB', 'Mrs. Binisha'); // Lab
         await add('Monday', 5, 'OBT352', 'Mrs. Arun Venkadesh');
-        await add('Monday', 6, 'NM', 'Mrs. Sheeba D');
-        await add('Monday', 7, 'NM', 'Mrs. Sheeba D');
-        await add('Monday', 8, 'NM', 'Mrs. Sheeba D');
+        await add('Monday', 6, 'NM_LAB', 'Mrs. Sheeba D');
+        await add('Monday', 7, 'NM_LAB', 'Mrs. Sheeba D');
+        await add('Monday', 8, 'NM_LAB', 'Mrs. Sheeba D');
 
         // TUESDAY
         await add('Tuesday', 1, 'CS3491', 'Dr. Abisha Mano');
         await add('Tuesday', 2, 'CCS356', 'Mrs. Sheeba D');
         await add('Tuesday', 3, 'CCS336-STA', 'Mrs. Binisha');
-        await add('Tuesday', 4, 'SS', 'Dr. Bobby Denis');
+        await add('Tuesday', 4, 'SOFTSKILL', 'Dr. Bobby Denis');
         await add('Tuesday', 5, 'CCS354', 'Mrs. Raja Kala');
         await add('Tuesday', 6, 'CCS336-CSM', 'Mrs. Anto Babiyola');
         await add('Tuesday', 7, 'CCS356', 'Mrs. Sheeba D');
@@ -108,18 +108,18 @@ const seed = async () => {
         // WEDNESDAY
         await add('Wednesday', 1, 'CCS354', 'Mrs. Raja Kala');
         await add('Wednesday', 2, 'CCS336-CSM', 'Mrs. Anto Babiyola');
-        await add('Wednesday', 3, 'CCS356', 'Mrs. Sheeba D'); // Lab
-        await add('Wednesday', 4, 'CCS356', 'Mrs. Sheeba D'); // Lab
+        await add('Wednesday', 3, 'CCS356_LAB', 'Mrs. Sheeba D'); // Lab - OOSE
+        await add('Wednesday', 4, 'CCS356_LAB', 'Mrs. Sheeba D'); // Lab
         await add('Wednesday', 5, 'CS3491', 'Dr. Abisha Mano');
         await add('Wednesday', 6, 'CCS336-STA', 'Mrs. Binisha');
-        await add('Wednesday', 7, 'NM', 'Mrs. Raja Kala'); // Hackathon
-        await add('Wednesday', 8, 'NPTEL', 'Mrs. Anto Babiyola'); // Using valid staff placeholder
+        await add('Wednesday', 7, 'NM_LAB', 'Mrs. Raja Kala');
+        await add('Wednesday', 8, 'NPTEL', 'Mrs. Anto Babiyola');
 
         // THURSDAY
         await add('Thursday', 1, 'OBT352', 'Mrs. Arun Venkadesh');
         await add('Thursday', 2, 'CCS354', 'Mrs. Raja Kala');
-        await add('Thursday', 3, 'CS3491', 'Dr. Abisha Mano'); // Lab
-        await add('Thursday', 4, 'CS3491', 'Dr. Abisha Mano'); // Lab
+        await add('Thursday', 3, 'CS3691_LAB', 'Dr. Abisha Mano'); // Lab - Embedded/IoT
+        await add('Thursday', 4, 'CS3691_LAB', 'Dr. Abisha Mano'); // Lab
         await add('Thursday', 5, 'CCS336-CSM', 'Mrs. Anto Babiyola');
         await add('Thursday', 6, 'OBT352', 'Mrs. Arun Venkadesh');
         await add('Thursday', 7, 'CS3491', 'Dr. Abisha Mano');
@@ -128,10 +128,10 @@ const seed = async () => {
         // FRIDAY
         await add('Friday', 1, 'CCS356', 'Mrs. Sheeba D');
         await add('Friday', 2, 'CCS336-STA', 'Mrs. Binisha');
-        await add('Friday', 3, 'CCS354', 'Mrs. Raja Kala'); // Lab
-        await add('Friday', 4, 'CCS354', 'Mrs. Raja Kala'); // Lab
-        await add('Friday', 5, 'CCS336-CSM', 'Mrs. Anto Babiyola'); // Lab
-        await add('Friday', 6, 'CCS336-CSM', 'Mrs. Anto Babiyola'); // Lab
+        await add('Friday', 3, 'CCS354_LAB', 'Mrs. Raja Kala'); // Lab - Security
+        await add('Friday', 4, 'CCS354_LAB', 'Mrs. Raja Kala'); // Lab
+        await add('Friday', 5, 'CCS336_LAB', 'Mrs. Anto Babiyola'); // Lab - Testing/Cloud? Using Testing code fallback
+        await add('Friday', 6, 'CCS336_LAB', 'Mrs. Anto Babiyola'); // Lab
         await add('Friday', 7, 'CCS336-CSM', 'Mrs. Anto Babiyola');
         await add('Friday', 8, 'OBT352', 'Mrs. Arun Venkadesh');
 
