@@ -327,8 +327,6 @@ const getUserFromStudent = async (studentId) => {
     return res.rows[0]?.user_id;
 };
 
-// ... (Existing Routes)
-
 app.get('/api/subjects', async (req, res) => {
     try {
         const result = await db.query("SELECT * FROM subjects ORDER BY subject_code");
@@ -338,6 +336,49 @@ app.get('/api/subjects', async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
+
+app.post('/api/subjects', async (req, res) => {
+    const { subject_code, subject_name, semester, credits } = req.body;
+    try {
+        const result = await db.query(
+            "INSERT INTO subjects (subject_code, subject_name, semester, credits) VALUES ($1, $2, $3, $4) RETURNING *",
+            [subject_code, subject_name, semester || 1, credits || 3]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        if (err.code === '23505') return res.status(400).json({ message: 'Subject Code already exists' });
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.put('/api/subjects/:id', async (req, res) => {
+    const { id } = req.params;
+    const { subject_code, subject_name, semester, credits } = req.body;
+    try {
+        const result = await db.query(
+            "UPDATE subjects SET subject_code = $1, subject_name = $2, semester = $3, credits = $4 WHERE id = $5 RETURNING *",
+            [subject_code, subject_name, semester, credits, id]
+        );
+        if (result.rows.length === 0) return res.status(404).json({ message: 'Subject not found' });
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.delete('/api/subjects/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.query("DELETE FROM subjects WHERE id = $1", [id]);
+        res.json({ message: 'Subject deleted successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 app.get('/api/staff', async (req, res) => {
     try {
         const now = new Date();
@@ -939,27 +980,6 @@ app.get('/api/attendance/report', async (req, res) => {
         });
 
         res.json(report);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
-// --- METADATA ENDPOINTS ---
-app.get('/api/staff', async (req, res) => {
-    try {
-        const result = await db.query("SELECT * FROM staff ORDER BY name");
-        res.json(result.rows);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
-app.get('/api/subjects', async (req, res) => {
-    try {
-        const result = await db.query("SELECT * FROM subjects ORDER BY subject_code");
-        res.json(result.rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

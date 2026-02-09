@@ -110,6 +110,7 @@ async function seedData() {
             { code: "CS3461", name: "OPERATING SYSTEMS LABORATORY", sem: 4 }, // Replaces LAB2
             { code: "CS3401_LAB", name: "ALGORITHMS LABORATORY", sem: 4 },
             { code: "SOFTSKILL", name: "SOFTSKILL TRAINING", sem: 4 }, // Replaces LAB3/SS
+            { code: "NPTEL", name: "NPTEL", sem: 4 },
 
             // Labs (Sem 6)
             { code: "CCS336_LAB", name: "SOFTWARE TESTING LABORATORY", sem: 6 },
