@@ -151,7 +151,7 @@ const NoDue = () => {
         } catch (err) {
             console.error("❌ No Due Update Error:", err);
             console.error("❌ Error response:", err.response?.data);
-            alert(`Action failed: ${err.response?.data?.message || err.message}`);
+            alert(`Action failed: ${err.response?.data?.message || err.message}\n${err.response?.data?.details || ''}`);
         }
     };
 

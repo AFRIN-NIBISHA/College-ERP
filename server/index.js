@@ -1878,9 +1878,17 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
         console.log("✅ Sending success response");
         res.json({ message: 'Updated successfully', field: updateField, status });
     } catch (err) {
-        console.error("❌ No Due Approval Error:", err);
-        console.error("Error stack:", err.stack);
-        res.status(500).json({ message: 'Server error', details: err.message });
+        console.error("❌ No Due Approval Critical Error:", err);
+        console.error("Error Name:", err.name);
+        console.error("Error Message:", err.message);
+        console.error("Error Stack:", err.stack);
+
+        // Return the specific error to the client for debugging
+        res.status(500).json({
+            message: `Server Error: ${err.message}`,
+            details: err.message,
+            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
     }
 });
 
