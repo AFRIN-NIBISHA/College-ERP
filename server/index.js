@@ -645,13 +645,12 @@ app.get('/api/timetable', async (req, res) => {
                    COALESCE(t.subject_name_text, s.subject_name) as subject_name, 
                    COALESCE(t.staff_name_text, st.name) as staff_name, 
                    s.subject_code,
-                   t.subject_id as subjectId, t.staff_id as staffId,
-                   t.subject_name_text as subjectNameText,
-                   t.subject_id as subjectId, t.staff_id as staffId,
-                   t.subject_name_text as subjectNameText,
-                   t.staff_name_text as staffNameText,
-                   t.subject_code_text as subjectCodeText,
-                   t.subject_credit_text as subjectCreditText
+                   t.subject_id as "subjectId", 
+                   t.staff_id as "staffId",
+                   t.subject_name_text as "subjectNameText",
+                   t.staff_name_text as "staffNameText",
+                   t.subject_code_text as "subjectCodeText",
+                   t.subject_credit_text as "subjectCreditText"
             FROM timetable t
             LEFT JOIN subjects s ON t.subject_id = s.id
             LEFT JOIN staff st ON t.staff_id = st.id
