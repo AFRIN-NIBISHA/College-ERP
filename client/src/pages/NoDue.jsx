@@ -68,10 +68,16 @@ const NoDue = () => {
 
                 return {
                     ...request,
-                    subjects: validSubjects.map(subject => ({
-                        ...subject,
-                        status: request[subject.subject_code.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_status'] || 'Pending'
-                    }))
+                    subjects: validSubjects.map(subject => {
+                        // Logic must match backend: if code is MANUAL, use name
+                        const code = (subject.subject_code && subject.subject_code !== 'MANUAL') ? subject.subject_code : subject.subject_name;
+                        const key = code.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_status';
+                        return {
+                            ...subject,
+                            status: request[key] || 'Pending',
+                            derivedCode: code // Store this for handleUpdate
+                        };
+                    })
                 };
             });
 
@@ -121,11 +127,9 @@ const NoDue = () => {
 
             let field = '';
             if (subjectCode) {
-                // Handle subject-wise approval
+                // Ensure we use the exact same logic as backend/frontend mapping
                 field = subjectCode.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_status';
-                console.log("Subject code to field conversion:");
-                console.log(`  Subject code: "${subjectCode}"`);
-                console.log(`  Field name: "${field}"`);
+                console.log(`Subject approval: "${subjectCode}" -> "${field}"`);
             } else if (stage) {
                 // Handle traditional stage approval
                 if (stage === 'office') field = 'office_status';
@@ -289,7 +293,8 @@ const NoDue = () => {
                     });
 
                     for (const sub of mySubjects) {
-                        await handleUpdate(id, null, 'Approved', null, sub.subject_code);
+                        // Use derivedCode (which handles MANUAL fallback)
+                        await handleUpdate(id, null, 'Approved', null, sub.derivedCode || sub.subject_code);
                     }
                 }
             }
@@ -476,8 +481,8 @@ const NoDue = () => {
                                                                 <div className="flex items-center gap-2">
                                                                     {sub.status === 'Pending' && isRelevantStaff ? (
                                                                         <>
-                                                                            <button onClick={() => handleUpdate(req.id, null, 'Approved', null, sub.subject_code)} className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700">✓</button>
-                                                                            <button onClick={() => handleReject(req.id, null, sub.subject_code)} className="px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200">✕</button>
+                                                                            <button onClick={() => handleUpdate(req.id, null, 'Approved', null, sub.derivedCode || sub.subject_code)} className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700">✓</button>
+                                                                            <button onClick={() => handleReject(req.id, null, sub.derivedCode || sub.subject_code)} className="px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200">✕</button>
                                                                         </>
                                                                     ) : (
                                                                         <StatusBadge status={sub.status} />

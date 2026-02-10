@@ -1829,10 +1829,10 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
                                     'No Due Request',
                                     `Clearance request for Class ${year}-${section} is ready for subject approval.`,
                                     'info'
-                                );
+                                ).catch(e => console.error("Notification push failed (non-fatal):", e.message));
                             }
                         } catch (notifErr) {
-                            console.error("Failed to notify staff:", notifErr);
+                            console.error("Failed to notify staff (non-fatal):", notifErr);
                         }
                     }
                 }
@@ -1849,9 +1849,11 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
 
                     // Fetch subjects from timetable (matching frontend filtering logic)
                     const subjectsRes = await db.query(`
-                        SELECT DISTINCT s.subject_code, s.subject_name 
+                        SELECT DISTINCT 
+                            COALESCE(s.subject_code, 'MANUAL') as subject_code, 
+                            COALESCE(s.subject_name, t.subject_name_text) as subject_name
                         FROM timetable t 
-                        JOIN subjects s ON t.subject_id = s.id 
+                        LEFT JOIN subjects s ON t.subject_id = s.id 
                         WHERE t.year = $1 AND t.section = $2
                     `, [year, section]);
 
@@ -1860,9 +1862,11 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
                         return !name.includes('soft skill') && !name.includes('softskill') && !name.includes('nptel');
                     });
 
-                    const relevantFields = filteredSubjects.map(sub =>
-                        sub.subject_code.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_status'
-                    );
+                    const relevantFields = filteredSubjects.map(sub => {
+                        // Fallback for manual subjects: generate key from name
+                        const code = sub.subject_code !== 'MANUAL' ? sub.subject_code : (sub.subject_name || 'unknown');
+                        return code.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_status';
+                    });
 
                     console.log(`Checking completion for student (${year}-${section}). Relevant subjects:`, relevantFields);
 
@@ -2092,12 +2096,18 @@ app.get('/api/student/subjects', async (req, res) => {
     const { year, section } = req.query;
     try {
         const result = await db.query(`
-            SELECT DISTINCT s.subject_code, s.subject_name, st.name as staff_name, st.id as staff_profile_id, s.credits
+            SELECT DISTINCT 
+                COALESCE(s.subject_code, 'MANUAL') as subject_code, 
+                COALESCE(s.subject_name, t.subject_name_text) as subject_name, 
+                COALESCE(st.name, t.staff_name_text) as staff_name, 
+                st.id as staff_profile_id, 
+                s.credits
             FROM timetable t
-            JOIN subjects s ON t.subject_id = s.id
-            JOIN staff st ON t.staff_id = st.id
+            LEFT JOIN subjects s ON t.subject_id = s.id
+            LEFT JOIN staff st ON t.staff_id = st.id
             WHERE t.year = $1 AND t.section = $2
-            ORDER BY s.subject_code
+            AND (s.id IS NOT NULL OR t.subject_name_text IS NOT NULL)
+            ORDER BY subject_code
         `, [year, section]);
         res.json(result.rows);
     } catch (err) {
