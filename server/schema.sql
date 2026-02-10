@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL, -- In production, hash this!
-    role VARCHAR(20) CHECK (role IN ('admin', 'staff', 'student', 'hod', 'principal', 'office')) NOT NULL
+    role VARCHAR(20) CHECK (role IN ('admin', 'staff', 'student', 'hod', 'principal', 'office')) NOT NULL,
+    is_setup BOOLEAN DEFAULT FALSE
 );
 
 -- Students table
@@ -55,10 +56,11 @@ CREATE TABLE IF NOT EXISTS staff (
 -- Subjects table
 CREATE TABLE IF NOT EXISTS subjects (
     id SERIAL PRIMARY KEY,
-    subject_code VARCHAR(20) UNIQUE NOT NULL,
-    subject_name VARCHAR(100) NOT NULL,
+    subject_code VARCHAR(50) UNIQUE NOT NULL,
+    subject_name VARCHAR(255) NOT NULL,
     semester INT NOT NULL,
-    credits INT DEFAULT 3
+    credits INT DEFAULT 3,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Marks table
@@ -158,6 +160,10 @@ CREATE TABLE IF NOT EXISTS timetable (
     period INT NOT NULL, -- 1 to 8
     subject_id INT REFERENCES subjects(id) ON DELETE CASCADE,
     staff_id INT REFERENCES staff(id) ON DELETE SET NULL,
+    subject_name_text VARCHAR(100),
+    staff_name_text VARCHAR(100),
+    subject_code_text VARCHAR(50),
+    subject_credit_text VARCHAR(10),
     UNIQUE(year, section, day, period)
 );
 
@@ -180,4 +186,12 @@ CREATE TABLE IF NOT EXISTS class_details (
     staff_id INT REFERENCES staff(id) ON DELETE SET NULL,
     rep_name VARCHAR(100),
     UNIQUE(year, section)
+);
+
+-- Push Subscriptions
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    subscription TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
