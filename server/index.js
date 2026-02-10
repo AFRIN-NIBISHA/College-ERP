@@ -381,14 +381,23 @@ const getUserFromStudent = async (studentId) => {
 };
 
 app.get('/api/subjects', async (req, res) => {
+    const { semester } = req.query;
     try {
-        const result = await db.query("SELECT * FROM subjects ORDER BY subject_code");
+        let query = "SELECT * FROM subjects";
+        const params = [];
+        if (semester) {
+            params.push(semester);
+            query += ` WHERE semester = $1`;
+        }
+        query += " ORDER BY subject_code";
+        const result = await db.query(query, params);
         res.json(result.rows);
     } catch (err) {
-        console.error(err);
+        console.error("Subjects Fetch Error:", err);
         res.status(500).json({ message: 'Server error' });
     }
 });
+
 
 app.post('/api/subjects', async (req, res) => {
     const { subject_code, subject_name, semester, credits } = req.body;

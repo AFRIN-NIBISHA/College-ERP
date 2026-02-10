@@ -22,7 +22,18 @@ const Subjects = () => {
     const fetchSubjects = async () => {
         try {
             setLoading(true);
-            const res = await axios.get('/api/subjects');
+            let url = '/api/subjects';
+
+            // For students, filter by their current semester automatically
+            if (user?.role === 'student' && user?.year) {
+                const currentMonth = new Date().getMonth() + 1;
+                const isEvenSemester = currentMonth >= 1 && currentMonth <= 6;
+                const studentYear = parseInt(user.year);
+                const currentSemester = isEvenSemester ? studentYear * 2 : (studentYear * 2) - 1;
+                url += `?semester=${currentSemester}`;
+            }
+
+            const res = await axios.get(url);
             setSubjects(res.data);
             setError(null);
         } catch (err) {
@@ -32,6 +43,7 @@ const Subjects = () => {
             setLoading(false);
         }
     };
+
 
     useEffect(() => {
         fetchSubjects();
@@ -88,8 +100,14 @@ const Subjects = () => {
             <div className="flex justify-between items-start">
                 <div>
                     <h2 className="text-3xl font-bold text-slate-800">Subject Management</h2>
-                    <p className="text-slate-500">Add and manage curriculum subjects and codes.</p>
+                    <p className="text-slate-500">
+                        {user?.role === 'student'
+                            ? `Showing assigned subjects for Semester ${((new Date().getMonth() + 1) >= 1 && (new Date().getMonth() + 1) <= 6) ? parseInt(user.year) * 2 : (parseInt(user.year) * 2) - 1}`
+                            : 'Add and manage curriculum subjects and codes.'
+                        }
+                    </p>
                 </div>
+
                 {isAdmin && !showAddForm && (
                     <button
                         onClick={() => setShowAddForm(true)}
