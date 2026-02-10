@@ -239,6 +239,20 @@ const initDb = async () => {
         `);
         console.log("Schema verified/updated.");
 
+        // Safe Seeding for Class Incharges (if table is empty)
+        const classCount = await db.query("SELECT COUNT(*) FROM class_details");
+        if (parseInt(classCount.rows[0].count) === 0) {
+            console.log("Seeding default class incharge data...");
+            // Try to find Raja Kala
+            const rajaRes = await db.query("SELECT id FROM staff WHERE name ILIKE '%Raja Kala%' LIMIT 1");
+            if (rajaRes.rows.length > 0) {
+                const rajaId = rajaRes.rows[0].id;
+                await db.query("INSERT INTO class_details (year, section, staff_id) VALUES (3, 'A', $1) ON CONFLICT DO NOTHING", [rajaId]);
+                console.log("Seeded Raja Kala for 3rd Year A");
+            }
+        }
+
+
         // Ensure all students have user accounts for push notifications
         const orphanStudents = await db.query("SELECT id, roll_no, name FROM students WHERE user_id IS NULL");
         if (orphanStudents.rows.length > 0) {
