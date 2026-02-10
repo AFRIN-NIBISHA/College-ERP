@@ -381,14 +381,34 @@ const getUserFromStudent = async (studentId) => {
 };
 
 app.get('/api/subjects', async (req, res) => {
-    const { semester } = req.query;
+    const { semester, year, section } = req.query;
     try {
-        let query = "SELECT * FROM subjects";
-        const params = [];
-        if (semester) {
-            params.push(semester);
-            query += ` WHERE semester = $1`;
+        let query;
+        let params = [];
+
+        if (year && section) {
+            // Fetch subjects assigned in the timetable for this class
+            // Include both known subjects and custom text entries
+            query = `
+                SELECT DISTINCT 
+                    COALESCE(s.id, (999000 + t.id)) as id,
+                    COALESCE(s.subject_name, t.subject_name_text) as subject_name,
+                    COALESCE(s.subject_code, COALESCE(t.subject_code_text, 'Custom')) as subject_code,
+                    COALESCE(s.semester, 0) as semester,
+                    COALESCE(s.credits, 3) as credits
+                FROM timetable t
+                LEFT JOIN subjects s ON t.subject_id = s.id
+                WHERE TRIM(t.year::text) = TRIM($1::text) AND UPPER(TRIM(t.section)) = UPPER(TRIM($2))
+            `;
+            params = [year, section];
+        } else {
+            query = "SELECT * FROM subjects";
+            if (semester) {
+                params.push(semester);
+                query += ` WHERE semester = $1`;
+            }
         }
+
         query += " ORDER BY subject_code";
         const result = await db.query(query, params);
         res.json(result.rows);
@@ -397,6 +417,7 @@ app.get('/api/subjects', async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
+
 
 
 app.post('/api/subjects', async (req, res) => {

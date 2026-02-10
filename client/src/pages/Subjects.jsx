@@ -24,8 +24,11 @@ const Subjects = () => {
             setLoading(true);
             let url = '/api/subjects';
 
-            // For students, filter by their current semester automatically
-            if (user?.role === 'student' && user?.year) {
+            // For students, prioritize showing subjects that are in their assigned timetable
+            if (user?.role === 'student' && user?.year && user?.section) {
+                url += `?year=${user.year}&section=${user.section}`;
+            } else if (user?.role === 'student' && user?.year) {
+                // Fallback to semester if section is missing
                 const currentMonth = new Date().getMonth() + 1;
                 const isEvenSemester = currentMonth >= 1 && currentMonth <= 6;
                 const studentYear = parseInt(user.year);
@@ -43,6 +46,7 @@ const Subjects = () => {
             setLoading(false);
         }
     };
+
 
 
     useEffect(() => {
@@ -102,11 +106,12 @@ const Subjects = () => {
                     <h2 className="text-3xl font-bold text-slate-800">Subject Management</h2>
                     <p className="text-slate-500">
                         {user?.role === 'student'
-                            ? `Showing assigned subjects for Semester ${((new Date().getMonth() + 1) >= 1 && (new Date().getMonth() + 1) <= 6) ? parseInt(user.year) * 2 : (parseInt(user.year) * 2) - 1}`
+                            ? `Showing subjects assigned in your Timetable for ${user.year}${user.section}`
                             : 'Add and manage curriculum subjects and codes.'
                         }
                     </p>
                 </div>
+
 
                 {isAdmin && !showAddForm && (
                     <button
