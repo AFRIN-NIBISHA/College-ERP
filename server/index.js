@@ -32,7 +32,8 @@ const initDb = async () => {
                 id SERIAL PRIMARY KEY,
                 username VARCHAR(50) UNIQUE NOT NULL,
                 password VARCHAR(255) NOT NULL,
-                role VARCHAR(20) CHECK (role IN ('admin', 'staff', 'student')) NOT NULL
+                role VARCHAR(20) CHECK (role IN ('admin', 'staff', 'student', 'hod', 'principal', 'office')) NOT NULL,
+                is_setup BOOLEAN DEFAULT FALSE
             );
             CREATE TABLE IF NOT EXISTS students (
                 id SERIAL PRIMARY KEY,
@@ -146,12 +147,19 @@ const initDb = async () => {
                 date_from DATE NOT NULL,
                 date_to DATE NOT NULL,
                 reason TEXT,
-                no_of_days INT,
+                no_of_days DECIMAL(4,1),
                 hours INT,
                 od_type VARCHAR(10) DEFAULT 'Day', -- 'Hour' or 'Day'
                 pending_with VARCHAR(20), -- 'staff', 'hod', 'principal'
                 status VARCHAR(20) DEFAULT 'Pending',
                 remarks TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS push_subscriptions (
+                id SERIAL PRIMARY KEY,
+                user_id INT REFERENCES users(id) ON DELETE CASCADE,
+                subscription TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
@@ -2035,7 +2043,7 @@ app.post('/api/od/apply', async (req, res) => {
         res.json({ message: 'OD Request submitted successfully', pending_with: pendingWith, id: newOD.id });
     } catch (err) {
         console.error("OD Apply Error:", err);
-        res.status(500).json({ message: 'Server error', error: err.message });
+        res.status(500).json({ message: 'Server error: ' + err.message, error: err.message });
     }
 });
 
@@ -2055,15 +2063,17 @@ app.get('/api/od', async (req, res) => {
             query += ` AND od.student_id = $${params.length}`;
         }
 
-        // New Filtering Logic for Staff/HOD/Principal
+        // Filtering Logic for Staff/HOD/Principal
         if (role === 'staff' && profile_id) {
-            // Only show requests from classes where this staff is the Class Incharge
-            // And pending with staff
+            // Staff (Incharge) can see ALL requests from their class to stay informed
+            // But they can only APPROVE if pending_with = 'staff' (handled in frontend/backend)
             params.push(profile_id);
-            query += ` AND (s.year, s.section) IN (SELECT year, section FROM class_details WHERE staff_id = $${params.length}) AND od.pending_with = 'staff'`;
+            query += ` AND (s.year, s.section) IN (SELECT year, section FROM class_details WHERE staff_id = $${params.length})`;
         } else if (role === 'hod') {
+            // HOD sees what is pending with HOD
             query += ` AND od.pending_with = 'hod'`;
         } else if (role === 'principal') {
+            // Principal sees what is pending with Principal
             query += ` AND od.pending_with = 'principal'`;
         }
 
