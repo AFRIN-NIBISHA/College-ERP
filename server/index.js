@@ -163,6 +163,8 @@ const initDb = async () => {
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS od_type VARCHAR(10) DEFAULT 'Day';
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS hours INT;
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS pending_with VARCHAR(20);
+            ALTER TABLE timetable ADD COLUMN IF NOT EXISTS subject_name_text VARCHAR(255);
+            ALTER TABLE timetable ADD COLUMN IF NOT EXISTS staff_name_text VARCHAR(255);
             ALTER TABLE timetable ADD COLUMN IF NOT EXISTS subject_code_text VARCHAR(50);
             ALTER TABLE timetable ADD COLUMN IF NOT EXISTS subject_credit_text VARCHAR(10);
 
