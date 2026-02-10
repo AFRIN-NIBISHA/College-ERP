@@ -176,6 +176,34 @@ const Timetable = () => {
 
     const getEntry = (day, period) => timetable.find(t => t.day === day && t.period === period) || {};
 
+    // -- Summary Table Handlers --
+    const handleSummaryChange = (oldSubjectName, field, newValue) => {
+        setTimetable(prev => prev.map(t => {
+            if (t.subjectNameText === oldSubjectName) {
+                if (field === 'subject') {
+                    // Update Subject Name
+                    return {
+                        ...t,
+                        subjectNameText: newValue,
+                        // If renamed, we lose the ID linkage unless it matches a known subject
+                        subjectId: subjects.find(s => s.name === newValue)?.id || null,
+                        subject_id: subjects.find(s => s.name === newValue)?.id || null
+                    };
+                } else if (field === 'staff') {
+                    // Update Staff Name
+                    return {
+                        ...t,
+                        staffNameText: newValue,
+                        // Try to resolve staff ID
+                        staffId: staff.find(s => s.name === newValue)?.id || null,
+                        staff_id: staff.find(s => s.name === newValue)?.id || null
+                    };
+                }
+            }
+            return t;
+        }));
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-end">
@@ -370,8 +398,32 @@ const Timetable = () => {
                                     <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
                                         <td className="px-6 py-4 text-center font-medium text-slate-600">{idx + 1}</td>
                                         <td className="px-6 py-4 font-bold text-slate-800 border-l border-slate-100">{row.code}</td>
-                                        <td className="px-6 py-4 text-slate-700 border-l border-slate-100">{row.name}</td>
-                                        <td className="px-6 py-4 text-slate-700 border-l border-slate-100 font-medium">{row.staff}</td>
+
+                                        {/* Editable Course Name */}
+                                        <td className="px-6 py-2 text-slate-700 border-l border-slate-100">
+                                            {isStudent ? row.name : (
+                                                <input
+                                                    type="text"
+                                                    value={row.name}
+                                                    onChange={(e) => handleSummaryChange(row.name, 'subject', e.target.value)}
+                                                    className="w-full bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none hover:border-slate-300 transition-colors py-1"
+                                                />
+                                            )}
+                                        </td>
+
+                                        {/* Editable Staff Name */}
+                                        <td className="px-6 py-2 text-slate-700 border-l border-slate-100 font-medium">
+                                            {isStudent ? row.staff : (
+                                                <input
+                                                    type="text"
+                                                    value={row.staff === 'TBA' ? '' : row.staff}
+                                                    placeholder="Assign Staff"
+                                                    onChange={(e) => handleSummaryChange(row.name, 'staff', e.target.value)}
+                                                    className="w-full bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none hover:border-slate-300 transition-colors py-1"
+                                                />
+                                            )}
+                                        </td>
+
                                         <td className="px-6 py-4 text-center text-slate-600 border-l border-slate-100">{row.credits}</td>
                                     </tr>
                                 ));

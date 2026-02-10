@@ -1,24 +1,24 @@
-const { Pool } = require('pg');
-require('dotenv').config();
 
-const pool = new Pool({
-    user: process.env.DB_USER || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'college_erp',
-    password: process.env.DB_PASSWORD || 'NibiGeo',
-    port: process.env.DB_PORT || 5432,
-});
+const db = require('./db');
 
-async function check() {
+async function test() {
     try {
-        const res = await pool.query("SELECT * FROM students");
-        console.log("Total Students:", res.rowCount);
+        const res = await db.query("SELECT * FROM students LIMIT 5");
         console.log("Students:", res.rows);
-    } catch (err) {
-        console.error(err);
+
+        if (res.rows.length > 0) {
+            const s = res.rows[0];
+            console.log(`Test Login for ${s.roll_no} / ${s.dob} / ${s.year} / ${s.section}`);
+
+            // formatting date to YYYY-MM-DD for consistency check
+            const dob = new Date(s.dob).toISOString().split('T')[0];
+            console.log("Formatted DOB:", dob);
+        }
+    } catch (e) {
+        console.error(e);
     } finally {
-        pool.end();
+        process.exit();
     }
 }
 
-check();
+test();
