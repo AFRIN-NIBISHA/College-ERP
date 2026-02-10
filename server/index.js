@@ -8,11 +8,15 @@ const webpush = require('web-push');
 require('dotenv').config();
 
 // Web Push Setup
-webpush.setVapidDetails(
-    process.env.VAPID_EMAIL || 'mailto:admin@example.com',
-    process.env.VAPID_PUBLIC_KEY,
-    process.env.VAPID_PRIVATE_KEY
-);
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(
+        process.env.VAPID_EMAIL || 'mailto:admin@example.com',
+        process.env.VAPID_PUBLIC_KEY,
+        process.env.VAPID_PRIVATE_KEY
+    );
+} else {
+    console.warn("VAPID Keys missing. Push notifications disabled.");
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
