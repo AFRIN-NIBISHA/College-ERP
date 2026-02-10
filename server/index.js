@@ -2067,10 +2067,15 @@ app.post('/api/od/apply', async (req, res) => {
                         const staffNameRes = await db.query("SELECT name FROM staff WHERE id = $1", [staffProfileId]);
                         if (staffNameRes.rows.length > 0) {
                             const staffName = staffNameRes.rows[0].name;
-                            const allStaffAccounts = await db.query("SELECT user_id FROM staff WHERE name = $1 AND user_id IS NOT NULL", [staffName]);
+                            // Notify ALL accounts with this name (case-insensitive) that have a linked user_id
+                            const allStaffAccounts = await db.query(
+                                "SELECT user_id FROM staff WHERE UPPER(TRIM(name)) = UPPER(TRIM($1)) AND user_id IS NOT NULL",
+                                [staffName]
+                            );
                             for (const staffRow of allStaffAccounts.rows) {
                                 await createNotification(staffRow.user_id, 'New OD Request', `A student in your class has applied for ${od_type} OD.`, 'od');
                             }
+
                         }
                     }
 
@@ -2133,8 +2138,9 @@ app.get('/api/od', async (req, res) => {
                     SELECT cd.year, UPPER(TRIM(cd.section)) 
                     FROM class_details cd
                     JOIN staff st ON cd.staff_id = st.id
-                    WHERE st.name = $${params.length}
+                    WHERE UPPER(TRIM(st.name)) = UPPER(TRIM($${params.length}))
                 )`);
+
             } else {
                 params.push(profile_id);
                 conditions.push(`(s.year, UPPER(TRIM(s.section))) IN (SELECT year, UPPER(TRIM(section)) FROM class_details WHERE staff_id = $${params.length})`);
