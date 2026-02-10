@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, BookOpen, Save } from 'lucide-react';
+import { Calendar, Clock, BookOpen, Save, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
@@ -60,7 +60,10 @@ const Timetable = () => {
             setTimetable(res.data.map(t => ({
                 ...t,
                 subjectNameText: t.subject_name || '',
-                staffNameText: t.staff_name || ''
+                staffNameText: t.staff_name || '',
+                // If it's a known subject, use its details, otherwise use manual text
+                subjectCodeText: t.subjectCodeText || (t.subject_code !== 'Custom' ? t.subject_code : undefined),
+                subjectCreditText: t.subjectCreditText
             })));
         } catch (err) {
             console.error(err);
@@ -146,7 +149,11 @@ const Timetable = () => {
                         subjectId: entry.subjectId || null,
                         staffId: entry.staffId || null,
                         subjectNameText: entry.subjectNameText || null,
-                        staffNameText: entry.staffNameText || null
+                        staffId: entry.staffId || null,
+                        subjectNameText: entry.subjectNameText || null,
+                        staffNameText: entry.staffNameText || null,
+                        subjectCodeText: entry.subjectCodeText || null,
+                        subjectCreditText: entry.subjectCreditText || null
                     });
                 }
             });
@@ -177,31 +184,51 @@ const Timetable = () => {
     const getEntry = (day, period) => timetable.find(t => t.day === day && t.period === period) || {};
 
     // -- Summary Table Handlers --
+    // -- Summary Table Handlers --
     const handleSummaryChange = (oldSubjectName, field, newValue) => {
         setTimetable(prev => prev.map(t => {
             if (t.subjectNameText === oldSubjectName) {
                 if (field === 'subject') {
-                    // Update Subject Name
                     return {
                         ...t,
                         subjectNameText: newValue,
-                        // If renamed, we lose the ID linkage unless it matches a known subject
-                        subjectId: subjects.find(s => s.name === newValue)?.id || null,
+                        subjectId: subjects.find(s => s.name === newValue)?.id || null, // re-link if known
                         subject_id: subjects.find(s => s.name === newValue)?.id || null
                     };
                 } else if (field === 'staff') {
-                    // Update Staff Name
                     return {
                         ...t,
                         staffNameText: newValue,
-                        // Try to resolve staff ID
-                        staffId: staff.find(s => s.name === newValue)?.id || null,
+                        staffId: staff.find(s => s.name === newValue)?.id || null, // re-link if known
                         staff_id: staff.find(s => s.name === newValue)?.id || null
                     };
+                } else if (field === 'code') {
+                    return { ...t, subjectCodeText: newValue };
+                } else if (field === 'credits') {
+                    return { ...t, subjectCreditText: newValue };
                 }
             }
             return t;
         }));
+    };
+
+    const handleDeleteSubject = async (subjectName) => {
+        if (!window.confirm(`Are you sure you want to delete '${subjectName}' and its schedule?`)) return;
+
+        try {
+            // Optimistic update
+            setTimetable(prev => prev.filter(t => t.subjectNameText !== subjectName));
+
+            // Server-side delete (optional, or rely on Save)
+            // But user asked to delete subject, so immediate delete might be better:
+            await axios.delete('/api/timetable/subject', {
+                data: { year, section, subjectName }
+            });
+
+        } catch (err) {
+            console.error(err);
+            alert("Failed to delete subject entries.");
+        }
     };
 
     return (
@@ -335,6 +362,7 @@ const Timetable = () => {
                                 <th className="px-6 py-4 font-bold text-slate-700 border-l border-slate-200">Course Name</th>
                                 <th className="px-6 py-4 font-bold text-slate-700 border-l border-slate-200">Name of the Staff</th>
                                 <th className="px-6 py-4 font-bold text-slate-700 w-24 text-center border-l border-slate-200">Credit</th>
+                                {!isStudent && <th className="px-6 py-4 font-bold text-slate-700 w-16 text-center border-l border-slate-200">Action</th>}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -350,10 +378,14 @@ const Timetable = () => {
                                         // Try to find metadata
                                         const meta = subjects.find(s => s.name === t.subjectNameText) || {};
 
+                                        // Use manual text if available, else fallback to meta or 'Custom'
+                                        const code = t.subjectCodeText || meta.code || 'Custom';
+                                        const credits = t.subjectCreditText || meta.credits || '-';
+
                                         uniqueSubjects.push({
                                             name: t.subjectNameText,
-                                            code: meta.code || 'Custom',
-                                            credits: meta.credits || '-',
+                                            code,
+                                            credits
                                         });
                                     }
                                 });
@@ -397,7 +429,19 @@ const Timetable = () => {
                                 return summaryData.map((row, idx) => (
                                     <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
                                         <td className="px-6 py-4 text-center font-medium text-slate-600">{idx + 1}</td>
-                                        <td className="px-6 py-4 font-bold text-slate-800 border-l border-slate-100">{row.code}</td>
+
+                                        {/* Editable Course Code */}
+                                        <td className="px-6 py-2 border-l border-slate-100 font-bold text-slate-800">
+                                            {isStudent ? row.code : (
+                                                <input
+                                                    type="text"
+                                                    value={row.code === 'Custom' ? '' : row.code}
+                                                    placeholder="Code"
+                                                    onChange={(e) => handleSummaryChange(row.name, 'code', e.target.value)}
+                                                    className="w-full bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none hover:border-slate-300 transition-colors py-1 font-bold"
+                                                />
+                                            )}
+                                        </td>
 
                                         {/* Editable Course Name */}
                                         <td className="px-6 py-2 text-slate-700 border-l border-slate-100">
@@ -424,7 +468,30 @@ const Timetable = () => {
                                             )}
                                         </td>
 
-                                        <td className="px-6 py-4 text-center text-slate-600 border-l border-slate-100">{row.credits}</td>
+                                        {/* Editable Credits */}
+                                        <td className="px-6 py-2 text-center text-slate-600 border-l border-slate-100">
+                                            {isStudent ? row.credits : (
+                                                <input
+                                                    type="text"
+                                                    value={row.credits === '-' ? '' : row.credits}
+                                                    placeholder="-"
+                                                    onChange={(e) => handleSummaryChange(row.name, 'credits', e.target.value)}
+                                                    className="w-12 text-center bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none hover:border-slate-300 transition-colors py-1"
+                                                />
+                                            )}
+                                        </td>
+
+                                        {!isStudent && (
+                                            <td className="px-4 py-2 border-l border-slate-100 text-center">
+                                                <button
+                                                    onClick={() => handleDeleteSubject(row.name)}
+                                                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Delete Subject"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </td>
+                                        )}
                                     </tr>
                                 ));
                             })()}

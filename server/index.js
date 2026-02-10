@@ -59,10 +59,11 @@ const initDb = async () => {
             );
             CREATE TABLE IF NOT EXISTS subjects (
                 id SERIAL PRIMARY KEY,
-                subject_code VARCHAR(20) UNIQUE NOT NULL,
-                subject_name VARCHAR(100) NOT NULL,
+                subject_name VARCHAR(255) NOT NULL,
+                subject_code VARCHAR(50) UNIQUE NOT NULL,
                 semester INT NOT NULL,
-                credits INT DEFAULT 3
+                credits INT DEFAULT 3,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             CREATE TABLE IF NOT EXISTS marks (
                 id SERIAL PRIMARY KEY,
@@ -162,6 +163,8 @@ const initDb = async () => {
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS od_type VARCHAR(10) DEFAULT 'Day';
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS hours INT;
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS pending_with VARCHAR(20);
+            ALTER TABLE timetable ADD COLUMN IF NOT EXISTS subject_code_text VARCHAR(50);
+            ALTER TABLE timetable ADD COLUMN IF NOT EXISTS subject_credit_text VARCHAR(10);
 
             -- Ensure Fee Naming Consistency safely
             DO $$ 
@@ -642,7 +645,11 @@ app.get('/api/timetable', async (req, res) => {
                    s.subject_code,
                    t.subject_id as subjectId, t.staff_id as staffId,
                    t.subject_name_text as subjectNameText,
-                   t.staff_name_text as staffNameText
+                   t.subject_id as subjectId, t.staff_id as staffId,
+                   t.subject_name_text as subjectNameText,
+                   t.staff_name_text as staffNameText,
+                   t.subject_code_text as subjectCodeText,
+                   t.subject_credit_text as subjectCreditText
             FROM timetable t
             LEFT JOIN subjects s ON t.subject_id = s.id
             LEFT JOIN staff st ON t.staff_id = st.id
@@ -669,21 +676,39 @@ app.post('/api/timetable', async (req, res) => {
         await db.query('BEGIN');
         for (const entry of entries) {
             await db.query(
-                `INSERT INTO timetable (year, section, day, period, subject_id, staff_id, subject_name_text, staff_name_text)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                `INSERT INTO timetable (year, section, day, period, subject_id, staff_id, subject_name_text, staff_name_text, subject_code_text, subject_credit_text)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
                  ON CONFLICT (year, section, day, period)
                  DO UPDATE SET 
                     subject_id = EXCLUDED.subject_id, 
                     staff_id = EXCLUDED.staff_id,
                     subject_name_text = EXCLUDED.subject_name_text,
-                    staff_name_text = EXCLUDED.staff_name_text`,
-                [year, section, entry.day, entry.period, entry.subjectId || null, entry.staffId || null, entry.subjectNameText || null, entry.staffNameText || null]
+                    staff_name_text = EXCLUDED.staff_name_text,
+                    subject_code_text = EXCLUDED.subject_code_text,
+                    subject_credit_text = EXCLUDED.subject_credit_text`,
+                [year, section, entry.day, entry.period, entry.subjectId || null, entry.staffId || null, entry.subjectNameText || null, entry.staffNameText || null, entry.subjectCodeText || null, entry.subjectCreditText || null]
             );
         }
         await db.query('COMMIT');
         res.json({ message: 'Timetable updated' });
     } catch (err) {
         await db.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.delete('/api/timetable/subject', async (req, res) => {
+    const { year, section, subjectName } = req.body;
+    try {
+        console.log(`Deleting subject '${subjectName}' for ${year}-${section}`);
+        // Delete by subject name text match
+        await db.query(
+            "DELETE FROM timetable WHERE year = $1 AND section = $2 AND subject_name_text = $3",
+            [year, section, subjectName]
+        );
+        res.json({ message: 'Subject entries deleted' });
+    } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
