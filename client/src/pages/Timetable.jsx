@@ -57,7 +57,11 @@ const Timetable = () => {
         setLoading(true);
         try {
             const res = await axios.get(`/api/timetable?year=${year}&section=${section}`);
-            setTimetable(res.data);
+            setTimetable(res.data.map(t => ({
+                ...t,
+                subjectNameText: t.subject_name || '',
+                staffNameText: t.staff_name || ''
+            })));
         } catch (err) {
             console.error(err);
         } finally {
@@ -89,34 +93,42 @@ const Timetable = () => {
     };
 
     const handleEntryChange = (day, period, field, value) => {
-        // Optimistic update with consistent field names
         setTimetable(prev => {
             const existing = prev.find(t => t.day === day && t.period === period);
+
+            // Helper to resolve ID from text
+            const resolveId = (text, type) => {
+                if (type === 'subject') {
+                    const match = subjects.find(s => s.name === text || s.code === text);
+                    return match ? match.id : null;
+                }
+                if (type === 'staff') {
+                    const match = staff.find(s => s.name === text || s.staff_id === text);
+                    return match ? match.id : null;
+                }
+                return null;
+            };
+
+            const updateLogic = (t) => {
+                const updated = { ...t };
+                if (field === 'subject') {
+                    updated.subjectNameText = value;
+                    updated.subjectId = resolveId(value, 'subject');
+                    // Clear legacy field if needed or keep sync
+                    updated.subject_id = updated.subjectId;
+                } else if (field === 'staff') {
+                    updated.staffNameText = value;
+                    updated.staffId = resolveId(value, 'staff');
+                    updated.staff_id = updated.staffId;
+                }
+                return updated;
+            };
+
             if (existing) {
-                return prev.map(t => {
-                    if (t.day === day && t.period === period) {
-                        const updated = { ...t };
-                        if (field === 'subjectId') {
-                            updated.subject_id = value;
-                            updated.subjectId = value;
-                        } else if (field === 'staffId') {
-                            updated.staff_id = value;
-                            updated.staffId = value;
-                        }
-                        return updated;
-                    }
-                    return t;
-                });
+                return prev.map(t => (t.day === day && t.period === period) ? updateLogic(t) : t);
             } else {
                 const newEntry = { day, period, year, section };
-                if (field === 'subjectId') {
-                    newEntry.subject_id = value;
-                    newEntry.subjectId = value;
-                } else if (field === 'staffId') {
-                    newEntry.staff_id = value;
-                    newEntry.staffId = value;
-                }
-                return [...prev, newEntry];
+                return [...prev, updateLogic(newEntry)];
             }
         });
     };
@@ -127,12 +139,14 @@ const Timetable = () => {
         days.forEach(day => {
             periods.forEach(period => {
                 const entry = timetable.find(t => t.day === day && t.period === period);
-                if (entry && (entry.subject_id || entry.subjectId) && (entry.staff_id || entry.staffId)) {
+                if (entry && (entry.subjectNameText || entry.staffNameText)) {
                     records.push({
                         day,
                         period,
-                        subjectId: entry.subjectId || entry.subject_id,
-                        staffId: entry.staffId || entry.staff_id
+                        subjectId: entry.subjectId || null,
+                        staffId: entry.staffId || null,
+                        subjectNameText: entry.subjectNameText || null,
+                        staffNameText: entry.staffNameText || null
                     });
                 }
             });
@@ -244,26 +258,20 @@ const Timetable = () => {
                                     return (
                                         <td key={period} className="p-2 border-r border-slate-100 min-w-[140px]">
                                             <div className="space-y-2">
-                                                <select
-                                                    className="w-full text-xs font-semibold bg-blue-50/50 border-none rounded focus:ring-1 focus:ring-blue-500 p-1 text-blue-900 truncate cursor-pointer appearance-auto"
-                                                    value={entry.subject_id || entry.subjectId || ''}
-                                                    onChange={(e) => handleEntryChange(day, period, 'subjectId', e.target.value)}
-                                                >
-                                                    <option value="">Select Subject</option>
-                                                    {Array.isArray(subjects) && subjects.map(s => (
-                                                        <option key={s.id} value={s.id}>{s.code}</option>
-                                                    ))}
-                                                </select>
-                                                <select
-                                                    className="w-full text-xs bg-slate-50/50 border-none rounded focus:ring-1 focus:ring-slate-400 p-1 text-slate-600 truncate cursor-pointer appearance-auto"
-                                                    value={entry.staff_id || entry.staffId || ''}
-                                                    onChange={(e) => handleEntryChange(day, period, 'staffId', e.target.value)}
-                                                >
-                                                    <option value="">Select Faculty</option>
-                                                    {Array.isArray(staff) && staff.map(s => (
-                                                        <option key={s.id} value={s.id}>{s.name} ({s.staff_id})</option>
-                                                    ))}
-                                                </select>
+                                                <input
+                                                    list="subject-options"
+                                                    className="w-full text-xs font-semibold bg-blue-50/50 border-none rounded focus:ring-1 focus:ring-blue-500 p-1 text-blue-900 truncate placeholder-blue-300"
+                                                    placeholder="Subject"
+                                                    value={entry.subjectNameText || ''}
+                                                    onChange={(e) => handleEntryChange(day, period, 'subject', e.target.value)}
+                                                />
+                                                <input
+                                                    list="staff-options"
+                                                    className="w-full text-xs bg-slate-50/50 border-none rounded focus:ring-1 focus:ring-slate-400 p-1 text-slate-600 truncate placeholder-slate-400"
+                                                    placeholder="Faculty"
+                                                    value={entry.staffNameText || ''}
+                                                    onChange={(e) => handleEntryChange(day, period, 'staff', e.target.value)}
+                                                />
                                             </div>
                                         </td>
                                     );
@@ -271,7 +279,17 @@ const Timetable = () => {
                             </tr>
                         ))}
                     </tbody>
-                </table>
+
+                    <datalist id="subject-options">
+                        {subjects.map(s => (
+                            <option key={s.id} value={s.name}>{s.code}</option>
+                        ))}
+                    </datalist>
+                    <datalist id="staff-options">
+                        {staff.map(s => (
+                            <option key={s.id} value={s.name}>{s.staff_id}</option>
+                        ))}
+                    </datalist>                </table>
             </div>
 
             {/* Course Details Summary Table */}
@@ -293,35 +311,50 @@ const Timetable = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {(() => {
-                                // Determine current semester based on year
-                                const currentSem = parseInt(year) * 2;
+                                // Extract all unique subjects from the timetable (including custom ones)
+                                const uniqueSubjects = [];
+                                const seenSubjects = new Set();
 
-                                // Filter subjects for this year's sem
-                                const relevantSubjects = subjects.filter(s => s.semester === currentSem);
+                                timetable.forEach(t => {
+                                    if (t.subjectNameText && !seenSubjects.has(t.subjectNameText)) {
+                                        seenSubjects.add(t.subjectNameText);
 
-                                // Map to subject details
-                                const summaryData = relevantSubjects.map((subject, index) => {
-                                    const subId = subject.id;
+                                        // Try to find metadata
+                                        const meta = subjects.find(s => s.name === t.subjectNameText) || {};
 
-                                    // Find staff assigned to this subject in the current timetable
-                                    const assignedStaffIds = [...new Set(timetable
-                                        .filter(t => (t.subject_id || t.subjectId) == subId && (t.staff_id || t.staffId))
-                                        .map(t => t.staff_id || t.staffId))];
+                                        uniqueSubjects.push({
+                                            name: t.subjectNameText,
+                                            code: meta.code || 'Custom',
+                                            credits: meta.credits || '-',
+                                        });
+                                    }
+                                });
 
-                                    const staffNames = assignedStaffIds.map(sid => {
-                                        const s = staff.find(st => st.id == sid);
-                                        return s ? s.name : null;
-                                    }).filter(Boolean).join(', ');
+                                if (uniqueSubjects.length === 0) {
+                                    // Fallback to relevant subjects if timetable is empty but data exists (optional, or just show empty)
+                                    const currentSem = parseInt(year) * 2;
+                                    if (timetable.length === 0) {
+                                        // Show standard list if no timetable entries
+                                        subjects.filter(s => s.semester === currentSem).forEach(s => {
+                                            uniqueSubjects.push({ name: s.name, code: s.code, credits: s.credits });
+                                        });
+                                    }
+                                }
+
+                                const summaryData = uniqueSubjects.map(sub => {
+                                    // Find staff for this subject
+                                    const staffForSub = [...new Set(timetable
+                                        .filter(t => t.subjectNameText === sub.name && t.staffNameText)
+                                        .map(t => t.staffNameText)
+                                    )];
 
                                     return {
-                                        code: subject.code || subject.subject_code || 'N/A',
-                                        name: subject.name || subject.subject_name || 'Unknown Subject',
-                                        staff: staffNames || 'TBA',
-                                        credits: subject.credits || 3,
-                                        isValid: true
+                                        code: sub.code,
+                                        name: sub.name,
+                                        staff: staffForSub.join(', ') || 'TBA',
+                                        credits: sub.credits
                                     };
-                                })
-                                    .sort((a, b) => a.code.localeCompare(b.code));
+                                }).sort((a, b) => a.name.localeCompare(b.name));
 
                                 if (summaryData.length === 0) {
                                     return (
@@ -334,7 +367,7 @@ const Timetable = () => {
                                 }
 
                                 return summaryData.map((row, idx) => (
-                                    <tr key={row.code} className="hover:bg-slate-50/50 transition-colors">
+                                    <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
                                         <td className="px-6 py-4 text-center font-medium text-slate-600">{idx + 1}</td>
                                         <td className="px-6 py-4 font-bold text-slate-800 border-l border-slate-100">{row.code}</td>
                                         <td className="px-6 py-4 text-slate-700 border-l border-slate-100">{row.name}</td>

@@ -197,6 +197,10 @@ const initDb = async () => {
 
             ALTER TABLE timetable DROP CONSTRAINT IF EXISTS timetable_subject_id_fkey;
             ALTER TABLE timetable ADD CONSTRAINT timetable_subject_id_fkey FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE;
+
+            -- Manual Timetable Entry Support
+            ALTER TABLE timetable ADD COLUMN IF NOT EXISTS subject_name_text VARCHAR(100);
+            ALTER TABLE timetable ADD COLUMN IF NOT EXISTS staff_name_text VARCHAR(100);
         `);
         console.log("Schema verified/updated.");
 
@@ -628,8 +632,13 @@ app.get('/api/timetable', async (req, res) => {
     const { year, section } = req.query;
     try {
         const result = await db.query(`
-            SELECT t.*, s.subject_name, st.name as staff_name, s.subject_code,
-                   t.subject_id as subjectId, t.staff_id as staffId
+            SELECT t.*, 
+                   COALESCE(t.subject_name_text, s.subject_name) as subject_name, 
+                   COALESCE(t.staff_name_text, st.name) as staff_name, 
+                   s.subject_code,
+                   t.subject_id as subjectId, t.staff_id as staffId,
+                   t.subject_name_text as subjectNameText,
+                   t.staff_name_text as staffNameText
             FROM timetable t
             LEFT JOIN subjects s ON t.subject_id = s.id
             LEFT JOIN staff st ON t.staff_id = st.id
@@ -656,11 +665,15 @@ app.post('/api/timetable', async (req, res) => {
         await db.query('BEGIN');
         for (const entry of entries) {
             await db.query(
-                `INSERT INTO timetable (year, section, day, period, subject_id, staff_id)
-                 VALUES ($1, $2, $3, $4, $5, $6)
+                `INSERT INTO timetable (year, section, day, period, subject_id, staff_id, subject_name_text, staff_name_text)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                  ON CONFLICT (year, section, day, period)
-                 DO UPDATE SET subject_id = EXCLUDED.subject_id, staff_id = EXCLUDED.staff_id`,
-                [year, section, entry.day, entry.period, entry.subjectId, entry.staffId]
+                 DO UPDATE SET 
+                    subject_id = EXCLUDED.subject_id, 
+                    staff_id = EXCLUDED.staff_id,
+                    subject_name_text = EXCLUDED.subject_name_text,
+                    staff_name_text = EXCLUDED.staff_name_text`,
+                [year, section, entry.day, entry.period, entry.subjectId || null, entry.staffId || null, entry.subjectNameText || null, entry.staffNameText || null]
             );
         }
         await db.query('COMMIT');
