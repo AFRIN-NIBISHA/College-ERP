@@ -1633,9 +1633,18 @@ app.get('/api/no-due', async (req, res) => {
         // Staff Filtering: Only show students for whom the staff member has subjects in the timetable
         if (role === 'staff' && profile_id) {
             params.push(profile_id);
-            query += ` AND (s.year, s.section) IN (SELECT DISTINCT t.year, t.section FROM timetable t WHERE t.staff_id = $${params.length})`;
-            // Also, only show if Office has approved
-            query += ` AND nd.office_status = 'Approved'`;
+            // Relaxed check: Staff can see if they are linked via ID OR Name in the timetable for that class
+            // And Office must have Approved
+            query += ` 
+                AND (s.year, s.section) IN (
+                    SELECT DISTINCT t.year, t.section 
+                    FROM timetable t 
+                    LEFT JOIN staff st ON t.staff_id = st.id
+                    WHERE t.staff_id = $${params.length} 
+                    OR t.staff_name_text = (SELECT name FROM staff WHERE id = $${params.length})
+                )
+                AND nd.office_status = 'Approved'
+            `;
         }
 
         if (role === 'student' && !student_id) {
