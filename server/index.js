@@ -172,6 +172,14 @@ const initDb = async () => {
                 UNIQUE(year, section)
             );
 
+            CREATE TABLE IF NOT EXISTS notices (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(200) NOT NULL,
+                content TEXT,
+                date_posted TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+
 
             -- Ensure columns exist if table was created prevously
             ALTER TABLE fees ADD COLUMN IF NOT EXISTS total_fee DECIMAL(10, 2) DEFAULT 0;
