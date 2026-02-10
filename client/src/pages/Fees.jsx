@@ -9,8 +9,9 @@ const Fees = () => {
     const isStudent = user?.role === 'student';
 
     // Default to 1st Year, A Section (Common default) - or maintain user selection
-    const [year, setYear] = useState('3');
-    const [section, setSection] = useState('A');
+    // Default to All if possible, or maintain user selection
+    const [year, setYear] = useState('All');
+    const [section, setSection] = useState('All');
 
     // Data States
     const [students, setStudents] = useState([]); // Stores ALL students
@@ -51,20 +52,21 @@ const Fees = () => {
                 axios.get(feesUrl)
             ]);
 
-            // Combine Data
-            const combined = studentRes.data.map(student => {
-                // Find matching fee record (loose comparison for string/number safety)
-                const feeRecord = feesRes.data.find(f => f.student_id == student.id) || {};
+            // Combine Data efficiently using a map
+            const feeMap = new Map();
+            feesRes.data.forEach(f => feeMap.set(String(f.student_id), f));
 
-                // Merge: Fee details + Student details
+            const combined = studentRes.data.map(student => {
+                const feeRecord = feeMap.get(String(student.id)) || {};
+
                 return {
-                    ...feeRecord, // Default fee fields
-                    ...student,   // Student fields (name, roll_no, etc)
+                    ...feeRecord,
+                    ...student,
                     id: student.id,
-                    name: student.name, // Guarantee Name
-                    total_fee: feeRecord.total_fee || '50000', // Ensure default if missing
+                    name: student.name,
+                    total_fee: feeRecord.total_fee || '50000',
                     paid_amount: feeRecord.paid_amount || '0',
-                    status: feeRecord.status || 'Pending'
+                    status: feeRecord.status || (parseFloat(feeRecord.paid_amount) >= parseFloat(feeRecord.total_fee) && feeRecord.total_fee > 0 ? 'Paid' : 'Pending')
                 };
             });
 
@@ -109,10 +111,10 @@ const Fees = () => {
     // Client-side Filtering
     const filteredStudents = students.filter(student => {
         // If student, show all (only fetched own data)
-        if (user?.role === 'student') return true;
+        if (isStudent) return true;
 
-        const matchYear = student.year.toString() === year.toString();
-        const matchSection = student.section === section;
+        const matchYear = year === 'All' || student.year.toString() === year.toString();
+        const matchSection = section === 'All' || student.section === section;
         const matchSearch = searchTerm
             ? (student.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
             (student.roll_no || '').toLowerCase().includes(searchTerm.toLowerCase())
@@ -165,6 +167,12 @@ const Fees = () => {
                                         <div>
                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Filter by Year</p>
                                             <div className="grid grid-cols-2 gap-2">
+                                                <button
+                                                    onClick={() => setYear('All')}
+                                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${year === 'All' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
+                                                >
+                                                    All Years
+                                                </button>
                                                 {['1', '2', '3', '4'].map((y) => (
                                                     <button
                                                         key={y}
@@ -179,7 +187,13 @@ const Fees = () => {
 
                                         <div className="border-t border-slate-100 pt-3">
                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Filter by Section</p>
-                                            <div className="grid grid-cols-3 gap-2">
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <button
+                                                    onClick={() => setSection('All')}
+                                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${section === 'All' ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
+                                                >
+                                                    All Sections
+                                                </button>
                                                 {['A', 'B', 'C'].map((s) => (
                                                     <button
                                                         key={s}

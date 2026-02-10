@@ -44,9 +44,18 @@ const Marks = () => {
             const filteredSubjects = res.data.filter(s => yearSemesters.includes(s.semester));
             setSubjects(filteredSubjects);
 
-            // Set default subject if available (only for staff who need to enter marks)
-            if (filteredSubjects.length > 0 && !subject && isStaff) {
-                setSubject(filteredSubjects[0].subject_code);
+            // Handle subject selection after year change
+            if (filteredSubjects.length > 0) {
+                // If current subject is not in the new year's subjects, or no subject is selected
+                if (!subject || !filteredSubjects.some(s => s.subject_code === subject)) {
+                    if (isStaff) {
+                        setSubject(filteredSubjects[0].subject_code);
+                    } else {
+                        setSubject('');
+                    }
+                }
+            } else {
+                setSubject('');
             }
         } catch (err) {
             console.error("Error fetching subjects", err);

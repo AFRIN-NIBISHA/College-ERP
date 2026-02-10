@@ -17,6 +17,8 @@ const Reports = () => {
     const [statusFilter, setStatusFilter] = useState('All'); // For No Due: All, Completed, Pending
     const [studentSearch, setStudentSearch] = useState('');
     const [selectedStudentId, setSelectedStudentId] = useState('');
+    const [subject, setSubject] = useState('');
+    const [subjects, setSubjects] = useState([]);
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
     const [data, setData] = useState([]);
@@ -81,7 +83,27 @@ const Reports = () => {
 
     useEffect(() => {
         fetchData();
-    }, [activeTab, year, section, month, statusFilter, selectedStudentId]);
+    }, [activeTab, year, section, month, statusFilter, selectedStudentId, subject]);
+
+    useEffect(() => {
+        if (activeTab === 'marks') {
+            fetchSubjects();
+        }
+    }, [year, activeTab]);
+
+    const fetchSubjects = async () => {
+        try {
+            const res = await axios.get(`/api/subjects`);
+            const yearSemesters = year === '2' ? [3, 4] : year === '3' ? [5, 6] : year === '1' ? [1, 2] : year === '4' ? [7, 8] : [];
+            const filtered = res.data.filter(s => yearSemesters.includes(s.semester));
+            setSubjects(filtered);
+            if (filtered.length > 0 && (!subject || !filtered.some(s => s.subject_code === subject))) {
+                setSubject(filtered[0].subject_code);
+            }
+        } catch (err) {
+            console.error("Error fetching subjects", err);
+        }
+    };
 
     const fetchData = async () => {
         setLoading(true);
@@ -108,7 +130,9 @@ const Reports = () => {
                 if (month) params.append('month', month);
                 url = `/api/attendance/report?${params.toString()}`;
             } else if (activeTab === 'marks') {
-                params.append('subject_code', 'CS101'); // Default subject or add selector
+                if (subject) {
+                    params.append('subject_code', subject);
+                }
                 url = `/api/marks?${params.toString()}`;
             } else if (activeTab === 'fees') {
                 url = `/api/fees?${params.toString()}`;
@@ -303,6 +327,17 @@ const Reports = () => {
                                             </div>
                                         )}
 
+                                        {activeTab === 'marks' && (
+                                            <div>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-1">Subject</p>
+                                                <select value={subject} onChange={(e) => setSubject(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs">
+                                                    {subjects.map(s => (
+                                                        <option key={s.id} value={s.subject_code}>{s.subject_code} - {s.subject_name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+
                                         {isStaff && (
                                             <div>
                                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-1">Specific Student (Roll No)</p>
@@ -335,14 +370,62 @@ const Reports = () => {
                 <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                     <h3 className="font-semibold text-slate-700">Preview: {data.length} Records Found</h3>
                     <div className="flex gap-2">
-                        <button onClick={downloadPDF} className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg text-sm">
+                        <button onClick={downloadPDF} className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-colors shadow-sm">
                             <Printer size={16} /> PDF
                         </button>
-                        <button onClick={downloadExcel} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm">
+                        <button onClick={downloadExcel} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors shadow-sm">
                             <FileSpreadsheet size={16} /> Excel
                         </button>
                     </div>
                 </div>
+
+                {/* Analytics Summary */}
+                {!loading && data.length > 0 && (
+                    <div className="p-4 bg-blue-50/30 border-b border-slate-100 grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {activeTab === 'fees' && (
+                            <>
+                                <div className="p-3 bg-white rounded-xl border border-blue-100 shadow-sm">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Paid</p>
+                                    <p className="text-lg font-extrabold text-emerald-600">₹{data.reduce((acc, curr) => acc + (parseFloat(curr.paid_amount) || 0), 0).toLocaleString()}</p>
+                                </div>
+                                <div className="p-3 bg-white rounded-xl border border-blue-100 shadow-sm">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Due</p>
+                                    <p className="text-lg font-extrabold text-rose-500">₹{data.reduce((acc, curr) => acc + (parseFloat(curr.total_fee) - parseFloat(curr.paid_amount) || 0), 0).toLocaleString()}</p>
+                                </div>
+                            </>
+                        )}
+                        {activeTab === 'attendance' && (
+                            <>
+                                <div className="p-3 bg-white rounded-xl border border-blue-100 shadow-sm">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Avg. Attendance</p>
+                                    <p className="text-lg font-extrabold text-blue-600">
+                                        {(data.reduce((acc, curr) => acc + (parseFloat(curr.percentage) || 0), 0) / data.length).toFixed(1)}%
+                                    </p>
+                                </div>
+                            </>
+                        )}
+                        {activeTab === 'no_due' && (
+                            <>
+                                <div className="p-3 bg-white rounded-xl border border-blue-100 shadow-sm">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Completed</p>
+                                    <p className="text-lg font-extrabold text-emerald-600">
+                                        {data.filter(item => item.nodue_overall_status === 'Completed').length}
+                                    </p>
+                                </div>
+                                <div className="p-3 bg-white rounded-xl border border-blue-100 shadow-sm">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">In Progress</p>
+                                    <p className="text-lg font-extrabold text-amber-500">
+                                        {data.filter(item => item.nodue_overall_status !== 'Completed' && item.nodue_overall_status !== 'Not Started').length}
+                                    </p>
+                                </div>
+                            </>
+                        )}
+                        <div className="p-3 bg-white rounded-xl border border-blue-100 shadow-sm">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Records</p>
+                            <p className="text-lg font-extrabold text-slate-700">{data.length}</p>
+                        </div>
+                    </div>
+                )}
 
                 <div className="flex-1 overflow-auto p-4">
                     {loading ? (
