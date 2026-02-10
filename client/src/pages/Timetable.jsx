@@ -291,18 +291,27 @@ const Timetable = () => {
 
                                     if (isStudent) {
                                         // Read Only View for Student
-                                        const subName = subjects.find(s => s.id == (entry.subject_id || entry.subjectId))?.code || '-';
-                                        const staffName = staff.find(s => s.id == (entry.staff_id || entry.staffId))?.name || (entry.subject_id ? 'Staff' : '-');
+                                        const entrySubCode = entry.subjectCodeText ||
+                                            subjects.find(s => s.id == (entry.subject_id || entry.subjectId))?.code ||
+                                            (entry.subjectNameText ? 'Custom' : '-');
+
+                                        const entrySubName = entry.subjectNameText ||
+                                            subjects.find(s => s.id == (entry.subject_id || entry.subjectId))?.name ||
+                                            '-';
+
+                                        const entryStaffName = entry.staffNameText ||
+                                            staff.find(s => s.id == (entry.staff_id || entry.staffId))?.name ||
+                                            (entrySubName !== '-' ? 'TBA' : '-');
 
                                         return (
                                             <td key={period} className="p-2 border-r border-slate-100 min-w-[140px] text-center">
-                                                {subName !== '-' ? (
+                                                {entrySubName !== '-' ? (
                                                     <div className="p-2 rounded-lg bg-blue-50/50 border border-blue-100/50 hover:bg-white hover:shadow-sm transition-all cursor-default relative group">
-                                                        <p className="text-xs font-bold text-blue-700">{subName}</p>
-                                                        <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wide truncate">{staffName}</p>
+                                                        <p className="text-xs font-bold text-blue-700">{entrySubCode !== 'Custom' ? entrySubCode : entrySubName}</p>
+                                                        <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wide truncate">{entryStaffName}</p>
                                                         {/* Tooltip for full details */}
                                                         <div className="absolute opacity-0 group-hover:opacity-100 bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-xs rounded shadow-lg pointer-events-none whitespace-nowrap z-10 transition-opacity">
-                                                            {subjects.find(s => s.id == (entry.subject_id || entry.subjectId))?.name}
+                                                            {entrySubName}
                                                         </div>
                                                     </div>
                                                 ) : <span className="text-slate-300">-</span>}
