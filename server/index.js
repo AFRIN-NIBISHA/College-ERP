@@ -163,6 +163,16 @@ const initDb = async () => {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
+            CREATE TABLE IF NOT EXISTS class_details (
+                id SERIAL PRIMARY KEY,
+                year INT NOT NULL,
+                section VARCHAR(10) NOT NULL,
+                staff_id INT REFERENCES staff(id) ON DELETE SET NULL,
+                rep_name VARCHAR(100),
+                UNIQUE(year, section)
+            );
+
+
             -- Ensure columns exist if table was created prevously
             ALTER TABLE fees ADD COLUMN IF NOT EXISTS total_fee DECIMAL(10, 2) DEFAULT 0;
             ALTER TABLE fees ADD COLUMN IF NOT EXISTS paid_amount DECIMAL(10, 2) DEFAULT 0;
