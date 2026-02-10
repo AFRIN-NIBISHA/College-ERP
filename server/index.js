@@ -2018,34 +2018,58 @@ app.post('/api/od/apply', async (req, res) => {
         const newOD = result.rows[0];
         console.log('OD Created Successfully:', newOD.id);
 
-        // Notify relevant users
-        if (pendingWith === 'staff') {
-            // Find Class Incharge from class_details
-            const stud = await db.query("SELECT year, section FROM students WHERE id = $1", [student_id]);
-            if (stud.rows.length > 0) {
-                const { year, section } = stud.rows[0];
-                const inchargeRes = await db.query("SELECT staff_id FROM class_details WHERE year = $1 AND section = $2", [year, section]);
-                if (inchargeRes.rows.length > 0) {
-                    const staffProfileId = inchargeRes.rows[0].staff_id;
-                    const staffUserRes = await db.query("SELECT user_id FROM staff WHERE id = $1", [staffProfileId]);
-                    if (staffUserRes.rows.length > 0) {
-                        await createNotification(staffUserRes.rows[0].user_id, 'New OD Request', `A student in your class has applied for ${od_type} OD.`, 'od');
+        // --- Notification Logic (Wrapped in try-catch to avoid failing the main request) ---
+        try {
+            if (pendingWith === 'staff') {
+                // Find Class Incharge from class_details
+                const stud = await db.query("SELECT year, section FROM students WHERE id = $1", [student_id]);
+                if (stud.rows.length > 0) {
+                    const { year, section } = stud.rows[0];
+                    const inchargeRes = await db.query(
+                        "SELECT staff_id FROM class_details WHERE year = $1 AND UPPER(TRIM(section)) = UPPER(TRIM($2))",
+                        [year, section]
+                    );
+                    if (inchargeRes.rows.length > 0) {
+                        const staffProfileId = inchargeRes.rows[0].staff_id;
+                        // Find the name of this incharge to notify ALL their linked accounts
+                        const staffNameRes = await db.query("SELECT name FROM staff WHERE id = $1", [staffProfileId]);
+                        if (staffNameRes.rows.length > 0) {
+                            const staffName = staffNameRes.rows[0].name;
+                            const allStaffAccounts = await db.query("SELECT user_id FROM staff WHERE name = $1 AND user_id IS NOT NULL", [staffName]);
+                            for (const staffRow of allStaffAccounts.rows) {
+                                await createNotification(staffRow.user_id, 'New OD Request', `A student in your class has applied for ${od_type} OD.`, 'od');
+                            }
+                        }
                     }
+
+                }
+            } else {
+                const usersToNotify = await db.query("SELECT id as user_id FROM users WHERE role = $1", [pendingWith]);
+                for (const user of usersToNotify.rows) {
+                    await createNotification(
+                        user.user_id,
+                        'New OD Request',
+                        `A new OD request requires ${pendingWith} approval.`,
+                        'od'
+                    );
                 }
             }
-        } else {
-            const usersToNotify = await db.query("SELECT id as user_id FROM users WHERE role = $1", [pendingWith]);
-            for (const user of usersToNotify.rows) {
-                await createNotification(user.user_id, 'New OD Request', `A new OD request requires ${pendingWith} approval.`, 'od');
-            }
+        } catch (notifErr) {
+            console.error("Delayed Notification Error (Request still succeeded):", notifErr.message);
+            // We don't throw here, the OD is already saved.
         }
 
         res.json({ message: 'OD Request submitted successfully', pending_with: pendingWith, id: newOD.id });
     } catch (err) {
         console.error("OD Apply Error:", err);
-        res.status(500).json({ message: 'Server error: ' + err.message, error: err.message });
+        res.status(500).json({
+            message: 'Server error: ' + err.message,
+            details: err.message,
+            hint: 'Database insertion or lookup failed before notification.'
+        });
     }
 });
+
 
 app.get('/api/od', async (req, res) => {
     const { student_id, role, profile_id } = req.query;
@@ -2064,18 +2088,33 @@ app.get('/api/od', async (req, res) => {
         }
 
         // Filtering Logic for Staff/HOD/Principal
-        if (role === 'staff' && profile_id) {
-            // Staff (Incharge) can see ALL requests from their class to stay informed
-            // But they can only APPROVE if pending_with = 'staff' (handled in frontend/backend)
-            params.push(profile_id);
-            query += ` AND (s.year, s.section) IN (SELECT year, section FROM class_details WHERE staff_id = $${params.length})`;
-        } else if (role === 'hod') {
-            // HOD sees what is pending with HOD
-            query += ` AND od.pending_with = 'hod'`;
-        } else if (role === 'principal') {
-            // Principal sees what is pending with Principal
-            query += ` AND od.pending_with = 'principal'`;
+        if (['staff', 'hod', 'principal'].includes(role) && profile_id) {
+            const staffRes = await db.query("SELECT name FROM staff WHERE id = $1", [profile_id]);
+            const staffName = staffRes.rows.length > 0 ? staffRes.rows[0].name : null;
+
+            let conditions = [];
+
+            // 1. Visibility for Incharge (Match by name to handle duplicates)
+            if (staffName) {
+                params.push(staffName);
+                conditions.push(`(s.year, UPPER(TRIM(s.section))) IN (
+                    SELECT cd.year, UPPER(TRIM(cd.section)) 
+                    FROM class_details cd
+                    JOIN staff st ON cd.staff_id = st.id
+                    WHERE st.name = $${params.length}
+                )`);
+            } else {
+                params.push(profile_id);
+                conditions.push(`(s.year, UPPER(TRIM(s.section))) IN (SELECT year, UPPER(TRIM(section)) FROM class_details WHERE staff_id = $${params.length})`);
+            }
+
+            // 2. Global pending visibility based on role
+            if (role === 'hod') conditions.push("od.pending_with = 'hod'");
+            else if (role === 'principal') conditions.push("od.pending_with = 'principal'");
+
+            query += ` AND (${conditions.join(' OR ')})`;
         }
+
 
         query += " ORDER BY od.created_at DESC";
         const result = await db.query(query, params);
@@ -2085,6 +2124,7 @@ app.get('/api/od', async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 });
+
 
 
 
