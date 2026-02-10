@@ -198,28 +198,49 @@ const NoDue = () => {
     const filteredRequests = requests.filter(req => {
         if (isStudent) return true; // Students see all their requests
 
-        // Office stops here
-        if (role === 'office' || role === 'admin') { // Admin sees everything? Let's restrict for clarity or keep all.
-            // If strictly Office view:
-            if (role === 'office') return req.office_status === 'Pending';
-            // Admin view: show all for debugging, or follow flow? 
-            // Let's stick to the flow requested: "Office la Approve panna tha staffs ku show aahanum"
-            if (role === 'admin') return true;
+        // Admin sees everything
+        if (role === 'admin') return true;
+
+        // Office sees pending office requests
+        if (role === 'office') {
+            return req.office_status === 'Pending';
         }
 
-        // Staff Logic: Only show if Office Approved AND Staff has pending subject
+        // Staff Logic: Only show if Office Approved
         if (role === 'staff') {
+            // Must be approved by office first
             if (req.office_status !== 'Approved') return false;
 
-            // Check if this staff has any pending subjects for this student
-            const hasPendingSubjectForThisStaff = req.subjects.some(subject => {
-                const userName = user?.name?.trim().toLowerCase() || user?.username?.trim().toLowerCase();
+            // Check if this staff is assigned to ANY subject for this student
+            // And if that subject is still Pending
+            const hasPendingSubjectForThisStaff = req.subjects && req.subjects.some(subject => {
+                const subStatusKey = subject.derivedCode ?
+                    (subject.derivedCode.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_status') :
+                    'unknown_status';
+
+                const currentStatus = req[subStatusKey] || 'Pending';
+
+                // If already approved/rejected, don't show in "To Do" list (optional, but usually desired)
+                if (currentStatus !== 'Pending') return false;
+
+                // Match Logic
+                const userName = user?.name?.trim().toLowerCase();
                 const staffName = subject.staff_name?.trim().toLowerCase();
 
-                const isIdMatch = user?.profileId && subject.staff_profile_id && (Number(user.profileId) === Number(subject.staff_profile_id));
-                const isNameMatch = userName && staffName && (userName === staffName || userName.includes(staffName) || staffName.includes(userName));
+                // ID Match (Strongest)
+                if (user?.profileId && subject.staff_profile_id &&
+                    Number(user.profileId) === Number(subject.staff_profile_id)) {
+                    return true;
+                }
 
-                return (isIdMatch || isNameMatch) && subject.status === 'Pending';
+                // Name Match (Fallback for manual entries)
+                if (userName && staffName) {
+                    return userName === staffName ||
+                        userName.includes(staffName) ||
+                        staffName.includes(userName);
+                }
+
+                return false;
             });
 
             return hasPendingSubjectForThisStaff;
@@ -229,8 +250,12 @@ const NoDue = () => {
         if (role === 'hod') {
             if (req.office_status !== 'Approved') return false;
 
-            const allSubjectsApproved = req.subjects.every(s => s.status === 'Approved');
-            if (!allSubjectsApproved) return false; // Waiting for Staffs
+            // Check if all subjects are approved
+            // We need to look at the actual status fields in 'req', not just the 'subjects' array which might be static metadata
+            // But wait, we mapped status into subjects in fetchRequests. Let's use that.
+            const allSubjectsApproved = req.subjects && req.subjects.every(s => s.status === 'Approved');
+
+            if (!allSubjectsApproved) return false;
 
             return req.hod_status === 'Pending';
         }
