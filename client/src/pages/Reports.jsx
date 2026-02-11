@@ -168,7 +168,7 @@ const Reports = () => {
                     receipt_no: item.receipt_no || '-',
                     paid_amount: item.paid_amount || 0,
                     total_fee: item.total_fee || 0,
-                    status: item.status || 'Pending',
+                    status: (parseFloat(item.paid_amount) >= parseFloat(item.total_fee) && item.total_fee > 0) ? 'Completed' : 'Next Payment',
                     nodue_overall_status: item.nodue_overall_status || 'Not Started',
                     office_status: item.office_status || '-',
                     staff_status: item.staff_status || '-',

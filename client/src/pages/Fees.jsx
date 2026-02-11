@@ -266,7 +266,7 @@ const Fees = () => {
                                             <td className="p-4" data-label="Status">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${paid >= total && total > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
                                                     }`}>
-                                                    {paid >= total && total > 0 ? 'Paid' : 'Pending'}
+                                                    {paid >= total && total > 0 ? 'Completed' : 'Next Payment'}
                                                 </span>
                                             </td>
                                             <td className="p-4 text-right" data-label="Action">
@@ -334,7 +334,7 @@ const Fees = () => {
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Payment Status</p>
                                         <p className={`text-lg font-extrabold ${parseFloat(feeForm.total_fee || 0) - parseFloat(feeForm.paid_amount || 0) > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
                                             {parseFloat(feeForm.total_fee || 0) - parseFloat(feeForm.paid_amount || 0) > 0
-                                                ? `Pending: ₹${(parseFloat(feeForm.total_fee || 0) - parseFloat(feeForm.paid_amount || 0)).toLocaleString()}`
+                                                ? `Next Payment: ₹${(parseFloat(feeForm.total_fee || 0) - parseFloat(feeForm.paid_amount || 0)).toLocaleString()}`
                                                 : 'Status: Completed'}
                                         </p>
                                     </div>
