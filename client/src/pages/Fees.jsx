@@ -329,6 +329,20 @@ const Fees = () => {
                                     </div>
                                 </div>
 
+                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                                    <div>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Payment Status</p>
+                                        <p className={`text-lg font-extrabold ${parseFloat(feeForm.total_fee || 0) - parseFloat(feeForm.paid_amount || 0) > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                                            {parseFloat(feeForm.total_fee || 0) - parseFloat(feeForm.paid_amount || 0) > 0
+                                                ? `Pending: ₹${(parseFloat(feeForm.total_fee || 0) - parseFloat(feeForm.paid_amount || 0)).toLocaleString()}`
+                                                : 'Status: Completed'}
+                                        </p>
+                                    </div>
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${parseFloat(feeForm.total_fee || 0) - parseFloat(feeForm.paid_amount || 0) > 0 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                        {parseFloat(feeForm.total_fee || 0) - parseFloat(feeForm.paid_amount || 0) > 0 ? <RefreshCw size={20} /> : <Check size={20} />}
+                                    </div>
+                                </div>
+
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-slate-700 mb-1">Payment Date</label>
@@ -371,7 +385,7 @@ const Fees = () => {
                                 </div>
                             </form>
                         </div>
-                    </div>
+                    </div >
                 )
             }
         </div >
