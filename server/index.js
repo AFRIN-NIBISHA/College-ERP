@@ -977,8 +977,6 @@ app.get('/api/reports/students', async (req, res) => {
 });
 
 // 7. Attendance Endpoints
-
-// Save Attendance (Bulk Update/Insert)
 // Save Attendance (Period-wise)
 app.post('/api/attendance', async (req, res) => {
     const { date, records, period } = req.body; // period is 1-8 or undefined (legacy)
@@ -994,16 +992,24 @@ app.post('/api/attendance', async (req, res) => {
 
         for (const [studentId, status] of Object.entries(records)) {
             if (periodCol) {
-                // Upsert Period Attendance
-                // We use dynamic column name safely because we whitelist period 1-8 above
+                // We need to build a list of all period columns EXCEPT the current one
+                const otherPeriods = [1, 2, 3, 4, 5, 6, 7, 8]
+                    .filter(p => p !== period)
+                    .map(p => `attendance.period_${p}`)
+                    .join(', ');
+
                 const query = `
                     INSERT INTO attendance (student_id, date, status, ${periodCol}) 
-                    VALUES ($1, $2, 'Present', $3) 
+                    VALUES ($1, $2, $3, $3) 
                     ON CONFLICT (student_id, date) 
-                    DO UPDATE SET ${periodCol} = EXCLUDED.${periodCol}
+                    DO UPDATE SET 
+                        ${periodCol} = EXCLUDED.${periodCol},
+                        status = CASE 
+                            WHEN EXCLUDED.${periodCol} = 'Absent' OR 'Absent' IN (${otherPeriods}) THEN 'Absent'
+                            WHEN EXCLUDED.${periodCol} = 'On Duty' OR 'On Duty' IN (${otherPeriods}) THEN 'On Duty'
+                            ELSE 'Present'
+                        END
                 `;
-                // Note: We default main 'status' to 'Present' on insert, but don't overwrite it on update unless we want to logic it out.
-                // Logic: Just update the specific period. The main 'status' remains 'Present' (default) if inserted new.
 
                 await db.query(query, [studentId, date, status]);
             } else {
