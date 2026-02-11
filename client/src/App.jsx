@@ -84,7 +84,7 @@ const Layout = ({ children }) => {
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
+                <main className="flex-1 overflow-y-scroll p-4 md:p-8 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
                     {children}
                 </main>
             </div>

@@ -272,7 +272,7 @@ const Reports = () => {
                         {showFilterDropdown && (
                             <>
                                 <div className="fixed inset-0 z-40" onClick={() => setShowFilterDropdown(false)}></div>
-                                <div className="absolute top-full right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-4 shadow-blue-900/10 scale-in-center">
+                                <div className="absolute top-full right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-4 shadow-blue-900/10 scale-in-center origin-top-right">
                                     <div className="space-y-4">
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>

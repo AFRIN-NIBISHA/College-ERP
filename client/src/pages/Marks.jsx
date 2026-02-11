@@ -163,7 +163,7 @@ const Marks = () => {
                         {showFilterDropdown && (
                             <>
                                 <div className="fixed inset-0 z-40" onClick={() => setShowFilterDropdown(false)}></div>
-                                <div className="absolute top-full left-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-4 sm:p-5 shadow-blue-900/10 scale-in-center">
+                                <div className="absolute top-full left-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-4 sm:p-5 shadow-blue-900/10 scale-in-center origin-top-left">
                                     <div className="space-y-4">
                                         <div>
                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Select Subject</p>

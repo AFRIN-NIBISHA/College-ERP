@@ -73,8 +73,6 @@ body::before {
     box-shadow:
         0 20px 25px -5px rgba(0, 0, 0, 0.1),
         0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    transform: translateY(-5px);
-    /* Pop up effect */
 }
 
 /* Responsive Table Enhancements */
@@ -147,30 +145,33 @@ body::before {
     }
 }
 
-/* Custom Animations - Fixes for UI Glitches */
+/* Animation Utilities - Optimized to prevent shaking */
 .scale-in-center {
-    animation: scale-in-center 0.15s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+    animation: slide-in-fwd-top 0.2s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+    transform-origin: top;
+    will-change: transform, opacity;
 }
 
-@keyframes scale-in-center {
+@keyframes slide-in-fwd-top {
     0% {
-        transform: scale(0.98);
+        transform: translateY(-10px);
         opacity: 0;
     }
 
     100% {
-        transform: scale(1);
+        transform: translateY(0);
         opacity: 1;
     }
 }
 
 .zoom-in {
-    animation: zoom-in 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    animation: zoom-in-stable 0.2s ease-out both;
+    will-change: transform, opacity;
 }
 
-@keyframes zoom-in {
+@keyframes zoom-in-stable {
     0% {
-        transform: scale(0.9);
+        transform: scale(0.95);
         opacity: 0;
     }
 
@@ -181,10 +182,10 @@ body::before {
 }
 
 .fade-in {
-    animation: fade-in 0.2s ease-out both;
+    animation: fade-in-stable 0.2s ease-out both;
 }
 
-@keyframes fade-in {
+@keyframes fade-in-stable {
     0% {
         opacity: 0;
     }
