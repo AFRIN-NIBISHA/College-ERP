@@ -236,6 +236,24 @@ const initDb = async () => {
             -- Manual Timetable Entry Support
             ALTER TABLE timetable ADD COLUMN IF NOT EXISTS subject_name_text VARCHAR(100);
             ALTER TABLE timetable ADD COLUMN IF NOT EXISTS staff_name_text VARCHAR(100);
+
+            -- Ensure Attendance Periods Exist
+            ALTER TABLE attendance ADD COLUMN IF NOT EXISTS period_1 VARCHAR(20);
+            ALTER TABLE attendance ADD COLUMN IF NOT EXISTS period_2 VARCHAR(20);
+            ALTER TABLE attendance ADD COLUMN IF NOT EXISTS period_3 VARCHAR(20);
+            ALTER TABLE attendance ADD COLUMN IF NOT EXISTS period_4 VARCHAR(20);
+            ALTER TABLE attendance ADD COLUMN IF NOT EXISTS period_5 VARCHAR(20);
+            ALTER TABLE attendance ADD COLUMN IF NOT EXISTS period_6 VARCHAR(20);
+            ALTER TABLE attendance ADD COLUMN IF NOT EXISTS period_7 VARCHAR(20);
+            ALTER TABLE attendance ADD COLUMN IF NOT EXISTS period_8 VARCHAR(20);
+
+            -- Ensure Attendance Unique Constraint
+            DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'attendance_student_id_date_key') THEN
+                    ALTER TABLE attendance ADD CONSTRAINT attendance_student_id_date_key UNIQUE (student_id, date);
+                END IF;
+            END $$;
         `);
         console.log("Schema verified/updated.");
 
