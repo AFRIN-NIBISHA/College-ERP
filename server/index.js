@@ -390,15 +390,18 @@ app.get('/api/subjects', async (req, res) => {
             // Fetch subjects assigned in the timetable for this class
             // Include both known subjects and custom text entries
             query = `
-                SELECT DISTINCT 
-                    COALESCE(s.id, (999000 + t.id)) as id,
+                SELECT 
+                    MIN(COALESCE(s.id, (999000 + t.id))) as id,
                     COALESCE(s.subject_name, t.subject_name_text) as subject_name,
                     COALESCE(s.subject_code, COALESCE(t.subject_code_text, 'Custom')) as subject_code,
-                    COALESCE(s.semester, 0) as semester,
-                    COALESCE(s.credits, 3) as credits
+                    MAX(COALESCE(s.semester, 0)) as semester,
+                    MAX(COALESCE(s.credits, 3)) as credits
                 FROM timetable t
                 LEFT JOIN subjects s ON t.subject_id = s.id
                 WHERE TRIM(t.year::text) = TRIM($1::text) AND UPPER(TRIM(t.section)) = UPPER(TRIM($2))
+                GROUP BY 
+                    COALESCE(s.subject_name, t.subject_name_text),
+                    COALESCE(s.subject_code, COALESCE(t.subject_code_text, 'Custom'))
             `;
             params = [year, section];
         } else {
