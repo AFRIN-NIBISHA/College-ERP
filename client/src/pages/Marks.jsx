@@ -154,7 +154,7 @@ const Marks = () => {
                     <div className="flex gap-2 w-full md:w-auto relative">
                         <button
                             onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 border rounded-xl transition-all text-sm font-semibold ${subject || year || section ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                            className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 border rounded-xl transition-colors duration-200 text-sm font-semibold ${subject || year || section ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                         >
                             <Filter size={16} />
                             <span className="truncate max-w-[150px]">{subject ? `Filter: ${subject}` : 'All Subjects'}</span>
