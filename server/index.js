@@ -2088,6 +2088,27 @@ app.post('/api/od/apply', async (req, res) => {
 
         const effectiveDateTo = (od_type === 'Hour' || !date_to) ? date_from : date_to;
 
+        // --- Overlap Check: Prevent multiple ODs for the same date/time ---
+        const existingOD = await db.query(
+            `SELECT * FROM student_od 
+             WHERE student_id = $1 
+             AND status != 'Rejected' 
+             AND date_from <= $2 
+             AND date_to >= $3`,
+            [student_id, effectiveDateTo, date_from]
+        );
+
+        if (existingOD.rows.length > 0) {
+            const conflict = existingOD.rows[0];
+            const conflictType = conflict.od_type;
+            const fromStr = new Date(conflict.date_from).toLocaleDateString();
+            const toStr = new Date(conflict.date_to).toLocaleDateString();
+
+            return res.status(400).json({
+                message: `Overlap detected! You already have a ${conflictType} OD request for this period (${fromStr} - ${toStr}). Current status: ${conflict.status}. Duplicate requests are not allowed.`
+            });
+        }
+
         const sanitizedData = [
             student_id,
             date_from || null,
