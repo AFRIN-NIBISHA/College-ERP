@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Bus, User, Phone, Plus, Edit2, Trash2, X, Check, Search } from 'lucide-react';
+import { Bus, User, Phone, Plus, Edit2, Trash2, X, Check, Search, AlertCircle } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -25,7 +25,7 @@ const BusManagement = () => {
     const fetchBuses = async () => {
         try {
             const res = await axios.get(`${API_URL}/bus`);
-            setBuses(res.data);
+            setBuses(Array.isArray(res.data) ? res.data : []);
             setLoading(false);
         } catch (err) {
             console.error('Error fetching buses', err);
@@ -89,8 +89,8 @@ const BusManagement = () => {
     };
 
     const filteredBuses = buses.filter(bus =>
-        bus.bus_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        bus.driver_name.toLowerCase().includes(searchTerm.toLowerCase())
+        (bus.bus_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (bus.driver_name || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
