@@ -2767,6 +2767,50 @@ app.get('/api/bus', async (req, res) => {
     }
 });
 
+// Add New Bus
+app.post('/api/bus', async (req, res) => {
+    const { bus_number, driver_name, driver_phone } = req.body;
+    try {
+        const result = await db.query(
+            "INSERT INTO bus (bus_number, driver_name, driver_phone) VALUES ($1, $2, $3) RETURNING *",
+            [bus_number, driver_name, driver_phone]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        if (err.code === '23505') return res.status(400).json({ message: 'Bus number already exists' });
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Update Bus
+app.put('/api/bus/:id', async (req, res) => {
+    const { id } = req.params;
+    const { bus_number, driver_name, driver_phone } = req.body;
+    try {
+        const result = await db.query(
+            "UPDATE bus SET bus_number = $1, driver_name = $2, driver_phone = $3 WHERE id = $4 RETURNING *",
+            [bus_number, driver_name, driver_phone, id]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Delete Bus
+app.delete('/api/bus/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await db.query("DELETE FROM bus WHERE id = $1", [id]);
+        res.json({ message: 'Bus deleted successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 // 2. Start Trip (Ensures bus exists)
 app.post('/api/bus/start', async (req, res) => {
     const { bus_number, driver_name } = req.body;

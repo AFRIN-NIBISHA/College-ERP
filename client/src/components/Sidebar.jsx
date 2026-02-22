@@ -1,7 +1,10 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, GraduationCap, FileText, ClipboardCheck, Bell, LogOut, BookOpen, BarChart, IndianRupee, CheckCircle, X, MapPin, Navigation } from 'lucide-react';
+import {
+    LayoutDashboard, Users, GraduationCap, FileText, ClipboardCheck,
+    Bell, LogOut, BookOpen, BarChart, IndianRupee, CheckCircle,
+    X, MapPin, Navigation, Settings
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import logo from '../assets/dmi_logo.png';
@@ -16,7 +19,6 @@ const Sidebar = ({ isOpen, onClose }) => {
     useEffect(() => {
         if (user?.id) {
             fetchNotifications();
-            // Poll for notifications every 30 seconds
             const interval = setInterval(fetchNotifications, 30000);
             return () => clearInterval(interval);
         }
@@ -47,12 +49,11 @@ const Sidebar = ({ isOpen, onClose }) => {
         navigate('/login');
     };
 
-    // Define menus for each role
     const menus = {
         student: [
             { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
             { icon: Users, label: 'My Profile', path: '/profile' },
-            { icon: BookOpen, label: 'Subjects', path: '/subjects' }, // Placeholder
+            { icon: BookOpen, label: 'Subjects', path: '/subjects' },
             { icon: FileText, label: 'Timetable', path: '/timetable' },
             { icon: ClipboardCheck, label: 'Attendance', path: '/attendance' },
             { icon: BookOpen, label: 'Internal Marks', path: '/marks' },
@@ -63,7 +64,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],
         staff: [
-            { icon: LayoutDashboard, label: 'Dashboard', path: '/' }, // Staff need dashboard too
+            { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
             { icon: ClipboardCheck, label: 'Attendance', path: '/attendance' },
             { icon: FileText, label: 'Timetable', path: '/timetable' },
             { icon: BookOpen, label: 'Update Marks', path: '/marks' },
@@ -74,11 +75,12 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: BarChart, label: 'Reports', path: '/reports' },
             { icon: MapPin, label: 'Bus Tracking', path: '/bus-tracking' },
             { icon: Navigation, label: 'Driver Portal', path: '/driver-tracking' },
+            { icon: Settings, label: 'Bus Management', path: '/bus-management' },
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],
         hod: [
             { icon: LayoutDashboard, label: 'HOD Dashboard', path: '/' },
-            { icon: ClipboardCheck, label: 'Faculty Attendance', path: '/attendance/faculty' }, // Added
+            { icon: ClipboardCheck, label: 'Faculty Attendance', path: '/attendance/faculty' },
             { icon: GraduationCap, label: 'Staff Mgmt', path: '/faculty' },
             { icon: Users, label: 'Dept Students', path: '/students' },
             { icon: ClipboardCheck, label: 'Monitor Attendance', path: '/attendance/report' },
@@ -86,6 +88,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: FileText, label: 'OD / Leave', path: '/od-requests' },
             { icon: BarChart, label: 'Dept Reports', path: '/reports' },
             { icon: MapPin, label: 'Bus Tracking', path: '/bus-tracking' },
+            { icon: Settings, label: 'Bus Management', path: '/bus-management' },
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],
         principal: [
@@ -97,6 +100,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: BarChart, label: 'Global Reports', path: '/reports' },
             { icon: MapPin, label: 'Bus Tracking', path: '/bus-tracking' },
             { icon: Navigation, label: 'Driver Portal', path: '/driver-tracking' },
+            { icon: Settings, label: 'Bus Management', path: '/bus-management' },
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],
         office: [
@@ -106,12 +110,8 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: Users, label: 'Student Records', path: '/students' },
             { icon: BarChart, label: 'Reports', path: '/reports' },
             { icon: MapPin, label: 'Bus Tracking', path: '/bus-tracking' },
-        ],
-        admin: [
-            { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-            { icon: Users, label: 'Students', path: '/students' },
-            { icon: CheckCircle, label: 'No Due', path: '/no-due' },
-            { icon: FileText, label: 'OD Requests', path: '/od-requests' }
+            { icon: Settings, label: 'Bus Management', path: '/bus-management' },
+            { icon: Bell, label: 'Notices', path: '/notices' },
         ],
         driver: [
             { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -122,9 +122,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     };
 
     const currentRole = user?.role || 'student';
-    let filteredItems = menus[currentRole] || menus['staff'];
-
-    // Map admin to principal view for full access
+    let filteredItems = menus[currentRole] || menus['student'];
     if (currentRole === 'admin') filteredItems = menus['principal'];
 
     return (
@@ -138,11 +136,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                     <img src={logo} alt="DMI Logo" className="w-10 h-10 object-contain" />
                     <span className="text-xl font-bold tracking-tight text-slate-800">College<span className="text-blue-600">ERP</span></span>
                 </div>
-                {/* Close Button Mobile */}
-                <button
-                    onClick={onClose}
-                    className="lg:hidden p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-                >
+                <button onClick={onClose} className="lg:hidden p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
                     <X size={20} />
                 </button>
             </div>
@@ -152,12 +146,11 @@ const Sidebar = ({ isOpen, onClose }) => {
                 {filteredItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = location.pathname === item.path;
-
                     return (
                         <Link
                             key={item.path}
                             to={item.path}
-                            onClick={() => onClose && onClose()} // Close sidebar on mobile when link clicked
+                            onClick={() => onClose && onClose()}
                             className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group font-medium text-sm ${isActive
                                 ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 shadow-sm border border-blue-100'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 hover:translate-x-1'
@@ -172,7 +165,6 @@ const Sidebar = ({ isOpen, onClose }) => {
             </nav>
 
             <div className="p-5 border-t border-slate-100 bg-white/50">
-                {/* Notifications Panel */}
                 <div className="relative mb-4">
                     <button
                         onClick={() => setShowNotifications(!showNotifications)}
@@ -194,7 +186,6 @@ const Sidebar = ({ isOpen, onClose }) => {
 
                     {showNotifications && (
                         <div className="absolute bottom-full left-0 w-full mb-2 bg-white rounded-xl shadow-xl border border-slate-100 max-h-80 overflow-y-auto z-50 animate-in slide-in-from-bottom-2 fade-in duration-200">
-                            {/* ... existing notification list ... */}
                             <div className="p-3 border-b border-slate-100 bg-slate-50 rounded-t-xl">
                                 <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Recent Updates</h4>
                             </div>
