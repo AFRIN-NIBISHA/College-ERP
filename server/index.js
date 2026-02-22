@@ -2839,6 +2839,19 @@ app.post('/api/bus/location', async (req, res) => {
     }
 });
 
+// Remove Bus Location (Stop sharing)
+app.delete('/api/bus/location/:bus_id', async (req, res) => {
+    const { bus_id } = req.params;
+    try {
+        await db.query("DELETE FROM bus_location WHERE bus_id = $1", [bus_id]);
+        res.json({ success: true, message: 'Location sharing stopped' });
+    } catch (err) {
+        console.error("Location Delete Error:", err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+
 // 4. Get Live Location
 app.get('/api/bus/live/:bus_id', async (req, res) => {
     const { bus_id } = req.params;

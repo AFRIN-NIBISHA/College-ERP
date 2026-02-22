@@ -70,14 +70,25 @@ const DriverTracking = () => {
         }
     };
 
-    const stopTrip = () => {
+    const stopTrip = async () => {
         if (watchId.current) {
             navigator.geolocation.clearWatch(watchId.current);
         }
+
+        // Notify server to clear location
+        if (currentBus) {
+            try {
+                await axios.delete(`${API_URL}/bus/location/${currentBus.id}`);
+            } catch (err) {
+                console.error('Failed to clear location on server', err);
+            }
+        }
+
         setIsTracking(false);
         setCurrentBus(null);
         setLocation(null);
     };
+
 
     const startLocationWatch = (id) => {
         if (!navigator.geolocation) {
