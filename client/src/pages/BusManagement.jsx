@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Bus, User, Phone, Plus, Edit2, Trash2, X, Check, Search, AlertCircle } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const BusManagement = () => {
     const [buses, setBuses] = useState([]);
@@ -73,7 +73,7 @@ const BusManagement = () => {
                 setSuccess('');
             }, 1500);
         } catch (err) {
-            setError(err.response?.data?.message || 'Something went wrong');
+            setError(err.response?.data?.message || 'Network error or server unavailable');
         }
     };
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Bus, Navigation, StopCircle, Play, CheckCircle2, AlertCircle, RefreshCcw } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const DriverTracking = () => {
     const [buses, setBuses] = useState([]);

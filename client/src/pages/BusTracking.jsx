@@ -26,7 +26,7 @@ const busIcon = new L.Icon({
     popupAnchor: [0, -38],
 });
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Component to recenter map
 const RecenterMap = ({ center }) => {
