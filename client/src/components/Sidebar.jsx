@@ -49,6 +49,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         navigate('/login');
     };
 
+    // --- MENUS CONFIGURATION ---
     const menus = {
         student: [
             { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
@@ -74,7 +75,6 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: FileText, label: 'OD / Leave', path: '/od-requests' },
             { icon: BarChart, label: 'Reports', path: '/reports' },
             { icon: MapPin, label: 'Bus Tracking', path: '/bus-tracking' },
-            { icon: Navigation, label: 'Driver Portal', path: '/driver-tracking' },
             { icon: Settings, label: 'Bus Management', path: '/bus-management' },
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],
@@ -99,7 +99,6 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: FileText, label: 'OD Approvals', path: '/od-requests' },
             { icon: BarChart, label: 'Global Reports', path: '/reports' },
             { icon: MapPin, label: 'Bus Tracking', path: '/bus-tracking' },
-            { icon: Navigation, label: 'Driver Portal', path: '/driver-tracking' },
             { icon: Settings, label: 'Bus Management', path: '/bus-management' },
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],
@@ -123,6 +122,8 @@ const Sidebar = ({ isOpen, onClose }) => {
 
     const currentRole = user?.role || 'student';
     let filteredItems = menus[currentRole] || menus['student'];
+
+    // Admin uses Principal view by default
     if (currentRole === 'admin') filteredItems = menus['principal'];
 
     return (
@@ -150,7 +151,6 @@ const Sidebar = ({ isOpen, onClose }) => {
                         <Link
                             key={item.path}
                             to={item.path}
-                            onClick={() => onClose && onClose()}
                             className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group font-medium text-sm ${isActive
                                 ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 shadow-sm border border-blue-100'
                                 : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 hover:translate-x-1'
