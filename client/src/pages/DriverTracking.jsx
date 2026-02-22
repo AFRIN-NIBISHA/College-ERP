@@ -17,6 +17,28 @@ const DriverTracking = () => {
     const [error, setError] = useState('');
     const [location, setLocation] = useState(null);
     const watchId = useRef(null);
+    const wakeLock = useRef(null);
+
+    // Function to request wake lock (keeps screen on)
+    const requestWakeLock = async () => {
+        if ('wakeLock' in navigator) {
+            try {
+                wakeLock.current = await navigator.wakeLock.request('screen');
+                console.log('Wake Lock active');
+            } catch (err) {
+                console.error(`${err.name}, ${err.message}`);
+            }
+        }
+    };
+
+    const releaseWakeLock = async () => {
+        if (wakeLock.current) {
+            await wakeLock.current.release();
+            wakeLock.current = null;
+            console.log('Wake Lock released');
+        }
+    };
+
 
     useEffect(() => {
         fetchBuses();
@@ -56,6 +78,9 @@ const DriverTracking = () => {
         }
 
         try {
+            // 0. Request Wake Lock (Keep screen on)
+            await requestWakeLock();
+
             // 1. Tell server we are starting
             const res = await axios.post(`${API_URL}/bus/start`, busData);
             const bus = res.data;
@@ -74,6 +99,9 @@ const DriverTracking = () => {
         if (watchId.current) {
             navigator.geolocation.clearWatch(watchId.current);
         }
+
+        // Release Wake Lock
+        releaseWakeLock();
 
         // Notify server to clear location
         if (currentBus) {
@@ -125,8 +153,18 @@ const DriverTracking = () => {
     };
 
     useEffect(() => {
+        const handleVisibilityChange = async () => {
+            if (wakeLock.current !== null && document.visibilityState === 'visible') {
+                await requestWakeLock();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
         return () => {
             if (watchId.current) navigator.geolocation.clearWatch(watchId.current);
+            releaseWakeLock();
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
     }, []);
 
@@ -287,9 +325,10 @@ const DriverTracking = () => {
 
                 <div className="bg-slate-50/50 border-t border-slate-100 p-8 text-center bg-white/50 backdrop-blur-md">
                     <p className="text-xs text-slate-400 font-bold leading-relaxed max-w-sm mx-auto">
-                        <span className="text-amber-500 uppercase tracking-tighter mr-1">Note:</span>
-                        Keep this page active. If you minimize or lock your phone, location updates may pause.
+                        <span className="text-blue-500 uppercase tracking-tighter mr-1">Smart Active:</span>
+                        System will keep your screen active. For best results, keep this tab open even when the screen is dimmed.
                     </p>
+
                 </div>
             </div>
         </div>
