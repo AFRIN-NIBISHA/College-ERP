@@ -18,13 +18,26 @@ let DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// Custom Bus Icon
-const busIcon = new L.Icon({
-    iconUrl: 'https://cdn-icons-png.flaticon.com/512/3448/3448339.png',
-    iconSize: [38, 38],
-    iconAnchor: [19, 38],
-    popupAnchor: [0, -38],
-});
+// Custom Bus Icon Generator
+const createBusIcon = (busNumber) => {
+    return L.divIcon({
+        className: 'custom-bus-marker',
+        html: `
+            <div style="display: flex; flex-direction: column; align-items: center; filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06));">
+                <div style="background: #2563eb; color: white; border-radius: 6px; padding: 2px 8px; font-size: 10px; font-weight: 900; white-space: nowrap; margin-bottom: 2px; border: 1.5px solid white;">
+                    ${busNumber}
+                </div>
+                <div style="background: white; border-radius: 50%; width: 34px; height: 34px; display: flex; items-center; justify-content: center; border: 2px solid #2563eb; padding: 4px;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3448/3448339.png" style="width: 24px; height: 24px;" />
+                </div>
+            </div>
+        `,
+        iconSize: [80, 60],
+        iconAnchor: [40, 52],
+        popupAnchor: [0, -52]
+    });
+};
+
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -144,7 +157,7 @@ const BusTracking = () => {
                             <Marker
                                 key={bus.id}
                                 position={[bus.latitude, bus.longitude]}
-                                icon={busIcon}
+                                icon={createBusIcon(bus.bus_number)}
                                 eventHandlers={{
                                     click: () => setSelectedBus(bus),
                                 }}
