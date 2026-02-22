@@ -2337,7 +2337,8 @@ app.get('/api/student/subjects', async (req, res) => {
 // In-memory OTP Store (Production should use Redis or DB)
 const otpStore = new Map();
 
-const axios = require('axios'); // Ensure axios is required at top or here
+// OTP Store use already required modules
+
 
 app.post('/api/auth/register-check', async (req, res) => {
     const { name, mobile, role } = req.body;
@@ -2644,18 +2645,9 @@ app.put('/api/notifications/:id/read', async (req, res) => {
 });
 
 // --- DEPLOYMENT CONFIGURATION ---
-// Debugging path
 const clientBuildPath = path.resolve(__dirname, '../client/dist');
-console.log('Serving static files from:', clientBuildPath);
-
-// Serve static files from the React app
 app.use(express.static(clientBuildPath));
 
-// The "catchall" handler: for any request that doesn't
-// match one above, send back React's index.html file.
-app.get(/.*/, (req, res) => {
-    res.sendFile(path.join(clientBuildPath, 'index.html'));
-});
 
 // --- NEW AUTH FLOW (Mobile -> OTP -> Password) ---
 
@@ -2880,6 +2872,12 @@ app.get('/api/bus/locations', async (req, res) => {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
+});
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get(/.*/, (req, res) => {
+    res.sendFile(path.join(clientBuildPath, 'index.html'));
 });
 
 app.listen(PORT, () => {
