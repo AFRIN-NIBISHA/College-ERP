@@ -179,6 +179,21 @@ const initDb = async () => {
                 date_posted TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
+            CREATE TABLE IF NOT EXISTS bus (
+                id SERIAL PRIMARY KEY,
+                bus_number VARCHAR(20) UNIQUE NOT NULL,
+                driver_name VARCHAR(100) NOT NULL,
+                driver_phone VARCHAR(15)
+            );
+
+            CREATE TABLE IF NOT EXISTS bus_location (
+                id SERIAL PRIMARY KEY,
+                bus_id INT REFERENCES bus(id) ON DELETE CASCADE UNIQUE,
+                latitude DECIMAL(10, 8) NOT NULL,
+                longitude DECIMAL(11, 8) NOT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
 
 
             -- Ensure columns exist if table was created prevously
@@ -2733,6 +2748,90 @@ app.post('/api/auth/login-phone', async (req, res) => {
             user: { ...user, profileId }
         });
 
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// --- Bus Tracking System ---
+
+// 1. Get List of Buses
+app.get('/api/bus', async (req, res) => {
+    try {
+        const result = await db.query("SELECT * FROM bus ORDER BY bus_number");
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// 2. Start Trip (Ensures bus exists)
+app.post('/api/bus/start', async (req, res) => {
+    const { bus_number, driver_name } = req.body;
+    try {
+        let bus = await db.query("SELECT * FROM bus WHERE bus_number = $1", [bus_number]);
+        if (bus.rows.length === 0) {
+            bus = await db.query(
+                "INSERT INTO bus (bus_number, driver_name) VALUES ($1, $2) RETURNING *",
+                [bus_number, driver_name]
+            );
+        }
+        res.json(bus.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// 3. Update Bus Location
+app.post('/api/bus/location', async (req, res) => {
+    const { bus_id, latitude, longitude } = req.body;
+    try {
+        await db.query(
+            `INSERT INTO bus_location (bus_id, latitude, longitude, updated_at)
+             VALUES ($1, $2, $3, NOW())
+             ON CONFLICT (bus_id) 
+             DO UPDATE SET latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude, updated_at = NOW()`,
+            [bus_id, latitude, longitude]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Location Update Error:", err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// 4. Get Live Location
+app.get('/api/bus/live/:bus_id', async (req, res) => {
+    const { bus_id } = req.params;
+    try {
+        const result = await db.query(`
+            SELECT b.bus_number, b.driver_name, bl.latitude, bl.longitude, bl.updated_at
+            FROM bus b
+            JOIN bus_location bl ON b.id = bl.bus_id
+            WHERE b.id = $1
+        `, [bus_id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Location not found' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.get('/api/bus/locations', async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT b.id, b.bus_number, b.driver_name, bl.latitude, bl.longitude, bl.updated_at
+            FROM bus b
+            LEFT JOIN bus_location bl ON b.id = bl.bus_id
+        `);
+        res.json(result.rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

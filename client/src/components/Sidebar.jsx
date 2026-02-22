@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, GraduationCap, FileText, ClipboardCheck, Bell, LogOut, BookOpen, BarChart, IndianRupee, CheckCircle, X } from 'lucide-react';
+import { LayoutDashboard, Users, GraduationCap, FileText, ClipboardCheck, Bell, LogOut, BookOpen, BarChart, IndianRupee, CheckCircle, X, MapPin, Navigation } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 import React, { useState, useEffect } from 'react';
@@ -59,6 +59,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: IndianRupee, label: 'Fees', path: '/fees' },
             { icon: CheckCircle, label: 'No Due', path: '/no-due' },
             { icon: FileText, label: 'OD / Leave', path: '/od-requests' },
+            { icon: MapPin, label: 'Bus Tracking', path: '/bus-tracking' },
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],
         staff: [
@@ -71,6 +72,8 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: CheckCircle, label: 'No Due Inbox', path: '/no-due' },
             { icon: FileText, label: 'OD / Leave', path: '/od-requests' },
             { icon: BarChart, label: 'Reports', path: '/reports' },
+            { icon: MapPin, label: 'Bus Tracking', path: '/bus-tracking' },
+            { icon: Navigation, label: 'Driver Portal', path: '/driver-tracking' },
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],
         hod: [
@@ -82,6 +85,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: CheckCircle, label: 'No Due Requests', path: '/no-due' },
             { icon: FileText, label: 'OD / Leave', path: '/od-requests' },
             { icon: BarChart, label: 'Dept Reports', path: '/reports' },
+            { icon: MapPin, label: 'Bus Tracking', path: '/bus-tracking' },
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],
         principal: [
@@ -91,6 +95,8 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: CheckCircle, label: 'No Due Approval', path: '/no-due' },
             { icon: FileText, label: 'OD Approvals', path: '/od-requests' },
             { icon: BarChart, label: 'Global Reports', path: '/reports' },
+            { icon: MapPin, label: 'Bus Tracking', path: '/bus-tracking' },
+            { icon: Navigation, label: 'Driver Portal', path: '/driver-tracking' },
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],
         office: [
@@ -99,6 +105,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: CheckCircle, label: 'No Due (Office)', path: '/no-due' },
             { icon: Users, label: 'Student Records', path: '/students' },
             { icon: BarChart, label: 'Reports', path: '/reports' },
+            { icon: MapPin, label: 'Bus Tracking', path: '/bus-tracking' },
         ],
         admin: [
             { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
