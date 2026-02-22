@@ -112,6 +112,12 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: Users, label: 'Students', path: '/students' },
             { icon: CheckCircle, label: 'No Due', path: '/no-due' },
             { icon: FileText, label: 'OD Requests', path: '/od-requests' }
+        ],
+        driver: [
+            { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+            { icon: Navigation, label: 'Location Sharing', path: '/driver-tracking' },
+            { icon: MapPin, label: 'All Buses', path: '/bus-tracking' },
+            { icon: Bell, label: 'Notices', path: '/notices' },
         ]
     };
 

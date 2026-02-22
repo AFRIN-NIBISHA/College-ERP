@@ -32,7 +32,7 @@ const initDb = async () => {
                 id SERIAL PRIMARY KEY,
                 username VARCHAR(50) UNIQUE NOT NULL,
                 password VARCHAR(255) NOT NULL,
-                role VARCHAR(20) CHECK (role IN ('admin', 'staff', 'student', 'hod', 'principal', 'office')) NOT NULL,
+                role VARCHAR(20) CHECK (role IN ('admin', 'staff', 'student', 'hod', 'principal', 'office', 'driver')) NOT NULL,
                 is_setup BOOLEAN DEFAULT FALSE
             );
             CREATE TABLE IF NOT EXISTS students (
@@ -2450,7 +2450,7 @@ app.post('/api/login', async (req, res) => {
                     year = sRes.rows[0].year?.toString().trim();
                     section = sRes.rows[0].section?.toString().trim().toUpperCase();
                 }
-            } else if (['staff', 'hod', 'principal', 'office'].includes(user.role)) {
+            } else if (['staff', 'hod', 'principal', 'office', 'driver'].includes(user.role)) {
                 const stRes = await db.query("SELECT id FROM staff WHERE user_id = $1", [user.id]);
                 if (stRes.rows.length > 0) profileId = stRes.rows[0].id;
             }
@@ -2462,7 +2462,7 @@ app.post('/api/login', async (req, res) => {
         }
 
         // 2. Fallback: Staff Legacy Login (StaffID + Name)
-        if (['staff', 'hod', 'principal', 'office'].includes(role)) {
+        if (['staff', 'hod', 'principal', 'office', 'driver'].includes(role)) {
             console.log(`[Staff Legacy Login] Attempting for StaffID: '${username}' with Name: '${password}'`);
             const staffRes = await db.query("SELECT * FROM staff WHERE staff_id = $1", [username.trim()]);
             if (staffRes.rows.length > 0) {
