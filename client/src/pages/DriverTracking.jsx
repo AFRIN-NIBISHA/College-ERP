@@ -129,15 +129,21 @@ const DriverTracking = () => {
                 const { latitude, longitude } = position.coords;
                 setLocation({ latitude, longitude });
                 sendLocation(id, latitude, longitude);
+                setError(''); // Auto-clear error when location is found
             },
             (err) => {
-                let msg = 'Location Access Denied. Please enable GPS.';
+                let msg = 'Searching for GPS signal...';
                 if (err.code === 1) msg = 'Please allow location permission in your browser.';
-                if (err.code === 3) msg = 'Location request timed out. Retrying...';
+                if (err.code === 3) msg = 'GPS signal weak (Timeout). Retrying...';
                 setError(msg);
             },
-            { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+            {
+                enableHighAccuracy: true,
+                maximumAge: 3000, // Allow 3s old location if signal is weak
+                timeout: 15000    // Wait up to 15s for high accuracy lock
+            }
         );
+
     };
 
     const sendLocation = async (id, lat, lng) => {
