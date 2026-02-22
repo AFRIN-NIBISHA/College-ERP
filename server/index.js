@@ -181,7 +181,7 @@ const initDb = async () => {
 
             CREATE TABLE IF NOT EXISTS bus (
                 id SERIAL PRIMARY KEY,
-                bus_number VARCHAR(20) UNIQUE NOT NULL,
+                bus_number VARCHAR(50) UNIQUE NOT NULL,
                 driver_name VARCHAR(100) NOT NULL,
                 driver_phone VARCHAR(15)
             );
