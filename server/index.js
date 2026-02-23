@@ -2691,9 +2691,7 @@ app.put('/api/notifications/:id/read', async (req, res) => {
     }
 });
 
-// --- DEPLOYMENT CONFIGURATION ---
-const clientBuildPath = path.resolve(__dirname, '../client/dist');
-app.use(express.static(clientBuildPath));
+// --- DEPLOYMENT CONFIGURATION MOVED TO BOTTOM ---
 
 
 // --- NEW AUTH FLOW (Mobile -> OTP -> Password) ---
@@ -3016,6 +3014,11 @@ app.get('/api/library/my-issues/:student_id', async (req, res) => {
 });
 
 
+
+// --- DEPLOYMENT CONFIGURATION ---
+const clientBuildPath = path.resolve(__dirname, '../client/dist');
+console.log('Serving static files from:', clientBuildPath);
+app.use(express.static(clientBuildPath));
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
