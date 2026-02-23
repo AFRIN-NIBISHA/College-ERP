@@ -95,6 +95,11 @@ const Layout = ({ children }) => {
     );
 };
 
+const LibraryRouter = () => {
+    const { user } = useAuth();
+    return user?.role === 'student' ? <StudentLibrary /> : <Library />;
+};
+
 function App() {
     return (
         <AuthProvider>
@@ -123,7 +128,7 @@ function App() {
                                 <Route path="/profile" element={<Profile />} />
                                 <Route path="/od-requests" element={<StudentOD />} />
                                 <Route path="/bus-management" element={<BusManagement />} />
-                                <Route path="/library" element={user?.role === 'student' ? <StudentLibrary /> : <Library />} />
+                                <Route path="/library" element={<LibraryRouter />} />
                                 <Route path="*" element={<div className="text-center mt-20 text-slate-400 font-light text-xl">Page not found</div>} />
                             </Routes>
                         </Layout>
