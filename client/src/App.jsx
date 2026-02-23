@@ -19,7 +19,6 @@ import Subjects from './pages/Subjects';
 import Profile from './pages/Profile';
 import StudentOD from './pages/StudentOD';
 import BusTracking from './pages/BusTracking';
-import DriverTracking from './pages/DriverTracking';
 import BusManagement from './pages/BusManagement';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Menu, X } from 'lucide-react';
@@ -123,7 +122,6 @@ function App() {
                                 <Route path="/profile" element={<Profile />} />
                                 <Route path="/od-requests" element={<StudentOD />} />
                                 <Route path="/bus-tracking" element={<BusTracking />} />
-                                <Route path="/driver-tracking" element={<DriverTracking />} />
                                 <Route path="/bus-management" element={<BusManagement />} />
                                 <Route path="*" element={<div className="text-center mt-20 text-slate-400 font-light text-xl">Page not found</div>} />
                             </Routes>

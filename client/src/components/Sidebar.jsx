@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, Users, GraduationCap, FileText, ClipboardCheck,
     Bell, LogOut, BookOpen, BarChart, IndianRupee, CheckCircle,
-    X, MapPin, Navigation, Settings
+    X, MapPin, Settings
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import React, { useState, useEffect } from 'react';
@@ -110,12 +110,6 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: Settings, label: 'Bus Management', path: '/bus-management' },
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],
-        driver: [
-            { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-            { icon: Navigation, label: 'Location Sharing', path: '/driver-tracking' },
-            { icon: MapPin, label: 'All Buses', path: '/bus-tracking' },
-            { icon: Bell, label: 'Notices', path: '/notices' },
-        ]
     };
 
     const currentRole = user?.role || 'student';

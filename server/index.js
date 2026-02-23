@@ -32,7 +32,7 @@ const initDb = async () => {
                 id SERIAL PRIMARY KEY,
                 username VARCHAR(50) UNIQUE NOT NULL,
                 password VARCHAR(255) NOT NULL,
-                role VARCHAR(20) CHECK (role IN ('admin', 'staff', 'student', 'hod', 'principal', 'office', 'driver')) NOT NULL,
+                role VARCHAR(20) CHECK (role IN ('admin', 'staff', 'student', 'hod', 'principal', 'office')) NOT NULL,
                 is_setup BOOLEAN DEFAULT FALSE
             );
             CREATE TABLE IF NOT EXISTS students (
@@ -2451,7 +2451,7 @@ app.post('/api/login', async (req, res) => {
                     year = sRes.rows[0].year?.toString().trim();
                     section = sRes.rows[0].section?.toString().trim().toUpperCase();
                 }
-            } else if (['staff', 'hod', 'principal', 'office', 'driver'].includes(user.role)) {
+            } else if (['staff', 'hod', 'principal', 'office'].includes(user.role)) {
                 const stRes = await db.query("SELECT id FROM staff WHERE user_id = $1", [user.id]);
                 if (stRes.rows.length > 0) profileId = stRes.rows[0].id;
             }
@@ -2463,7 +2463,7 @@ app.post('/api/login', async (req, res) => {
         }
 
         // 2. Fallback: Staff Legacy Login (StaffID + Name)
-        if (['staff', 'hod', 'principal', 'office', 'driver'].includes(role)) {
+        if (['staff', 'hod', 'principal', 'office'].includes(role)) {
             console.log(`[Staff Legacy Login] Attempting for StaffID: '${username}' with Name: '${password}'`);
             const staffRes = await db.query("SELECT * FROM staff WHERE staff_id = $1", [username.trim()]);
             if (staffRes.rows.length > 0) {
@@ -2803,89 +2803,16 @@ app.delete('/api/bus/:id', async (req, res) => {
     }
 });
 
-// 2. Start Trip (Ensures bus exists)
-app.post('/api/bus/start', async (req, res) => {
-    const { bus_number, driver_name } = req.body;
-    try {
-        let bus = await db.query("SELECT * FROM bus WHERE bus_number = $1", [bus_number]);
-        if (bus.rows.length === 0) {
-            bus = await db.query(
-                "INSERT INTO bus (bus_number, driver_name) VALUES ($1, $2) RETURNING *",
-                [bus_number, driver_name]
-            );
-        }
-        res.json(bus.rows[0]);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
-// 3. Update Bus Location
-app.post('/api/bus/location', async (req, res) => {
-    const { bus_id, latitude, longitude } = req.body;
-    try {
-        await db.query(
-            `INSERT INTO bus_location (bus_id, latitude, longitude, updated_at)
-             VALUES ($1, $2, $3, NOW())
-             ON CONFLICT (bus_id) 
-             DO UPDATE SET latitude = EXCLUDED.latitude, longitude = EXCLUDED.longitude, updated_at = NOW()`,
-            [bus_id, latitude, longitude]
-        );
-        res.json({ success: true });
-    } catch (err) {
-        console.error("Location Update Error:", err);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
-// Remove Bus Location (Stop sharing)
-app.delete('/api/bus/location/:bus_id', async (req, res) => {
-    const { bus_id } = req.params;
-    try {
-        await db.query("DELETE FROM bus_location WHERE bus_id = $1", [bus_id]);
-        res.json({ success: true, message: 'Location sharing stopped' });
-    } catch (err) {
-        console.error("Location Delete Error:", err);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
-
-// 4. Get Live Location
-app.get('/api/bus/live/:bus_id', async (req, res) => {
-    const { bus_id } = req.params;
-    try {
-        const result = await db.query(`
-            SELECT b.bus_number, b.driver_name, bl.latitude, bl.longitude, bl.updated_at
-            FROM bus b
-            JOIN bus_location bl ON b.id = bl.bus_id
-            WHERE b.id = $1
-        `, [bus_id]);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ message: 'Location not found' });
-        }
-        res.json(result.rows[0]);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
 app.get('/api/bus/locations', async (req, res) => {
     try {
-        const result = await db.query(`
-            SELECT b.id, b.bus_number, b.driver_name, bl.latitude, bl.longitude, bl.updated_at
-            FROM bus b
-            LEFT JOIN bus_location bl ON b.id = bl.bus_id
-        `);
+        const result = await db.query("SELECT id, bus_number, driver_name FROM bus");
         res.json(result.rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 });
+
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
