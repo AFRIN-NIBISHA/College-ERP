@@ -89,6 +89,9 @@ const initDb = async () => {
             ALTER TABLE staff ADD COLUMN IF NOT EXISTS bus_driver_phone VARCHAR(15);
             ALTER TABLE staff ADD COLUMN IF NOT EXISTS bus_starting_point VARCHAR(255);
             ALTER TABLE staff ADD COLUMN IF NOT EXISTS bus_ending_point VARCHAR(255);
+
+            ALTER TABLE bus ADD COLUMN IF NOT EXISTS starting_point VARCHAR(255);
+            ALTER TABLE bus ADD COLUMN IF NOT EXISTS ending_point VARCHAR(255);
             CREATE TABLE IF NOT EXISTS marks (
                 id SERIAL PRIMARY KEY,
                 student_id INT REFERENCES students(id) ON DELETE CASCADE,
@@ -206,7 +209,9 @@ const initDb = async () => {
                 id SERIAL PRIMARY KEY,
                 bus_number VARCHAR(50) UNIQUE NOT NULL,
                 driver_name VARCHAR(100) NOT NULL,
-                driver_phone VARCHAR(15)
+                driver_phone VARCHAR(15),
+                starting_point VARCHAR(255),
+                ending_point VARCHAR(255)
             );
 
             CREATE TABLE IF NOT EXISTS bus_location (
@@ -2784,11 +2789,11 @@ app.get('/api/bus', async (req, res) => {
 
 // Add New Bus
 app.post('/api/bus', async (req, res) => {
-    const { bus_number, driver_name, driver_phone } = req.body;
+    const { bus_number, driver_name, driver_phone, starting_point, ending_point } = req.body;
     try {
         const result = await db.query(
-            "INSERT INTO bus (bus_number, driver_name, driver_phone) VALUES ($1, $2, $3) RETURNING *",
-            [bus_number, driver_name, driver_phone]
+            "INSERT INTO bus (bus_number, driver_name, driver_phone, starting_point, ending_point) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+            [bus_number, driver_name, driver_phone, starting_point, ending_point]
         );
         res.json(result.rows[0]);
     } catch (err) {
@@ -2801,11 +2806,11 @@ app.post('/api/bus', async (req, res) => {
 // Update Bus
 app.put('/api/bus/:id', async (req, res) => {
     const { id } = req.params;
-    const { bus_number, driver_name, driver_phone } = req.body;
+    const { bus_number, driver_name, driver_phone, starting_point, ending_point } = req.body;
     try {
         const result = await db.query(
-            "UPDATE bus SET bus_number = $1, driver_name = $2, driver_phone = $3 WHERE id = $4 RETURNING *",
-            [bus_number, driver_name, driver_phone, id]
+            "UPDATE bus SET bus_number = $1, driver_name = $2, driver_phone = $3, starting_point = $4, ending_point = $5 WHERE id = $6 RETURNING *",
+            [bus_number, driver_name, driver_phone, starting_point, ending_point, id]
         );
         res.json(result.rows[0]);
     } catch (err) {

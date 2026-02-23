@@ -205,3 +205,22 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
     subscription TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Bus management
+CREATE TABLE IF NOT EXISTS bus (
+    id SERIAL PRIMARY KEY,
+    bus_number VARCHAR(50) UNIQUE NOT NULL,
+    driver_name VARCHAR(100) NOT NULL,
+    driver_phone VARCHAR(15),
+    starting_point VARCHAR(255),
+    ending_point VARCHAR(255)
+);
+
+-- Bus locations for tracking
+CREATE TABLE IF NOT EXISTS bus_location (
+    id SERIAL PRIMARY KEY,
+    bus_id INT REFERENCES bus(id) ON DELETE CASCADE UNIQUE,
+    latitude DECIMAL(10, 8) NOT NULL,
+    longitude DECIMAL(11, 8) NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

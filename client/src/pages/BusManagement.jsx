@@ -13,7 +13,9 @@ const BusManagement = () => {
     const [formData, setFormData] = useState({
         bus_number: '',
         driver_name: '',
-        driver_phone: ''
+        driver_phone: '',
+        starting_point: '',
+        ending_point: ''
     });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -43,14 +45,18 @@ const BusManagement = () => {
             setFormData({
                 bus_number: bus.bus_number,
                 driver_name: bus.driver_name,
-                driver_phone: bus.driver_phone || ''
+                driver_phone: bus.driver_phone || '',
+                starting_point: bus.starting_point || '',
+                ending_point: bus.ending_point || ''
             });
         } else {
             setEditingBus(null);
             setFormData({
                 bus_number: '',
                 driver_name: '',
-                driver_phone: ''
+                driver_phone: '',
+                starting_point: '',
+                ending_point: ''
             });
         }
         setIsModalOpen(true);
@@ -190,6 +196,17 @@ const BusManagement = () => {
                                         <span className="font-mono text-slate-700 font-bold">{bus.driver_phone || 'Not provided'}</span>
                                     </div>
                                 </div>
+                                <div className="flex items-center gap-4 text-slate-600 bg-slate-50/50 p-3 rounded-2xl border border-slate-100/50">
+                                    <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-emerald-500">
+                                        <RefreshCw size={18} />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Route</span>
+                                        <span className="font-bold text-slate-700 tracking-tight text-xs">
+                                            {bus.starting_point || 'Start'} → {bus.ending_point || 'End'}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -254,6 +271,29 @@ const BusManagement = () => {
                                     value={formData.driver_phone}
                                     onChange={(e) => setFormData({ ...formData, driver_phone: e.target.value })}
                                 />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Starting Point</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-blue-500 transition-all font-black text-slate-800 placeholder:text-slate-300 shadow-inner"
+                                        placeholder="Starting point"
+                                        value={formData.starting_point}
+                                        onChange={(e) => setFormData({ ...formData, starting_point: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Ending Point</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-blue-500 transition-all font-black text-slate-800 placeholder:text-slate-300 shadow-inner"
+                                        placeholder="Ending point"
+                                        value={formData.ending_point}
+                                        onChange={(e) => setFormData({ ...formData, ending_point: e.target.value })}
+                                    />
+                                </div>
                             </div>
 
                             {error && (

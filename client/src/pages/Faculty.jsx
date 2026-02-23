@@ -12,6 +12,7 @@ const Faculty = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeDesignation, setActiveDesignation] = useState('All');
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+    const [buses, setBuses] = useState([]);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -31,7 +32,17 @@ const Faculty = () => {
 
     useEffect(() => {
         fetchStaff();
+        fetchBuses();
     }, []);
+
+    const fetchBuses = async () => {
+        try {
+            const res = await axios.get('/api/bus');
+            setBuses(res.data);
+        } catch (err) {
+            console.error('Error fetching buses', err);
+        }
+    };
 
     const fetchStaff = async () => {
         setIsLoading(true);
@@ -46,7 +57,27 @@ const Faculty = () => {
     };
 
     const handleInputChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData(prev => {
+            const newData = { ...prev, [name]: value };
+
+            // Auto-fill logic for Bus
+            if (name === 'bus_no') {
+                const matchedBus = buses.find(b =>
+                    b.bus_number.toLowerCase() === value.toLowerCase() ||
+                    b.bus_number.split(' ')[0].toLowerCase() === value.toLowerCase()
+                );
+
+                if (matchedBus) {
+                    newData.bus_driver_name = matchedBus.driver_name;
+                    newData.bus_driver_phone = matchedBus.driver_phone || '';
+                    newData.bus_starting_point = matchedBus.starting_point || '';
+                    newData.bus_ending_point = matchedBus.ending_point || '';
+                }
+            }
+
+            return newData;
+        });
     };
 
     const resetForm = () => {

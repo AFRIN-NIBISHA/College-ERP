@@ -74,6 +74,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: FileText, label: 'OD / Leave', path: '/od-requests' },
             { icon: BarChart, label: 'Reports', path: '/reports' },
             { icon: MapPin, label: 'Bus Tracking', path: '/bus-tracking' },
+            { icon: Settings, label: 'Bus Management', path: '/bus-management' },
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],
         hod: [
