@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL, -- In production, hash this!
-    role VARCHAR(20) CHECK (role IN ('admin', 'staff', 'student', 'hod', 'principal', 'office')) NOT NULL,
+    role VARCHAR(20) CHECK (role IN ('admin', 'staff', 'student', 'hod', 'principal', 'office', 'librarian')) NOT NULL,
     is_setup BOOLEAN DEFAULT FALSE
 );
 
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS students (
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     roll_no VARCHAR(20) UNIQUE NOT NULL,
     name VARCHAR(100) NOT NULL,
-    department VARCHAR(50) DEFAULT 'CSE',
+    department VARCHAR(50),
     year INT NOT NULL, -- 1, 2, 3, 4
     section VARCHAR(10), -- A, B, C
     email VARCHAR(100),
@@ -26,8 +26,7 @@ CREATE TABLE IF NOT EXISTS students (
     bus_driver_phone VARCHAR(15),
     bus_starting_point VARCHAR(255),
     bus_ending_point VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 
 -- Student On Duty (OD) table
 CREATE TABLE IF NOT EXISTS student_od (
@@ -60,6 +59,7 @@ CREATE TABLE IF NOT EXISTS staff (
     bus_driver_phone VARCHAR(15),
     bus_starting_point VARCHAR(255),
     bus_ending_point VARCHAR(255),
+    library_status VARCHAR(20) DEFAULT 'Active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -213,6 +213,32 @@ CREATE TABLE IF NOT EXISTS bus (
     driver_name VARCHAR(100) NOT NULL,
     driver_phone VARCHAR(15),
     starting_point VARCHAR(255),
-    ending_point VARCHAR(255)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Library Books
+CREATE TABLE IF NOT EXISTS books (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(255) NOT NULL,
+    isbn VARCHAR(50) UNIQUE,
+    category VARCHAR(100),
+    total_copies INT DEFAULT 1,
+    available_copies INT DEFAULT 1,
+    shelf_location VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Library Issues
+CREATE TABLE IF NOT EXISTS book_issues (
+    id SERIAL PRIMARY KEY,
+    book_id INT REFERENCES books(id) ON DELETE CASCADE,
+    student_id INT REFERENCES students(id) ON DELETE CASCADE,
+    issue_date DATE DEFAULT CURRENT_DATE,
+    due_date DATE NOT NULL,
+    return_date DATE,
+    fine_amount DECIMAL(10, 2) DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'Issued',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

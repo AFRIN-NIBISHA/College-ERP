@@ -32,7 +32,7 @@ const initDb = async () => {
                 id SERIAL PRIMARY KEY,
                 username VARCHAR(50) UNIQUE NOT NULL,
                 password VARCHAR(255) NOT NULL,
-                role VARCHAR(20) CHECK (role IN ('admin', 'staff', 'student', 'hod', 'principal', 'office')) NOT NULL,
+                role VARCHAR(20) CHECK (role IN ('admin', 'staff', 'student', 'hod', 'principal', 'office', 'librarian')) NOT NULL,
                 is_setup BOOLEAN DEFAULT FALSE
             );
             CREATE TABLE IF NOT EXISTS students (
@@ -242,6 +242,32 @@ const initDb = async () => {
             -- Ensure No Due Constraints
             ALTER TABLE no_dues DROP CONSTRAINT IF EXISTS no_dues_student_id_semester_key;
             ALTER TABLE no_dues ADD CONSTRAINT no_dues_student_id_semester_key UNIQUE (student_id, semester);
+
+            CREATE TABLE IF NOT EXISTS books (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                author VARCHAR(255) NOT NULL,
+                isbn VARCHAR(50) UNIQUE,
+                category VARCHAR(100),
+                total_copies INT DEFAULT 1,
+                available_copies INT DEFAULT 1,
+                shelf_location VARCHAR(100),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS book_issues (
+                id SERIAL PRIMARY KEY,
+                book_id INT REFERENCES books(id) ON DELETE CASCADE,
+                student_id INT REFERENCES students(id) ON DELETE CASCADE,
+                issue_date DATE DEFAULT CURRENT_DATE,
+                due_date DATE NOT NULL,
+                return_date DATE,
+                fine_amount DECIMAL(10, 2) DEFAULT 0,
+                status VARCHAR(20) DEFAULT 'Issued',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS library_status VARCHAR(20) DEFAULT 'Active';
 
             CREATE TABLE IF NOT EXISTS attendance (
                 id SERIAL PRIMARY KEY,
@@ -2818,6 +2844,171 @@ app.delete('/api/bus/:id', async (req, res) => {
     try {
         await db.query("DELETE FROM bus WHERE id = $1", [id]);
         res.json({ message: 'Bus deleted successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// --- Library System ---
+
+// Books CRUD
+app.get('/api/library/books', async (req, res) => {
+    try {
+        const { search, category } = req.query;
+        let query = "SELECT * FROM books WHERE 1=1";
+        const params = [];
+
+        if (search) {
+            params.push(`%${search}%`);
+            query += ` AND (title ILIKE $${params.length} OR author ILIKE $${params.length} OR isbn ILIKE $${params.length})`;
+        }
+
+        if (category && category !== 'All') {
+            params.push(category);
+            query += ` AND category = $${params.length}`;
+        }
+
+        query += " ORDER BY title";
+        const result = await db.query(query, params);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.post('/api/library/books', async (req, res) => {
+    const { title, author, isbn, category, total_copies, shelf_location } = req.body;
+    try {
+        const result = await db.query(
+            "INSERT INTO books (title, author, isbn, category, total_copies, available_copies, shelf_location) VALUES ($1, $2, $3, $4, $5, $5, $6) RETURNING *",
+            [title, author, isbn, category, total_copies, shelf_location]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        if (err.code === '23505') return res.status(400).json({ message: 'ISBN already exists' });
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.put('/api/library/books/:id', async (req, res) => {
+    const { id } = req.params;
+    const { title, author, isbn, category, total_copies, shelf_location } = req.body;
+    try {
+        const result = await db.query(
+            "UPDATE books SET title = $1, author = $2, isbn = $3, category = $4, total_copies = $5, shelf_location = $6 WHERE id = $7 RETURNING *",
+            [title, author, isbn, category, total_copies, shelf_location, id]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.delete('/api/library/books/:id', async (req, res) => {
+    try {
+        await db.query("DELETE FROM books WHERE id = $1", [req.params.id]);
+        res.json({ message: 'Book deleted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Issue & Return
+app.post('/api/library/issue', async (req, res) => {
+    const { book_id, roll_no, due_date } = req.body;
+    try {
+        const studentRes = await db.query("SELECT id, name, library_status FROM students WHERE roll_no = $1", [roll_no]);
+        if (studentRes.rows.length === 0) return res.status(404).json({ message: 'Student not found' });
+        const student = studentRes.rows[0];
+
+        if (student.library_status === 'Blocked') return res.status(403).json({ message: 'Student is blocked from library' });
+
+        const bookRes = await db.query("SELECT available_copies FROM books WHERE id = $1", [book_id]);
+        if (bookRes.rows.length === 0) return res.status(404).json({ message: 'Book not found' });
+        if (bookRes.rows[0].available_copies <= 0) return res.status(400).json({ message: 'Book not available' });
+
+        await db.query("BEGIN");
+        const issueRes = await db.query(
+            "INSERT INTO book_issues (book_id, student_id, due_date, status) VALUES ($1, $2, $3, 'Issued') RETURNING *",
+            [book_id, student.id, due_date]
+        );
+
+        await db.query("UPDATE books SET available_copies = available_copies - 1 WHERE id = $1", [book_id]);
+        await db.query("COMMIT");
+
+        res.json(issueRes.rows[0]);
+    } catch (err) {
+        await db.query("ROLLBACK");
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.post('/api/library/return/:issue_id', async (req, res) => {
+    try {
+        const { issue_id } = req.params;
+        const res1 = await db.query("SELECT * FROM book_issues WHERE id = $1", [issue_id]);
+        if (res1.rows.length === 0) return res.status(404).json({ message: 'Issue record not found' });
+        const issue = res1.rows[0];
+
+        if (issue.status === 'Returned') return res.status(400).json({ message: 'Already returned' });
+
+        const today = new Date();
+        const dueDate = new Date(issue.due_date);
+        let fine = 0;
+        if (today > dueDate) {
+            const diffTime = Math.abs(today - dueDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            fine = diffDays * 5;
+        }
+
+        await db.query("BEGIN");
+        await db.query(
+            "UPDATE book_issues SET return_date = CURRENT_DATE, fine_amount = $1, status = 'Returned' WHERE id = $2",
+            [fine, issue_id]
+        );
+        await db.query("UPDATE books SET available_copies = available_copies + 1 WHERE id = $1", [issue.book_id]);
+        await db.query("COMMIT");
+
+        res.json({ message: 'Book returned', fine });
+    } catch (err) {
+        await db.query("ROLLBACK");
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.get('/api/library/issues', async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT bi.*, b.title, s.name as student_name, s.roll_no
+            FROM book_issues bi
+            JOIN books b ON bi.book_id = b.id
+            JOIN students s ON bi.student_id = s.id
+            ORDER BY bi.issue_date DESC
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.get('/api/library/my-issues/:student_id', async (req, res) => {
+    try {
+        const result = await db.query(`
+            SELECT bi.*, b.title, b.author
+            FROM book_issues bi
+            JOIN books b ON bi.book_id = b.id
+            WHERE bi.student_id = $1
+            ORDER BY bi.issue_date DESC
+        `, [req.params.student_id]);
+        res.json(result.rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
