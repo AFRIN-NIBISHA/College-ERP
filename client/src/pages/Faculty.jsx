@@ -296,7 +296,7 @@ const Faculty = () => {
             {/* Modal */}
             {showAddModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-                    <div className="bg-white w-full max-w-lg rounded-2xl p-6 relative animate-in fade-in zoom-in duration-200">
+                    <div className="bg-white w-full max-w-lg rounded-2xl p-6 relative animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 border border-slate-100 shadow-2xl">
                         <h3 className="text-xl font-bold text-slate-800 mb-6">{editingId ? 'Edit Faculty' : 'Add New Faculty'}</h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">

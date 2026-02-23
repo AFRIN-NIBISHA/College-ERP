@@ -224,7 +224,7 @@ const BusManagement = () => {
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
-                    <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 relative z-10 shadow-3xl animate-in zoom-in-95 duration-200">
+                    <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 relative z-10 shadow-3xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200">
                         <button
                             onClick={() => setIsModalOpen(false)}
                             className="absolute right-8 top-8 text-slate-400 hover:text-slate-600 transition-colors"

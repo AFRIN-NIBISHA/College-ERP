@@ -398,7 +398,7 @@ const Students = () => {
             {/* Add/Edit Student Modal (Restricted) */}
             {canEditStudents && showAddModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-                    <div className="bg-white w-full max-w-lg rounded-2xl p-6 relative animate-in fade-in zoom-in duration-200 shadow-2xl border border-slate-100">
+                    <div className="bg-white w-full max-w-lg rounded-2xl p-6 relative animate-in fade-in zoom-in duration-200 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200">
                         <h3 className="text-xl font-bold text-slate-800 mb-6">{editingId ? 'Edit Student' : 'Add New Student'}</h3>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
