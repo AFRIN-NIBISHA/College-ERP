@@ -45,6 +45,11 @@ const initDb = async () => {
                 section VARCHAR(10),
                 email VARCHAR(100),
                 phone VARCHAR(15),
+                bus_no VARCHAR(50),
+                bus_driver_name VARCHAR(100),
+                bus_driver_phone VARCHAR(15),
+                bus_starting_point VARCHAR(255),
+                bus_ending_point VARCHAR(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             CREATE TABLE IF NOT EXISTS staff (
@@ -56,6 +61,11 @@ const initDb = async () => {
                 department VARCHAR(50) DEFAULT 'CSE',
                 email VARCHAR(100),
                 phone VARCHAR(15),
+                bus_no VARCHAR(50),
+                bus_driver_name VARCHAR(100),
+                bus_driver_phone VARCHAR(15),
+                bus_starting_point VARCHAR(255),
+                bus_ending_point VARCHAR(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             CREATE TABLE IF NOT EXISTS subjects (
@@ -66,6 +76,19 @@ const initDb = async () => {
                 credits INT DEFAULT 3,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+
+            -- Migrations for existing tables
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS bus_no VARCHAR(50);
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS bus_driver_name VARCHAR(100);
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS bus_driver_phone VARCHAR(15);
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS bus_starting_point VARCHAR(255);
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS bus_ending_point VARCHAR(255);
+
+            ALTER TABLE staff ADD COLUMN IF NOT EXISTS bus_no VARCHAR(50);
+            ALTER TABLE staff ADD COLUMN IF NOT EXISTS bus_driver_name VARCHAR(100);
+            ALTER TABLE staff ADD COLUMN IF NOT EXISTS bus_driver_phone VARCHAR(15);
+            ALTER TABLE staff ADD COLUMN IF NOT EXISTS bus_starting_point VARCHAR(255);
+            ALTER TABLE staff ADD COLUMN IF NOT EXISTS bus_ending_point VARCHAR(255);
             CREATE TABLE IF NOT EXISTS marks (
                 id SERIAL PRIMARY KEY,
                 student_id INT REFERENCES students(id) ON DELETE CASCADE,
@@ -557,11 +580,11 @@ app.get('/api/staff', async (req, res) => {
 });
 
 app.post('/api/staff', async (req, res) => {
-    const { staff_id, name, designation, department, email, phone } = req.body;
+    const { staff_id, name, designation, department, email, phone, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point } = req.body;
     try {
         const result = await db.query(
-            "INSERT INTO staff (staff_id, name, designation, department, email, phone) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-            [staff_id, name, designation, department, email, phone]
+            "INSERT INTO staff (staff_id, name, designation, department, email, phone, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *",
+            [staff_id, name, designation, department, email, phone, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point]
         );
         res.json(result.rows[0]);
     } catch (err) {
@@ -573,11 +596,11 @@ app.post('/api/staff', async (req, res) => {
 
 app.put('/api/staff/:id', async (req, res) => {
     const { id } = req.params;
-    const { staff_id, name, designation, department, email, phone } = req.body;
+    const { staff_id, name, designation, department, email, phone, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point } = req.body;
     try {
         const result = await db.query(
-            "UPDATE staff SET staff_id = $1, name = $2, designation = $3, department = $4, email = $5, phone = $6 WHERE id = $7 RETURNING *",
-            [staff_id, name, designation, department, email, phone, id]
+            "UPDATE staff SET staff_id = $1, name = $2, designation = $3, department = $4, email = $5, phone = $6, bus_no = $7, bus_driver_name = $8, bus_driver_phone = $9, bus_starting_point = $10, bus_ending_point = $11 WHERE id = $12 RETURNING *",
+            [staff_id, name, designation, department, email, phone, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point, id]
         );
         if (result.rows.length === 0) return res.status(404).json({ message: 'Staff not found' });
         res.json(result.rows[0]);
@@ -858,13 +881,13 @@ app.get('/api/students', async (req, res) => {
 
 // 3. Add Student
 app.post('/api/students', async (req, res) => {
-    const { roll_no, name, year, section, email, phone, dob } = req.body;
+    const { roll_no, name, year, section, email, phone, dob, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point } = req.body;
     try {
         await db.query('BEGIN');
 
         const result = await db.query(
-            "INSERT INTO students (roll_no, name, department, year, section, email, phone, dob) VALUES ($1, $2, 'CSE', $3, $4, $5, $6, $7) RETURNING *",
-            [roll_no, name, year, section, email, phone, dob]
+            "INSERT INTO students (roll_no, name, department, year, section, email, phone, dob, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point) VALUES ($1, $2, 'CSE', $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *",
+            [roll_no, name, year, section, email, phone, dob, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point]
         );
 
         const newStudent = result.rows[0];
@@ -890,11 +913,11 @@ app.post('/api/students', async (req, res) => {
 // 3.1 Update Student
 app.put('/api/students/:id', async (req, res) => {
     const { id } = req.params;
-    const { roll_no, name, year, section, email, phone, dob } = req.body;
+    const { roll_no, name, year, section, email, phone, dob, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point } = req.body;
     try {
         const result = await db.query(
-            "UPDATE students SET roll_no = $1, name = $2, year = $3, section = $4, email = $5, phone = $6, dob = $7 WHERE id = $8 RETURNING *",
-            [roll_no, name, year, section, email, phone, dob, id]
+            "UPDATE students SET roll_no = $1, name = $2, year = $3, section = $4, email = $5, phone = $6, dob = $7, bus_no = $8, bus_driver_name = $9, bus_driver_phone = $10, bus_starting_point = $11, bus_ending_point = $12 WHERE id = $13 RETURNING *",
+            [roll_no, name, year, section, email, phone, dob, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point, id]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Student not found' });

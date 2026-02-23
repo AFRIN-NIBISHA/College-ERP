@@ -17,13 +17,13 @@ const Students = () => {
 
     // Form State
     const [formData, setFormData] = useState({
-        name: '',
-        roll_no: '',
-        year: '1',
-        section: 'A',
-        email: '',
         phone: '',
-        dob: ''
+        dob: '',
+        bus_no: '',
+        bus_driver_name: '',
+        bus_driver_phone: '',
+        bus_starting_point: '',
+        bus_ending_point: ''
     });
 
     const classOptions = [
@@ -97,7 +97,12 @@ const Students = () => {
             section: 'A',
             email: '',
             phone: '',
-            dob: ''
+            dob: '',
+            bus_no: '',
+            bus_driver_name: '',
+            bus_driver_phone: '',
+            bus_starting_point: '',
+            bus_ending_point: ''
         });
         setEditingId(null);
         setShowAddModal(false);
@@ -111,7 +116,12 @@ const Students = () => {
             section: student.section,
             email: student.email || '',
             phone: student.phone || '',
-            dob: student.dob ? student.dob.split('T')[0] : ''
+            dob: student.dob ? student.dob.split('T')[0] : '',
+            bus_no: student.bus_no || '',
+            bus_driver_name: student.bus_driver_name || '',
+            bus_driver_phone: student.bus_driver_phone || '',
+            bus_starting_point: student.bus_starting_point || '',
+            bus_ending_point: student.bus_ending_point || ''
         });
         setEditingId(student.id);
         setShowAddModal(true);
@@ -281,6 +291,7 @@ const Students = () => {
                                         <th className="p-4 text-slate-500 font-semibold text-sm hide-on-mobile">Year/Sec</th>
                                         <th className="p-4 text-slate-500 font-semibold text-sm hide-on-mobile">DOB</th>
                                         <th className="p-4 text-slate-500 font-semibold text-sm hide-on-mobile">Email</th>
+                                        <th className="p-4 text-slate-500 font-semibold text-sm hide-on-mobile">Bus No</th>
                                         <th className="p-4 text-slate-500 font-semibold text-sm">Status</th>
                                         {canEditStudents && <th className="p-4 text-slate-500 font-semibold text-sm">Actions</th>}
                                     </tr>
@@ -317,6 +328,7 @@ const Students = () => {
                                                 <td className="p-4 text-slate-600 font-medium hide-on-mobile" data-label="Year/Sec">{student.year} - {student.section}</td>
                                                 <td className="p-4 text-slate-500 text-sm hide-on-mobile" data-label="DOB">{student.dob ? new Date(student.dob).toLocaleDateString() : '-'}</td>
                                                 <td className="p-4 text-slate-500 text-sm hide-on-mobile" data-label="Email">{student.email}</td>
+                                                <td className="p-4 text-slate-500 text-sm hide-on-mobile" data-label="Bus No">{student.bus_no || '-'}</td>
                                                 <td className="p-4" data-label="Status">
                                                     <span className="px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
                                                         Active
@@ -403,6 +415,36 @@ const Students = () => {
                                 <div className="space-y-1">
                                     <label className="text-xs font-medium text-slate-500">Date of Birth</label>
                                     <input type="date" required name="dob" value={formData.dob} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                </div>
+                            </div>
+
+                            <div className="pt-4 border-t border-slate-100">
+                                <h4 className="text-sm font-bold text-slate-700 mb-4">Transport Details</h4>
+                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Bus Number</label>
+                                        <input name="bus_no" value={formData.bus_no} onChange={handleInputChange} placeholder="e.g. TN 74 AD 1234" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Driver Name</label>
+                                        <input name="bus_driver_name" value={formData.bus_driver_name} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Driver Mobile</label>
+                                        <input type="tel" name="bus_driver_phone" value={formData.bus_driver_phone} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-medium text-slate-500">Starting Point</label>
+                                            <input name="bus_starting_point" value={formData.bus_starting_point} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-medium text-slate-500">Ending Point</label>
+                                            <input name="bus_ending_point" value={formData.bus_ending_point} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

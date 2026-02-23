@@ -21,6 +21,11 @@ CREATE TABLE IF NOT EXISTS students (
     email VARCHAR(100),
     phone VARCHAR(15),
     dob DATE,
+    bus_no VARCHAR(50),
+    bus_driver_name VARCHAR(100),
+    bus_driver_phone VARCHAR(15),
+    bus_starting_point VARCHAR(255),
+    bus_ending_point VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -50,6 +55,11 @@ CREATE TABLE IF NOT EXISTS staff (
     department VARCHAR(50) DEFAULT 'CSE',
     email VARCHAR(100),
     phone VARCHAR(15),
+    bus_no VARCHAR(50),
+    bus_driver_name VARCHAR(100),
+    bus_driver_phone VARCHAR(15),
+    bus_starting_point VARCHAR(255),
+    bus_ending_point VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
