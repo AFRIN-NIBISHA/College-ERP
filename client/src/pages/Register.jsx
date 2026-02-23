@@ -90,7 +90,7 @@ const Register = () => {
                 <div className="p-8">
                     {/* Role Selection */}
                     <div className="flex justify-center flex-wrap gap-4 mb-8">
-                        {['staff', 'hod', 'principal', 'driver'].map((r) => (
+                        {['staff', 'hod', 'principal'].map((r) => (
                             <button
                                 key={r}
                                 onClick={() => setFormData({ ...formData, role: r })}
