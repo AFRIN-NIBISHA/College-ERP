@@ -339,43 +339,43 @@ const Library = () => {
             {showBookModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setShowBookModal(false)}></div>
-                    <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-10 relative z-10 shadow-3xl animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh] scrollbar-thin scrollbar-thumb-slate-200">
-                        <button onClick={() => setShowBookModal(false)} className="absolute right-8 top-8 text-slate-400 hover:text-slate-600 transition-colors"><X size={28} /></button>
-                        <h3 className="text-3xl font-black text-slate-800 mb-2 tracking-tighter">{editingBook ? 'Edit Book' : 'Add New Book'}</h3>
-                        <p className="text-slate-500 mb-10 font-bold italic text-sm">Fill in the book details for library catalog.</p>
+                    <div className="bg-white w-full max-w-lg rounded-[2rem] p-6 md:p-8 relative z-10 shadow-3xl animate-in zoom-in-95 duration-200 overflow-y-auto max-h-[95vh] scrollbar-thin scrollbar-thumb-slate-200">
+                        <button onClick={() => setShowBookModal(false)} className="absolute right-6 top-6 text-slate-400 hover:text-slate-600 transition-colors"><X size={24} /></button>
+                        <h3 className="text-2xl font-black text-slate-800 mb-1 tracking-tighter">{editingBook ? 'Edit Book' : 'Add New Book'}</h3>
+                        <p className="text-slate-500 mb-6 font-bold italic text-xs">Fill in the book details for library catalog.</p>
 
-                        <form onSubmit={handleBookSubmit} className="space-y-6">
+                        <form onSubmit={handleBookSubmit} className="space-y-4">
                             <div className="space-y-1">
-                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Book Title</label>
-                                <input required value={bookFormData.title} onChange={(e) => setBookFormData({ ...bookFormData, title: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-800 shadow-inner" placeholder="Enter book title" />
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Book Title</label>
+                                <input required value={bookFormData.title} onChange={(e) => setBookFormData({ ...bookFormData, title: e.target.value })} className="w-full px-5 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-slate-800 shadow-inner text-sm" placeholder="Enter book title" />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Author</label>
-                                    <input required value={bookFormData.author} onChange={(e) => setBookFormData({ ...bookFormData, author: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-800 shadow-inner" placeholder="Author name" />
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Author</label>
+                                    <input required value={bookFormData.author} onChange={(e) => setBookFormData({ ...bookFormData, author: e.target.value })} className="w-full px-5 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-slate-800 shadow-inner text-sm" placeholder="Author name" />
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">ISBN</label>
-                                    <input value={bookFormData.isbn} onChange={(e) => setBookFormData({ ...bookFormData, isbn: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-800 shadow-inner" placeholder="Book ISBN" />
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ISBN</label>
+                                    <input value={bookFormData.isbn} onChange={(e) => setBookFormData({ ...bookFormData, isbn: e.target.value })} className="w-full px-5 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-slate-800 shadow-inner text-sm" placeholder="Book ISBN" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
-                                    <select value={bookFormData.category} onChange={(e) => setBookFormData({ ...bookFormData, category: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-800 shadow-inner">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
+                                    <select value={bookFormData.category} onChange={(e) => setBookFormData({ ...bookFormData, category: e.target.value })} className="w-full px-5 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-slate-800 shadow-inner text-sm">
                                         {categories.filter(c => c !== 'All').map(c => <option key={c} value={c}>{c}</option>)}
                                     </select>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Total Copies</label>
-                                    <input type="number" min="1" required value={bookFormData.total_copies} onChange={(e) => setBookFormData({ ...bookFormData, total_copies: parseInt(e.target.value) })} className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-800 shadow-inner" />
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Total Copies</label>
+                                    <input type="number" min="1" required value={bookFormData.total_copies} onChange={(e) => setBookFormData({ ...bookFormData, total_copies: parseInt(e.target.value) })} className="w-full px-5 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-slate-800 shadow-inner text-sm" />
                                 </div>
                             </div>
                             <div className="space-y-1">
-                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Shelf Location</label>
-                                <input value={bookFormData.shelf_location} onChange={(e) => setBookFormData({ ...bookFormData, shelf_location: e.target.value })} className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-blue-500 transition-all font-bold text-slate-800 shadow-inner" placeholder="e.g. S-102, Rack-A" />
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Shelf Location</label>
+                                <input value={bookFormData.shelf_location} onChange={(e) => setBookFormData({ ...bookFormData, shelf_location: e.target.value })} className="w-full px-5 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 transition-all font-bold text-slate-800 shadow-inner text-sm" placeholder="e.g. S-102, Rack-A" />
                             </div>
-                            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-2xl font-black text-lg shadow-xl shadow-blue-200 transition-all active:scale-95 mt-4">
+                            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-black text-md shadow-xl shadow-blue-200 transition-all active:scale-95 mt-2">
                                 {editingBook ? 'Update Catalog' : 'Add to Catalog'}
                             </button>
                         </form>
