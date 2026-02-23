@@ -214,13 +214,6 @@ const initDb = async () => {
                 ending_point VARCHAR(255)
             );
 
-            CREATE TABLE IF NOT EXISTS bus_location (
-                id SERIAL PRIMARY KEY,
-                bus_id INT REFERENCES bus(id) ON DELETE CASCADE UNIQUE,
-                latitude DECIMAL(10, 8) NOT NULL,
-                longitude DECIMAL(11, 8) NOT NULL,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
 
 
 
@@ -2831,15 +2824,6 @@ app.delete('/api/bus/:id', async (req, res) => {
     }
 });
 
-app.get('/api/bus/locations', async (req, res) => {
-    try {
-        const result = await db.query("SELECT id, bus_number, driver_name FROM bus");
-        res.json(result.rows);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
 
 
 // The "catchall" handler: for any request that doesn't

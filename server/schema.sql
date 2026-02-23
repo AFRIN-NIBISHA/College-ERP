@@ -216,11 +216,3 @@ CREATE TABLE IF NOT EXISTS bus (
     ending_point VARCHAR(255)
 );
 
--- Bus locations for tracking
-CREATE TABLE IF NOT EXISTS bus_location (
-    id SERIAL PRIMARY KEY,
-    bus_id INT REFERENCES bus(id) ON DELETE CASCADE UNIQUE,
-    latitude DECIMAL(10, 8) NOT NULL,
-    longitude DECIMAL(11, 8) NOT NULL,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
