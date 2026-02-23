@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS students (
     bus_driver_phone VARCHAR(15),
     bus_starting_point VARCHAR(255),
     bus_ending_point VARCHAR(255),
+    library_status VARCHAR(20) DEFAULT 'Active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 
 -- Student On Duty (OD) table
