@@ -289,7 +289,11 @@ const Marks = () => {
                                                     {subject ? student.name : student.subject_name}
                                                 </span>
                                                 <span className="text-[10px] sm:text-xs text-slate-400 font-mono tracking-tighter">
-                                                    {subject ? student.roll_no : (student.subject_code === 'MANUAL' ? 'Custom' : student.subject_code)}
+                                                    {subject ? student.roll_no : (
+                                                        (student.subject_code && student.subject_code.trim().toLowerCase() !== student.subject_name.trim().toLowerCase())
+                                                            ? (student.subject_code === 'MANUAL' ? 'Custom' : student.subject_code)
+                                                            : ''
+                                                    )}
                                                 </span>
                                             </div>
                                         </td>

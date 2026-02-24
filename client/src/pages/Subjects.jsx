@@ -235,7 +235,9 @@ const Subjects = () => {
                                 </div>
                             </div>
                             <div className="mb-4">
-                                <span className="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded uppercase tracking-wider">{sub.subject_code}</span>
+                                {sub.subject_code && sub.subject_code.trim().toLowerCase() !== sub.subject_name.trim().toLowerCase() && (
+                                    <span className="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded uppercase tracking-wider">{sub.subject_code}</span>
+                                )}
                                 <h3 className="text-lg font-bold text-slate-800 mt-1 leading-tight min-h-[56px]">{sub.subject_name}</h3>
                             </div>
                             <div className="flex items-center justify-between pt-4 border-t border-slate-50">

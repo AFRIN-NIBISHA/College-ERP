@@ -291,19 +291,25 @@ const Timetable = () => {
                                     {periods.map(period => {
                                         const entry = getEntry(day, period);
                                         const meta = subjects.find(s => s.id == (entry.subject_id || entry.subjectId)) || {};
-                                        const subCode = entry.subjectCodeText || meta.code || (entry.subjectNameText ? 'Custom' : '-');
-                                        const subName = entry.subjectNameText || meta.name || '-';
-                                        const staffName = entry.staffNameText || staff.find(s => s.id == (entry.staff_id || entry.staffId))?.name || (subName !== '-' ? 'TBA' : '-');
-                                        const isDuplicate = subCode.trim().toLowerCase() === subName.trim().toLowerCase();
+                                        const baseCode = (entry.subjectCodeText || meta.code || '').trim();
+                                        const baseName = (entry.subjectNameText || meta.name || '-').trim();
+
+                                        // The main text to show (Code if exists, else Name)
+                                        const displayHeader = (baseCode && baseCode !== 'Custom' && baseCode !== '-') ? baseCode : baseName;
+
+                                        // Only show subtext if it adds new information
+                                        const showSubtitle = baseName !== '-' && displayHeader.toLowerCase() !== baseName.toLowerCase();
+
+                                        const staffName = entry.staffNameText || staff.find(s => s.id == (entry.staff_id || entry.staffId))?.name || (baseName !== '-' ? 'TBA' : '-');
 
                                         if (isStudent) {
                                             return (
                                                 <td key={period} className="p-2 border-r border-slate-100 min-w-[140px] align-top">
-                                                    {subName !== '-' ? (
+                                                    {baseName !== '-' ? (
                                                         <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100/50 h-full flex flex-col justify-center min-h-[80px]">
-                                                            <p className="text-[11px] font-bold text-blue-900 leading-tight mb-1">{subCode !== 'Custom' && subCode !== '-' ? subCode : subName}</p>
-                                                            {!isDuplicate && subName !== '-' && (
-                                                                <p className="text-[9px] text-blue-600/70 font-medium leading-tight mb-1 line-clamp-2">{subName}</p>
+                                                            <p className="text-[11px] font-bold text-blue-900 leading-tight mb-1">{displayHeader}</p>
+                                                            {showSubtitle && (
+                                                                <p className="text-[9px] text-blue-600/70 font-medium leading-tight mb-1 line-clamp-2">{baseName}</p>
                                                             )}
                                                             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-auto border-t border-blue-100/30 pt-1">{staffName}</p>
                                                         </div>
