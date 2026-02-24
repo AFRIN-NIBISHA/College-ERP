@@ -251,6 +251,8 @@ const initDb = async () => {
             ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
             ALTER TABLE attendance ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
             ALTER TABLE no_dues ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
+            ALTER TABLE fees ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
+            ALTER TABLE student_od ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
 
             -- Ensure Fee Naming Consistency safely
             DO $$ 

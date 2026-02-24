@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS student_od (
     pending_with VARCHAR(20), -- 'staff', 'hod', 'principal'
     status VARCHAR(20) DEFAULT 'Pending',
     remarks TEXT,
+    academic_year VARCHAR(20) DEFAULT '2025-2026',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -138,7 +139,8 @@ CREATE TABLE IF NOT EXISTS fees (
     payment_date DATE,
     payment_mode VARCHAR(50),
     receipt_no VARCHAR(50),
-    status VARCHAR(20) DEFAULT 'Pending'
+    status VARCHAR(20) DEFAULT 'Pending',
+    academic_year VARCHAR(20) DEFAULT '2025-2026'
 );
 
 -- No Due table
