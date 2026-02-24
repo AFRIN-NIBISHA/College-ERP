@@ -141,12 +141,20 @@ body::before {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.875rem 0.5rem;
+        padding: 0.875rem 1rem;
         border: none;
         border-bottom: 1px solid #f8fafc;
         text-align: right;
-        min-height: 3rem;
-        /* Better touch target */
+        min-height: 3.25rem;
+        color: #1e293b;
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+
+    .mobile-stack td span {
+        max-width: 65%;
+        word-break: break-word;
+        display: inline-block;
     }
 
     .mobile-stack td:last-child {

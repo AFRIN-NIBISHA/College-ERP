@@ -136,7 +136,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
     return (
         <aside className={`
-            fixed inset-y-0 left-0 z-30 w-72 bg-white/90 backdrop-blur-xl border-r border-slate-200/60 flex flex-col transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none
+            fixed inset-y-0 left-0 z-50 w-72 bg-white lg:bg-white/90 backdrop-blur-xl border-r border-slate-200/60 flex flex-col transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none
             lg:relative lg:translate-x-0 
             ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>

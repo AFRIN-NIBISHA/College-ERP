@@ -252,18 +252,18 @@ const Fees = () => {
 
                                     return (
                                         <tr key={student.id} className="hover:bg-slate-50/50 transition-colors group">
-                                            <td className="p-4 text-slate-700 font-semibold md:font-medium" data-label="Roll No">{student.roll_no}</td>
+                                            <td className="p-4 text-slate-700 font-semibold md:font-medium" data-label="Roll No"><span>{student.roll_no}</span></td>
                                             <td
                                                 className={`p-4 font-bold border-l-0 md:border-l border-slate-100 ${canEditFees ? 'text-blue-600 hover:text-blue-700 cursor-pointer' : 'text-slate-700'}`}
                                                 onClick={() => canEditFees && handleEditClick(student)}
                                                 data-label="Student"
                                             >
-                                                {student.name}
+                                                <span>{student.name}</span>
                                             </td>
-                                            <td className="p-4 text-slate-600 border-l-0 md:border-l border-slate-100" data-label="Total Fee">₹{total.toLocaleString()}</td>
-                                            <td className="p-4 text-emerald-600 font-bold border-l-0 md:border-l border-slate-100" data-label="Paid Amt">₹{paid.toLocaleString()}</td>
-                                            <td className="p-4 text-red-500 font-bold border-l-0 md:border-l border-slate-100 hide-on-mobile" data-label="Balance">₹{balance > 0 ? balance.toLocaleString() : 0}</td>
-                                            <td className="p-4 text-slate-500 text-xs border-l-0 md:border-l border-slate-100 hide-on-mobile" data-label="Date">{student.payment_date ? new Date(student.payment_date).toLocaleDateString() : '-'}</td>
+                                            <td className="p-4 text-slate-600 border-l-0 md:border-l border-slate-100" data-label="Total Fee"><span>₹{total.toLocaleString()}</span></td>
+                                            <td className="p-4 text-emerald-600 font-bold border-l-0 md:border-l border-slate-100" data-label="Paid Amt"><span>₹{paid.toLocaleString()}</span></td>
+                                            <td className="p-4 text-red-500 font-bold border-l-0 md:border-l border-slate-100 hide-on-mobile" data-label="Balance"><span>₹{balance > 0 ? balance.toLocaleString() : 0}</span></td>
+                                            <td className="p-4 text-slate-500 text-xs border-l-0 md:border-l border-slate-100 hide-on-mobile" data-label="Date"><span>{student.payment_date ? new Date(student.payment_date).toLocaleDateString() : '-'}</span></td>
                                             <td className="p-4 border-l-0 md:border-l border-slate-100" data-label="Status">
                                                 <span className={`px-2 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider ${isPaid ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'
                                                     }`}>
@@ -271,14 +271,16 @@ const Fees = () => {
                                                 </span>
                                             </td>
                                             <td className="p-4 text-right border-l-0 md:border-l border-slate-100" data-label="Action">
-                                                {canEditFees && (
-                                                    <button
-                                                        onClick={() => handleEditClick(student)}
-                                                        className="p-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
-                                                    >
-                                                        <Edit2 size={14} />
-                                                    </button>
-                                                )}
+                                                <span>
+                                                    {canEditFees && (
+                                                        <button
+                                                            onClick={() => handleEditClick(student)}
+                                                            className="p-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                                        >
+                                                            <Edit2 size={14} />
+                                                        </button>
+                                                    )}
+                                                </span>
                                             </td>
                                         </tr>
                                     );

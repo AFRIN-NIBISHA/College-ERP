@@ -271,13 +271,12 @@ const Timetable = () => {
             </div>
 
             {/* Timetable View */}
-            <div className="space-y-4">
-                {/* Desktop View (Table) */}
-                <div className="hidden lg:block glass-card rounded-2xl overflow-hidden bg-white/60 border border-slate-200 overflow-x-auto">
-                    <table className="w-full min-w-[1000px] border-collapse">
+            <div className="glass-card rounded-2xl overflow-hidden bg-white border border-slate-200 shadow-sm">
+                <div className="overflow-x-auto scroll-hint">
+                    <table className="w-full min-w-[1100px] border-collapse">
                         <thead>
-                            <tr className="bg-slate-50/80 border-b border-slate-200">
-                                <th className="p-4 w-24 text-left font-bold text-slate-700 uppercase text-xs tracking-wider border-r border-slate-100">Day</th>
+                            <tr className="bg-slate-50 border-b border-slate-200">
+                                <th className="p-4 w-24 text-left font-bold text-slate-700 uppercase text-xs tracking-wider border-r border-slate-100 sticky left-0 bg-slate-50 z-20">Day</th>
                                 {periods.map(p => (
                                     <th key={p} className="p-4 text-center font-bold text-slate-600 text-xs uppercase tracking-wider border-r border-slate-100">
                                         Period {p}
@@ -288,7 +287,7 @@ const Timetable = () => {
                         <tbody className="divide-y divide-slate-100">
                             {days.map(day => (
                                 <tr key={day} className="hover:bg-slate-50/50">
-                                    <td className="p-4 font-bold text-slate-700 bg-slate-50/30 border-r border-slate-100">{day}</td>
+                                    <td className="p-4 font-bold text-slate-700 bg-slate-50 sticky left-0 z-20 border-r border-slate-100 shadow-sm">{day}</td>
                                     {periods.map(period => {
                                         const entry = getEntry(day, period);
                                         if (isStudent) {
@@ -298,36 +297,42 @@ const Timetable = () => {
                                             const staffName = entry.staffNameText || staff.find(s => s.id == (entry.staff_id || entry.staffId))?.name || (subName !== '-' ? 'TBA' : '-');
 
                                             return (
-                                                <td key={period} className="p-2 border-r border-slate-100 min-w-[120px] text-center">
+                                                <td key={period} className="p-2 border-r border-slate-100 min-w-[140px] align-top">
                                                     {subName !== '-' ? (
-                                                        <div className="p-2 rounded-lg bg-blue-50/50 border border-blue-100/50 hover:bg-white hover:shadow-sm transition-all cursor-default relative group">
-                                                            <p className="text-xs font-bold text-blue-700 truncate">{subCode !== 'Custom' ? subCode : subName}</p>
-                                                            <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wide truncate">{staffName}</p>
-                                                            <div className="absolute hidden group-hover:block bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-white text-[10px] rounded shadow-lg pointer-events-none whitespace-nowrap z-50">
-                                                                {subName}
-                                                            </div>
+                                                        <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100/50 h-full flex flex-col justify-center min-h-[70px]">
+                                                            <p className="text-xs font-bold text-blue-800 leading-tight mb-1">{subCode !== 'Custom' && subCode !== '-' ? subCode : subName}</p>
+                                                            {subName !== '-' && subCode !== subName && (
+                                                                <p className="text-[9px] text-blue-600/70 font-medium leading-tight mb-1 line-clamp-2">{subName}</p>
+                                                            )}
+                                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-auto border-t border-blue-100/30 pt-1">{staffName}</p>
                                                         </div>
-                                                    ) : <span className="text-slate-300">-</span>}
+                                                    ) : <div className="h-full flex items-center justify-center py-4 text-slate-200">/</div>}
                                                 </td>
                                             );
                                         }
                                         return (
-                                            <td key={period} className="p-2 border-r border-slate-100 min-w-[140px]">
-                                                <div className="space-y-1">
-                                                    <input
-                                                        list="subject-options"
-                                                        className="w-full text-[11px] font-semibold bg-blue-50/50 border-none rounded p-1 text-blue-900 truncate placeholder-blue-300 focus:ring-1 focus:ring-blue-500"
-                                                        placeholder="Subject"
-                                                        value={entry.subjectNameText || ''}
-                                                        onChange={(e) => handleEntryChange(day, period, 'subject', e.target.value)}
-                                                    />
-                                                    <input
-                                                        list="staff-options"
-                                                        className="w-full text-[10px] bg-slate-50/50 border-none rounded p-1 text-slate-600 truncate placeholder-slate-400 focus:ring-1 focus:ring-slate-400"
-                                                        placeholder="Faculty"
-                                                        value={entry.staffNameText || ''}
-                                                        onChange={(e) => handleEntryChange(day, period, 'staff', e.target.value)}
-                                                    />
+                                            <td key={period} className="p-2 border-r border-slate-100 min-w-[150px]">
+                                                <div className="space-y-2">
+                                                    <div className="space-y-1">
+                                                        <label className="text-[9px] font-bold text-blue-400 uppercase tracking-widest pl-1">Subject</label>
+                                                        <input
+                                                            list="subject-options"
+                                                            className="w-full text-xs font-semibold bg-blue-50/50 border border-blue-100 rounded-lg px-2 py-1.5 text-blue-900 placeholder-blue-300 focus:ring-1 focus:ring-blue-500 outline-none"
+                                                            placeholder="Select Subject"
+                                                            value={entry.subjectNameText || ''}
+                                                            onChange={(e) => handleEntryChange(day, period, 'subject', e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-1">Staff</label>
+                                                        <input
+                                                            list="staff-options"
+                                                            className="w-full text-[10px] bg-slate-50/50 border border-slate-200 rounded-lg px-2 py-1.5 text-slate-600 placeholder-slate-400 focus:ring-1 focus:ring-slate-400 outline-none"
+                                                            placeholder="Select Staff"
+                                                            value={entry.staffNameText || ''}
+                                                            onChange={(e) => handleEntryChange(day, period, 'staff', e.target.value)}
+                                                        />
+                                                    </div>
                                                 </div>
                                             </td>
                                         );
@@ -336,73 +341,6 @@ const Timetable = () => {
                             ))}
                         </tbody>
                     </table>
-                </div>
-
-                {/* Mobile & Tablet View (Cards) */}
-                <div className="lg:hidden space-y-6">
-                    {days.map(day => (
-                        <div key={day} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                            <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center gap-2">
-                                <Calendar size={16} className="text-blue-600" />
-                                <h3 className="font-bold text-slate-800">{day}</h3>
-                            </div>
-                            <div className="divide-y divide-slate-100">
-                                {periods.map(period => {
-                                    const entry = getEntry(day, period);
-                                    if (isStudent) {
-                                        const meta = subjects.find(s => s.id == (entry.subject_id || entry.subjectId)) || {};
-                                        const subCode = entry.subjectCodeText || meta.code || (entry.subjectNameText ? 'Custom' : '-');
-                                        const subName = entry.subjectNameText || meta.name || '-';
-                                        const staffName = entry.staffNameText || staff.find(s => s.id == (entry.staff_id || entry.staffId))?.name || (subName !== '-' ? 'TBA' : '-');
-
-                                        return (
-                                            <div key={period} className="px-4 py-3 flex items-center justify-between gap-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-[10px] font-bold text-slate-400 border border-slate-100">
-                                                        P{period}
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-bold text-slate-800">{subCode !== 'Custom' ? subCode : subName}</p>
-                                                        {subName !== '-' && <p className="text-xs text-slate-500">{subName}</p>}
-                                                    </div>
-                                                </div>
-                                                <div className="text-right">
-                                                    {subName !== '-' && (
-                                                        <span className="text-[10px] font-medium px-2 py-1 rounded bg-blue-50 text-blue-600 uppercase tracking-wide">
-                                                            {staffName}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        );
-                                    }
-                                    return (
-                                        <div key={period} className="px-4 py-3 flex items-center gap-4">
-                                            <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-[10px] font-bold text-slate-400 border border-slate-100 shrink-0">
-                                                P{period}
-                                            </div>
-                                            <div className="flex-1 grid grid-cols-2 gap-2">
-                                                <input
-                                                    list="subject-options"
-                                                    className="w-full text-xs font-semibold bg-blue-50/50 border border-blue-100 rounded-lg p-2 text-blue-900 outline-none focus:ring-1 focus:ring-blue-500"
-                                                    placeholder="Subject"
-                                                    value={entry.subjectNameText || ''}
-                                                    onChange={(e) => handleEntryChange(day, period, 'subject', e.target.value)}
-                                                />
-                                                <input
-                                                    list="staff-options"
-                                                    className="w-full text-xs bg-slate-50 px-2 rounded-lg border border-slate-200 outline-none focus:ring-1 focus:ring-slate-400"
-                                                    placeholder="Faculty"
-                                                    value={entry.staffNameText || ''}
-                                                    onChange={(e) => handleEntryChange(day, period, 'staff', e.target.value)}
-                                                />
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    ))}
                 </div>
             </div>
 
