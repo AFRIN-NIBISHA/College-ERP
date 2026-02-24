@@ -491,6 +491,27 @@ const NoDue = () => {
                                                 <span className="text-xs font-bold uppercase text-slate-500">Librarian</span>
                                                 <StatusBadge status={req.librarian_status} />
                                             </div>
+
+                                            {/* Library Details */}
+                                            {(role === 'librarian' || role === 'admin' || isStudent) && (
+                                                <div className="mb-3">
+                                                    {req.library_pending_books && req.library_pending_books.length > 0 ? (
+                                                        <div className="space-y-1.5">
+                                                            <p className="text-[10px] font-bold text-rose-500 uppercase tracking-wider mb-1">Pending Books ({req.library_pending_books.length})</p>
+                                                            {req.library_pending_books.map((book, bidx) => (
+                                                                <div key={bidx} className="bg-white p-2 rounded border border-rose-100 text-[10px] text-slate-600">
+                                                                    <p className="font-bold text-slate-800 truncate">{book.title}</p>
+                                                                    <p className="text-[9px] text-rose-400 mt-0.5">Due: {new Date(book.due_date).toLocaleDateString()}</p>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="p-2 bg-emerald-50 rounded border border-emerald-100 text-[10px] text-emerald-700 flex items-center gap-1">
+                                                            <CheckCircle size={10} /> No Pending Books
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                             {role === 'librarian' && req.librarian_status === 'Pending' && req.office_status === 'Approved' && (
                                                 <div className="flex gap-2 text-xs mt-2">
                                                     <button onClick={() => handleUpdate(req.id, 'librarian', 'Approved')} className="flex-1 py-1.5 bg-emerald-600 text-white rounded hover:bg-emerald-700">Approve</button>

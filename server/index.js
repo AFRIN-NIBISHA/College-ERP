@@ -1809,9 +1809,12 @@ app.get('/api/no-due', async (req, res) => {
                 nd.status as nodue_overall_status,
                 COALESCE(nd.created_at, s.created_at) as created_at,
                 s.name, s.roll_no, s.year, s.section, s.department,
-                COALESCE(f.total_fee, 50000) as total_fee, 
-                COALESCE(f.paid_amount, 0) as paid_amount, 
-                COALESCE(f.status, 'Pending') as fee_status
+                (
+                    SELECT JSON_AGG(JSON_BUILD_OBJECT('title', b.title, 'due_date', bi.due_date))
+                    FROM book_issues bi
+                    JOIN books b ON bi.book_id = b.id
+                    WHERE bi.student_id = s.id AND bi.status = 'Issued'
+                ) as library_pending_books
             FROM students s
             LEFT JOIN no_dues nd ON s.id = nd.student_id
             LEFT JOIN fees f ON s.id = f.student_id
