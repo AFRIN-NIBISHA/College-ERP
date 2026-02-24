@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Settings, Calendar, GraduationCap, ArrowRight, Save, Trash2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Settings, Calendar, GraduationCap, ArrowRight, Save, Trash2, AlertCircle, RefreshCw, Users } from 'lucide-react';
 
 const AdminSettings = () => {
     const [settings, setSettings] = useState({});
