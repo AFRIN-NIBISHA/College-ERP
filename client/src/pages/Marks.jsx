@@ -174,7 +174,9 @@ const Marks = () => {
                                             >
                                                 <option value="">All Subjects (View Only)</option>
                                                 {subjects.map(s => (
-                                                    <option key={s.id} value={s.subject_code}>{s.subject_code} - {s.subject_name}</option>
+                                                    <option key={s.id} value={s.subject_code}>
+                                                        {s.subject_code === 'MANUAL' ? s.subject_name : `${s.subject_code} - ${s.subject_name}`}
+                                                    </option>
                                                 ))}
                                             </select>
                                         </div>
@@ -287,7 +289,7 @@ const Marks = () => {
                                                     {subject ? student.name : student.subject_name}
                                                 </span>
                                                 <span className="text-[10px] sm:text-xs text-slate-400 font-mono tracking-tighter">
-                                                    {subject ? student.roll_no : student.subject_code}
+                                                    {subject ? student.roll_no : (student.subject_code === 'MANUAL' ? 'Custom' : student.subject_code)}
                                                 </span>
                                             </div>
                                         </td>

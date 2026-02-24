@@ -332,7 +332,9 @@ const Reports = () => {
                                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 px-1">Subject</p>
                                                 <select value={subject} onChange={(e) => setSubject(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs">
                                                     {subjects.map(s => (
-                                                        <option key={s.id} value={s.subject_code}>{s.subject_code} - {s.subject_name}</option>
+                                                        <option key={s.id} value={s.subject_code}>
+                                                            {s.subject_code === 'MANUAL' ? s.subject_name : `${s.subject_code} - ${s.subject_name}`}
+                                                        </option>
                                                     ))}
                                                 </select>
                                             </div>
