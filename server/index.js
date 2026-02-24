@@ -2614,7 +2614,7 @@ app.post('/api/login', async (req, res) => {
                 cleanId = cleanId.substring(4);
             }
 
-            const staffRes = await db.query("SELECT * FROM staff WHERE staff_id = $1 OR staff_id = $2", [username.trim(), cleanId]);
+            const staffRes = await db.query("SELECT * FROM staff WHERE LOWER(staff_id) = LOWER($1) OR LOWER(staff_id) = LOWER($2)", [username.trim(), cleanId]);
             if (staffRes.rows.length > 0) {
                 const staff = staffRes.rows[0];
                 const normalize = (str) => str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
