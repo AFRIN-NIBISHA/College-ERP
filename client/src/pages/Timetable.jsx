@@ -290,18 +290,19 @@ const Timetable = () => {
                                     <td className="p-4 font-bold text-slate-700 bg-slate-50 sticky left-0 z-20 border-r border-slate-100 shadow-sm">{day}</td>
                                     {periods.map(period => {
                                         const entry = getEntry(day, period);
-                                        if (isStudent) {
-                                            const meta = subjects.find(s => s.id == (entry.subject_id || entry.subjectId)) || {};
-                                            const subCode = entry.subjectCodeText || meta.code || (entry.subjectNameText ? 'Custom' : '-');
-                                            const subName = entry.subjectNameText || meta.name || '-';
-                                            const staffName = entry.staffNameText || staff.find(s => s.id == (entry.staff_id || entry.staffId))?.name || (subName !== '-' ? 'TBA' : '-');
+                                        const meta = subjects.find(s => s.id == (entry.subject_id || entry.subjectId)) || {};
+                                        const subCode = entry.subjectCodeText || meta.code || (entry.subjectNameText ? 'Custom' : '-');
+                                        const subName = entry.subjectNameText || meta.name || '-';
+                                        const staffName = entry.staffNameText || staff.find(s => s.id == (entry.staff_id || entry.staffId))?.name || (subName !== '-' ? 'TBA' : '-');
+                                        const isDuplicate = subCode.trim().toLowerCase() === subName.trim().toLowerCase();
 
+                                        if (isStudent) {
                                             return (
                                                 <td key={period} className="p-2 border-r border-slate-100 min-w-[140px] align-top">
                                                     {subName !== '-' ? (
-                                                        <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100/50 h-full flex flex-col justify-center min-h-[70px]">
-                                                            <p className="text-xs font-bold text-blue-800 leading-tight mb-1">{subCode !== 'Custom' && subCode !== '-' ? subCode : subName}</p>
-                                                            {subName !== '-' && subCode !== subName && (
+                                                        <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100/50 h-full flex flex-col justify-center min-h-[80px]">
+                                                            <p className="text-[11px] font-bold text-blue-900 leading-tight mb-1">{subCode !== 'Custom' && subCode !== '-' ? subCode : subName}</p>
+                                                            {!isDuplicate && subName !== '-' && (
                                                                 <p className="text-[9px] text-blue-600/70 font-medium leading-tight mb-1 line-clamp-2">{subName}</p>
                                                             )}
                                                             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight mt-auto border-t border-blue-100/30 pt-1">{staffName}</p>
