@@ -42,11 +42,32 @@ const Dashboard = () => {
     const [activities, setActivities] = useState([]);
     const [classInfo, setClassInfo] = useState({});
 
+    const [currentYear, setCurrentYear] = useState('2025 - 2026');
+
     useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await axios.get('/api/settings');
+                if (res.data?.current_academic_year) {
+                    setCurrentYear(res.data.current_academic_year.replace('-', ' - '));
+                }
+            } catch (err) {
+                console.error("Failed to fetch settings", err);
+            }
+        };
+        fetchSettings();
         fetchStats();
         fetchNotices();
         fetchActivities();
     }, []);
+
+    // Helper to get semester number
+    const getSemester = () => {
+        if (!user?.year) return null;
+        const month = new Date().getMonth() + 1;
+        const isEven = month >= 1 && month <= 6;
+        return isEven ? user.year * 2 : (user.year * 2) - 1;
+    };
 
     useEffect(() => {
         const prepareData = async () => {
@@ -162,10 +183,12 @@ const Dashboard = () => {
                     <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
                     <div className="relative z-10">
                         <p className="text-slate-400 font-medium text-sm mb-1 uppercase tracking-wider">Current Academic Session</p>
-                        <h3 className="text-3xl font-bold tracking-tight">2025 - 2026</h3>
+                        <h3 className="text-3xl font-bold tracking-tight">{currentYear}</h3>
                         <div className="flex items-center gap-2 mt-4">
                             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                            <span className="text-emerald-400 text-xs font-bold uppercase tracking-wide">Active Semester</span>
+                            <span className="text-emerald-400 text-xs font-bold uppercase tracking-wide">
+                                {user?.role === 'student' ? `Semester ${getSemester()}` : 'Active Semester'}
+                            </span>
                         </div>
                     </div>
 

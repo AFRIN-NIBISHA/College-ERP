@@ -239,7 +239,12 @@ const Subjects = () => {
                                 <h3 className="text-lg font-bold text-slate-800 mt-1 leading-tight min-h-[56px]">{sub.subject_name}</h3>
                             </div>
                             <div className="flex items-center justify-between pt-4 border-t border-slate-50">
-                                <span className="text-xs font-semibold text-slate-400">Semester {sub.semester}</span>
+                                <span className="text-xs font-semibold text-slate-400">
+                                    Semester {(user?.role === 'student' && (sub.semester === 0 || !sub.semester))
+                                        ? ((new Date().getMonth() + 1 >= 1 && new Date().getMonth() + 1 <= 6) ? user.year * 2 : (user.year * 2) - 1)
+                                        : sub.semester
+                                    }
+                                </span>
                                 <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">{sub.credits || 3} Credits</span>
                             </div>
                         </div>
