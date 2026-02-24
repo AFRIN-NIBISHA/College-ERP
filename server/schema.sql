@@ -9,6 +9,14 @@ CREATE TABLE IF NOT EXISTS users (
     is_setup BOOLEAN DEFAULT FALSE
 );
 
+-- Settings table for global configurations
+CREATE TABLE IF NOT EXISTS settings (
+    key VARCHAR(50) PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+INSERT INTO settings (key, value) VALUES ('current_academic_year', '2025-2026') ON CONFLICT (key) DO NOTHING;
+
 -- Students table
 CREATE TABLE IF NOT EXISTS students (
     id SERIAL PRIMARY KEY,
@@ -26,6 +34,8 @@ CREATE TABLE IF NOT EXISTS students (
     bus_driver_phone VARCHAR(15),
     bus_starting_point VARCHAR(255),
     bus_ending_point VARCHAR(255),
+    academic_year VARCHAR(20) DEFAULT '2025-2026',
+    status VARCHAR(20) DEFAULT 'Active', -- Active, Graduated, Dropout
     library_status VARCHAR(20) DEFAULT 'Active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 
@@ -97,7 +107,8 @@ CREATE TABLE IF NOT EXISTS internal_marks (
     assign2 INT DEFAULT 0,
     assign3 INT DEFAULT 0,
     assign4 INT DEFAULT 0,
-    UNIQUE(student_id, subject_code)
+    academic_year VARCHAR(20) DEFAULT '2025-2026',
+    UNIQUE(student_id, subject_code, academic_year)
 );
 
 -- Attendance table
@@ -114,7 +125,8 @@ CREATE TABLE IF NOT EXISTS attendance (
     period_6 VARCHAR(20),
     period_7 VARCHAR(20),
     period_8 VARCHAR(20),
-    UNIQUE(student_id, date)
+    academic_year VARCHAR(20) DEFAULT '2025-2026',
+    UNIQUE(student_id, date, academic_year)
 );
 
 -- Fees Table
@@ -141,8 +153,9 @@ CREATE TABLE IF NOT EXISTS no_dues (
     principal_status VARCHAR(20) DEFAULT 'Pending',
     status VARCHAR(20) DEFAULT 'Pending',
     remarks TEXT,
+    academic_year VARCHAR(20) DEFAULT '2025-2026',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(student_id, semester)
+    UNIQUE(student_id, semester, academic_year)
 );
 
 -- Notices/Announcements
@@ -176,7 +189,8 @@ CREATE TABLE IF NOT EXISTS timetable (
     staff_name_text VARCHAR(100),
     subject_code_text VARCHAR(50),
     subject_credit_text VARCHAR(10),
-    UNIQUE(year, section, day, period)
+    academic_year VARCHAR(20) DEFAULT '2025-2026',
+    UNIQUE(year, section, day, period, academic_year)
 );
 
 -- Notifications Table

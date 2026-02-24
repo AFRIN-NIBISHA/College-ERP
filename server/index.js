@@ -24,6 +24,16 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+// Helper to get current academic year
+async function getCurrentYear() {
+    try {
+        const res = await db.query("SELECT value FROM settings WHERE key = 'current_academic_year'");
+        return res.rows[0]?.value || '2025-2026';
+    } catch (e) {
+        return '2025-2026';
+    }
+}
+
 // Initialize Tables (Quick fix to ensure schema exists without separate script issues)
 const initDb = async () => {
     try {
@@ -35,6 +45,11 @@ const initDb = async () => {
                 role VARCHAR(20) CHECK (role IN ('admin', 'staff', 'student', 'hod', 'principal', 'office', 'librarian')) NOT NULL,
                 is_setup BOOLEAN DEFAULT FALSE
             );
+            CREATE TABLE IF NOT EXISTS settings (
+                key VARCHAR(50) PRIMARY KEY,
+                value TEXT NOT NULL
+            );
+            INSERT INTO settings (key, value) VALUES ('current_academic_year', '2025-2026') ON CONFLICT (key) DO NOTHING;
             CREATE TABLE IF NOT EXISTS students (
                 id SERIAL PRIMARY KEY,
                 user_id INT REFERENCES users(id) ON DELETE CASCADE,
@@ -230,6 +245,12 @@ const initDb = async () => {
             ALTER TABLE timetable ADD COLUMN IF NOT EXISTS staff_name_text VARCHAR(255);
             ALTER TABLE timetable ADD COLUMN IF NOT EXISTS subject_code_text VARCHAR(50);
             ALTER TABLE timetable ADD COLUMN IF NOT EXISTS subject_credit_text VARCHAR(10);
+            ALTER TABLE timetable ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'Active';
+            ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
+            ALTER TABLE attendance ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
+            ALTER TABLE no_dues ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
 
             -- Ensure Fee Naming Consistency safely
             DO $$ 
@@ -1032,7 +1053,8 @@ app.delete('/api/notices/:id', async (req, res) => {
 // 6. Reports Endpoint
 app.get('/api/reports/students', async (req, res) => {
     try {
-        const result = await db.query("SELECT * FROM students ORDER BY year, section, roll_no");
+        const currentYear = await getCurrentYear();
+        const result = await db.query("SELECT * FROM students WHERE academic_year = $1 OR status = 'Active' ORDER BY year, section, roll_no", [currentYear]);
         res.json(result.rows);
     } catch (err) {
         console.error(err);
@@ -1062,10 +1084,11 @@ app.post('/api/attendance', async (req, res) => {
                     .map(p => `attendance.period_${p}`)
                     .join(', ');
 
+                const academicYear = await getCurrentYear();
                 const query = `
-                    INSERT INTO attendance (student_id, date, status, ${periodCol}) 
-                    VALUES ($1, $2, $3, $3) 
-                    ON CONFLICT (student_id, date) 
+                    INSERT INTO attendance (student_id, date, status, ${periodCol}, academic_year) 
+                    VALUES ($1, $2, $3, $3, $4) 
+                    ON CONFLICT (student_id, date, academic_year) 
                     DO UPDATE SET 
                         ${periodCol} = EXCLUDED.${periodCol},
                         status = CASE 
@@ -1075,7 +1098,7 @@ app.post('/api/attendance', async (req, res) => {
                         END
                 `;
 
-                await db.query(query, [studentId, date, status]);
+                await db.query(query, [studentId, date, status, academicYear]);
             } else {
                 // Legacy / Overall fallback (if no period selected)
                 await db.query(
@@ -1123,9 +1146,10 @@ app.get('/api/attendance/personal', async (req, res) => {
 app.get('/api/attendance/report', async (req, res) => {
     const { year, section, month, student_id } = req.query;
     try {
-        let queryParams = [];
+        const currentYear = await getCurrentYear();
+        let queryParams = [currentYear];
         let dateCondition = "";
-        let whereConditions = [];
+        let whereConditions = ["a.academic_year = $1"];
 
         if (year) {
             queryParams.push(year);
@@ -1196,9 +1220,10 @@ app.get('/api/attendance/report', async (req, res) => {
 app.get('/api/marks', async (req, res) => {
     const { year, section, subject_code, student_id } = req.query;
     try {
+        const currentYear = await getCurrentYear();
         // 1. Get Students (Filter by ID if provided, otherwise Year/Section)
-        let sQuery = "SELECT id, name, roll_no, year FROM students WHERE 1=1";
-        const sParams = [];
+        let sQuery = "SELECT id, name, roll_no, year FROM students WHERE academic_year = $1";
+        const sParams = [currentYear];
 
         if (student_id) {
             sParams.push(student_id);
@@ -1214,8 +1239,8 @@ app.get('/api/marks', async (req, res) => {
         if (students.rows.length === 0) return res.json([]);
 
         // 2. Get Marks
-        let mQuery = "SELECT m.*, s.subject_name FROM internal_marks m JOIN subjects s ON m.subject_code = s.subject_code WHERE 1=1";
-        const mParams = [];
+        let mQuery = "SELECT m.*, s.subject_name FROM internal_marks m JOIN subjects s ON m.subject_code = s.subject_code WHERE m.academic_year = $1";
+        const mParams = [currentYear];
 
         if (subject_code) {
             mParams.push(subject_code);
@@ -1313,10 +1338,11 @@ app.post('/api/marks', async (req, res) => {
     try {
         const studentIds = [];
         for (const entry of marksData) {
+            const academicYear = await getCurrentYear();
             await db.query(`
-                INSERT INTO internal_marks (student_id, subject_code, ia1, ia2, ia3, assign1, assign2, assign3, assign4)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-                ON CONFLICT (student_id, subject_code) 
+                INSERT INTO internal_marks (student_id, subject_code, ia1, ia2, ia3, assign1, assign2, assign3, assign4, academic_year)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                ON CONFLICT (student_id, subject_code, academic_year) 
                 DO UPDATE SET 
                     ia1 = EXCLUDED.ia1, 
                     ia2 = EXCLUDED.ia2, 
@@ -1334,7 +1360,8 @@ app.post('/api/marks', async (req, res) => {
                 entry.assign1 || 0,
                 entry.assign2 || 0,
                 entry.assign3 || 0,
-                entry.assign4 || 0
+                entry.assign4 || 0,
+                academicYear
             ]);
             studentIds.push(entry.student_id);
         }
@@ -3005,28 +3032,44 @@ app.post('/api/library/return/:issue_id', async (req, res) => {
 
         if (issue.status === 'Returned') return res.status(400).json({ message: 'Already returned' });
 
-        const today = new Date();
-        const dueDate = new Date(issue.due_date);
-        let fine = 0;
-        if (today > dueDate) {
-            const diffTime = Math.abs(today - dueDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            fine = diffDays * 5;
-        }
-
         await db.query("BEGIN");
-        await db.query(
-            "UPDATE book_issues SET return_date = CURRENT_DATE, fine_amount = $1, status = 'Returned' WHERE id = $2",
-            [fine, issue_id]
-        );
+        await db.query("UPDATE book_issues SET status = 'Returned', return_date = CURRENT_DATE WHERE id = $1", [issue_id]);
         await db.query("UPDATE books SET available_copies = available_copies + 1 WHERE id = $1", [issue.book_id]);
         await db.query("COMMIT");
 
-        res.json({ message: 'Book returned', fine });
+        res.json({ message: 'Book returned successfully' });
     } catch (err) {
         await db.query("ROLLBACK");
         console.error(err);
         res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Settings & Promotion
+app.get('/api/settings', async (req, res) => {
+    try {
+        const results = await db.query("SELECT key, value FROM settings");
+        const settings = {};
+        results.rows.forEach(row => settings[row.key] = row.value);
+        res.json(settings);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.post('/api/admin/promote-year', async (req, res) => {
+    const { newYear } = req.body;
+    if (!newYear) return res.status(400).json({ message: 'New academic year is required' });
+
+    try {
+        // Use the existing promoteYear logic but we need to modify it to take an argument
+        // Since promote_year.js is already imported as promoteYear
+        await promoteYear(newYear);
+        res.json({ message: `Successfully promoted to ${newYear}. All historical data preserved.` });
+    } catch (err) {
+        console.error("Promotion Error:", err);
+        res.status(500).json({ message: 'Promotion failed', details: err.message });
     }
 });
 
