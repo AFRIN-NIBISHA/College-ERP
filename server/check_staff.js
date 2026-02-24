@@ -9,23 +9,14 @@ const client = new Client({
     port: process.env.DB_PORT,
 });
 
-async function fixStaff() {
+async function check() {
     try {
         await client.connect();
-        // Check if exists
-        const check = await client.query("SELECT * FROM staff WHERE staff_id = '9606ECE001'");
-        if (check.rows.length === 0) {
-            await client.query("INSERT INTO staff (staff_id, name, department) VALUES ('9606ECE001', 'Mrs. ABISHA MANO', 'ECE')");
-            console.log("Staff record created: 9606ECE001 | Mrs. ABISHA MANO");
-        } else {
-            await client.query("UPDATE staff SET name = 'Mrs. ABISHA MANO', department = 'ECE' WHERE staff_id = '9606ECE001'");
-            console.log("Staff record updated: 9606ECE001");
-        }
-    } catch (err) {
-        console.error(err);
-    } finally {
-        await client.end();
-    }
+        const res = await client.query("SELECT id, staff_id, name, department FROM staff WHERE staff_id ILIKE '%ECE%' OR name ILIKE '%Abisha%'");
+        console.log("STAFF_LIST_START");
+        res.rows.forEach(r => console.log(`ID:${r.id}|SID:${r.staff_id}|NAME:${r.name}|DEPT:${r.department}`));
+        console.log("STAFF_LIST_END");
+    } catch (err) { console.error(err); }
+    finally { await client.end(); }
 }
-
-fixStaff();
+check();

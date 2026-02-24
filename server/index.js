@@ -2617,8 +2617,13 @@ app.post('/api/login', async (req, res) => {
             const staffRes = await db.query("SELECT * FROM staff WHERE staff_id = $1 OR staff_id = $2", [username.trim(), cleanId]);
             if (staffRes.rows.length > 0) {
                 const staff = staffRes.rows[0];
-                const nInput = password.trim().toLowerCase();
-                const nDb = staff.name.toLowerCase();
+                const normalize = (str) => str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
+                const nInput = normalize(password);
+                const nDb = normalize(staff.name);
+
+                console.log(`[Staff Legacy Login] Comparing Normalized: Input='${nInput}', DB='${nDb}'`);
+
                 if (nDb === nInput || nDb.includes(nInput) || nInput.includes(nDb)) {
                     console.log("Staff Legacy Login Success:", staff.name);
                     return res.json({
