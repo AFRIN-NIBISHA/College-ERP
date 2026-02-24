@@ -13,9 +13,11 @@ const NoDue = () => {
     const role = user?.role || '';
     const isStudent = role === 'student';
 
-    const canApproveOffice = ['admin', 'office', 'staff', 'principal'].includes(role);
-    const canApproveStaff = ['admin', 'staff', 'hod', 'principal'].includes(role);
-    const canApproveHod = ['admin', 'hod', 'principal'].includes(role);
+    const canApproveOffice = ['admin', 'office'].includes(role);
+    const canApproveStaff = ['admin', 'staff'].includes(role);
+    const canApproveLibrarian = ['admin', 'librarian'].includes(role);
+    const canApproveHod = ['admin', 'hod'].includes(role);
+    const canApprovePrincipal = ['admin', 'principal'].includes(role);
 
     useEffect(() => {
         fetchRequests();
@@ -134,6 +136,7 @@ const NoDue = () => {
                 // Handle traditional stage approval
                 if (stage === 'office') field = 'office_status';
                 else if (stage === 'staff') field = 'staff_status';
+                else if (stage === 'librarian') field = 'librarian_status';
                 else if (stage === 'hod') field = 'hod_status';
                 else if (stage === 'principal') field = 'principal_status';
                 console.log("Stage to field conversion:");
@@ -206,6 +209,11 @@ const NoDue = () => {
             return req.office_status === 'Pending';
         }
 
+        // Librarian Logic: Show if Office Approved
+        if (role === 'librarian') {
+            return req.office_status === 'Approved' && req.librarian_status === 'Pending';
+        }
+
         // Staff Logic: Only show if Office Approved
         if (role === 'staff') {
             // Must be approved by office first
@@ -251,11 +259,10 @@ const NoDue = () => {
             if (req.office_status !== 'Approved') return false;
 
             // Check if all subjects are approved
-            // We need to look at the actual status fields in 'req', not just the 'subjects' array which might be static metadata
-            // But wait, we mapped status into subjects in fetchRequests. Let's use that.
             const allSubjectsApproved = req.subjects && req.subjects.every(s => s.status === 'Approved');
+            const librarianApproved = req.librarian_status === 'Approved';
 
-            if (!allSubjectsApproved) return false;
+            if (!allSubjectsApproved || !librarianApproved) return false;
 
             return req.hod_status === 'Pending';
         }
@@ -296,6 +303,8 @@ const NoDue = () => {
 
                 if (role === 'office') {
                     await handleUpdate(id, 'office', 'Approved');
+                } else if (role === 'librarian') {
+                    await handleUpdate(id, 'librarian', 'Approved');
                 } else if (role === 'hod') {
                     await handleUpdate(id, 'hod', 'Approved');
                 } else if (role === 'principal') {
@@ -475,6 +484,22 @@ const NoDue = () => {
                                         </div>
                                     )}
 
+                                    {/* Librarian - Show for Librarian, Admin, Student or if completed */}
+                                    {(role === 'librarian' || role === 'admin' || isStudent || (req.office_status === 'Approved' && (role === 'hod' || role === 'principal' || req.librarian_status === 'Approved'))) && (
+                                        <div className={`p-4 rounded-xl border ${req.librarian_status === 'Pending' && req.office_status === 'Approved' ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-slate-100'} ${role === 'librarian' ? 'ring-2 ring-blue-100' : ''}`}>
+                                            <div className="flex justify-between items-center mb-2">
+                                                <span className="text-xs font-bold uppercase text-slate-500">Librarian</span>
+                                                <StatusBadge status={req.librarian_status} />
+                                            </div>
+                                            {role === 'librarian' && req.librarian_status === 'Pending' && req.office_status === 'Approved' && (
+                                                <div className="flex gap-2 text-xs mt-2">
+                                                    <button onClick={() => handleUpdate(req.id, 'librarian', 'Approved')} className="flex-1 py-1.5 bg-emerald-600 text-white rounded hover:bg-emerald-700">Approve</button>
+                                                    <button onClick={() => handleReject(req.id, 'librarian')} className="py-1.5 px-3 bg-red-100 text-red-600 rounded hover:bg-red-200">Reject</button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
                                     {/* Staff - Show subject details for Everyone if Office Approved */}
                                     {((role === 'staff' || role === 'admin' || role === 'hod' || role === 'principal' || isStudent || (req.office_status === 'Approved' && role !== 'office'))) && (
                                         <div className="md:col-span-2">
@@ -530,12 +555,12 @@ const NoDue = () => {
                                         <div className="space-y-3">
                                             {/* HOD (Hidden for Principal) */}
                                             {role !== 'principal' && (
-                                                <div className={`p-3 rounded-xl border ${req.hod_status === 'Pending' && req.subjects.every(s => s.status === 'Approved') ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-slate-100'} ${role === 'hod' ? 'ring-2 ring-blue-100' : ''}`}>
+                                                <div className={`p-3 rounded-xl border ${req.hod_status === 'Pending' && req.subjects.every(s => s.status === 'Approved') && req.librarian_status === 'Approved' ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-slate-100'} ${role === 'hod' ? 'ring-2 ring-blue-100' : ''}`}>
                                                     <div className="flex justify-between items-center mb-1">
                                                         <span className="text-xs font-bold uppercase text-slate-500">HOD</span>
                                                         <StatusBadge status={req.hod_status} />
                                                     </div>
-                                                    {role === 'hod' && req.hod_status === 'Pending' && req.subjects.every(s => s.status === 'Approved') && (
+                                                    {role === 'hod' && req.hod_status === 'Pending' && req.subjects.every(s => s.status === 'Approved') && req.librarian_status === 'Approved' && (
                                                         <div className="flex gap-2 text-xs mt-2">
                                                             <button onClick={() => handleUpdate(req.id, 'hod', 'Approved')} className="flex-1 py-1.5 bg-purple-600 text-white rounded hover:bg-purple-700">Approve</button>
                                                             <button onClick={() => handleReject(req.id, 'hod')} className="py-1.5 px-3 bg-red-100 text-red-600 rounded hover:bg-red-200">Reject</button>

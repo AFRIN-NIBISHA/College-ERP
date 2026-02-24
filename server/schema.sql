@@ -136,6 +136,7 @@ CREATE TABLE IF NOT EXISTS no_dues (
     semester INT NOT NULL,
     office_status VARCHAR(20) DEFAULT 'Pending',
     staff_status VARCHAR(20) DEFAULT 'Pending',
+    librarian_status VARCHAR(20) DEFAULT 'Pending',
     hod_status VARCHAR(20) DEFAULT 'Pending',
     principal_status VARCHAR(20) DEFAULT 'Pending',
     status VARCHAR(20) DEFAULT 'Pending',

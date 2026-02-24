@@ -149,6 +149,7 @@ const initDb = async () => {
                 semester INT NOT NULL,
                 office_status VARCHAR(20) DEFAULT 'Pending',
                 staff_status VARCHAR(20) DEFAULT 'Pending',
+                librarian_status VARCHAR(20) DEFAULT 'Pending',
                 hod_status VARCHAR(20) DEFAULT 'Pending',
                 principal_status VARCHAR(20) DEFAULT 'Pending',
                 status VARCHAR(20) DEFAULT 'Pending',
@@ -242,6 +243,7 @@ const initDb = async () => {
             -- Ensure No Due Constraints
             ALTER TABLE no_dues DROP CONSTRAINT IF EXISTS no_dues_student_id_semester_key;
             ALTER TABLE no_dues ADD CONSTRAINT no_dues_student_id_semester_key UNIQUE (student_id, semester);
+            ALTER TABLE no_dues ADD COLUMN IF NOT EXISTS librarian_status VARCHAR(20) DEFAULT 'Pending';
 
             CREATE TABLE IF NOT EXISTS books (
                 id SERIAL PRIMARY KEY,
@@ -1711,8 +1713,8 @@ app.post('/api/no-due/request', async (req, res) => {
 
         // UPSERT: Insert or Update if exists
         const query = `
-            INSERT INTO no_dues (student_id, semester, office_status, created_at)
-            VALUES ($1, $2, 'Pending', NOW())
+            INSERT INTO no_dues (student_id, semester, office_status, librarian_status, created_at)
+            VALUES ($1, $2, 'Pending', 'Pending', NOW())
             ON CONFLICT (student_id, semester) 
             DO UPDATE SET 
                 office_status = 'Pending', 
@@ -1910,6 +1912,7 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
             console.log("Field not provided, checking stage:", stage);
             if (stage === 'office') updateField = 'office_status';
             else if (stage === 'staff') updateField = 'staff_status';
+            else if (stage === 'librarian') updateField = 'librarian_status';
             else if (stage === 'hod') updateField = 'hod_status';
             else if (stage === 'principal') updateField = 'principal_status';
         }
@@ -1917,7 +1920,7 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
         console.log("Determined updateField:", updateField);
 
         // Looser validation: allow any field that is either a standard stage or ends with _status
-        const isStandardStage = ['office_status', 'staff_status', 'hod_status', 'principal_status'].includes(updateField);
+        const isStandardStage = ['office_status', 'staff_status', 'librarian_status', 'hod_status', 'principal_status'].includes(updateField);
         const isSubjectStatus = updateField.endsWith('_status');
 
         if (!updateField || (!isStandardStage && !isSubjectStatus)) {
@@ -1946,9 +1949,15 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
                 if (requestRow.office_status !== 'Approved') {
                     return res.status(400).json({ message: 'Cannot approve Staff stage before Office approval' });
                 }
-            } else if (updateField === 'hod_status') {
                 if (requestRow.staff_status !== 'Approved') {
                     return res.status(400).json({ message: 'Cannot approve HOD stage before Staff approval' });
+                }
+                if (requestRow.librarian_status !== 'Approved') {
+                    return res.status(400).json({ message: 'Cannot approve HOD stage before Librarian approval' });
+                }
+            } else if (updateField === 'librarian_status') {
+                if (requestRow.office_status !== 'Approved') {
+                    return res.status(400).json({ message: 'Cannot approve Librarian stage before Office approval' });
                 }
             } else if (updateField === 'principal_status') {
                 if (requestRow.hod_status !== 'Approved') {
@@ -2030,6 +2039,20 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
                         }
                     }
                 }
+
+                // Notify Librarian
+                const librarianUsers = await db.query("SELECT id FROM users WHERE role = 'librarian'");
+                for (const row of librarianUsers.rows) {
+                    try {
+                        await createNotification(
+                            row.id,
+                            'No Due Request',
+                            `Clearance request for Student ${r.student_id} is ready for library approval.`,
+                            'info'
+                        ).catch(e => console.error("Notification push failed (non-fatal):", e.message));
+                    } catch (libErr) {
+                    }
+                }
             }
 
             // 2. Subject Approval -> Check if All Relevant Subjects are Done
@@ -2071,19 +2094,45 @@ app.put('/api/no-due/:id/approve', async (req, res) => {
                         await db.query("UPDATE no_dues SET staff_status = 'Approved' WHERE id = $1", [id]);
                         console.log("Overall staff_status updated to Approved (Timetable-based check)");
 
-                        await createNotification(studentUserId, 'No Due Update', 'All subject staffs have approved. Sent to HOD.', 'info');
+                        // CHECK LIBRARIAN STATUS TOO BEFORE NOTIFYING HOD
+                        const updatedRow = (await db.query("SELECT * FROM no_dues WHERE id = $1", [id])).rows[0];
 
-                        // Notify HOD
-                        const hodRes = await db.query("SELECT id FROM users WHERE role = 'hod'");
-                        for (const row of hodRes.rows) {
-                            await createNotification(
-                                row.id,
-                                'No Due Request',
-                                `All subjects approved for a student. HOD approval pending.`,
-                                'info'
-                            );
+                        if (updatedRow.librarian_status === 'Approved') {
+                            await createNotification(studentUserId, 'No Due Update', 'All subject staffs and Librarian have approved. Sent to HOD.', 'info');
+
+                            // Notify HOD
+                            const hodRes = await db.query("SELECT id FROM users WHERE role = 'hod'");
+                            for (const row of hodRes.rows) {
+                                await createNotification(
+                                    row.id,
+                                    'No Due Request',
+                                    `All subjects and Library approved for a student. HOD approval pending.`,
+                                    'info'
+                                );
+                            }
+                        } else {
+                            await createNotification(studentUserId, 'No Due Update', 'All subject staffs have approved. Waiting for Librarian.', 'info');
                         }
                     }
+                }
+            }
+
+            // 2.5 Librarian Approval -> Check if Staff is also done
+            if (updateField === 'librarian_status' && status === 'Approved') {
+                if (r.staff_status === 'Approved') {
+                    await createNotification(studentUserId, 'No Due Update', 'Librarian and all staffs have approved. Sent to HOD.', 'info');
+                    // Notify HOD
+                    const hodRes = await db.query("SELECT id FROM users WHERE role = 'hod'");
+                    for (const row of hodRes.rows) {
+                        await createNotification(
+                            row.id,
+                            'No Due Request',
+                            `Librarian and all subjects approved for a student. HOD approval pending.`,
+                            'info'
+                        );
+                    }
+                } else {
+                    await createNotification(studentUserId, 'No Due Update', 'Librarian has approved. Waiting for subject staff approvals.', 'info');
                 }
             }
 
