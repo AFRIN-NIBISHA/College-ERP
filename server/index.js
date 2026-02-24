@@ -2607,7 +2607,14 @@ app.post('/api/login', async (req, res) => {
         // 2. Fallback: Staff Legacy Login (StaffID + Name)
         if (['staff', 'hod', 'principal', 'office'].includes(role)) {
             console.log(`[Staff Legacy Login] Attempting for StaffID: '${username}' with Name: '${password}'`);
-            const staffRes = await db.query("SELECT * FROM staff WHERE staff_id = $1", [username.trim()]);
+
+            // Allow optional college code prefix 9606
+            let cleanId = username.trim();
+            if (cleanId.startsWith('9606')) {
+                cleanId = cleanId.substring(4);
+            }
+
+            const staffRes = await db.query("SELECT * FROM staff WHERE staff_id = $1 OR staff_id = $2", [username.trim(), cleanId]);
             if (staffRes.rows.length > 0) {
                 const staff = staffRes.rows[0];
                 const nInput = password.trim().toLowerCase();
