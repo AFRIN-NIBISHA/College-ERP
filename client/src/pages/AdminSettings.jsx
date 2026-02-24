@@ -14,15 +14,29 @@ const AdminSettings = () => {
 
     const fetchSettings = async () => {
         try {
+            console.log("Fetching settings...");
             const res = await axios.get('/api/settings');
-            setSettings(res.data);
+            console.log("Settings received:", res.data);
+            setSettings(res.data || {});
+
             // Pre-fill next year suggestion
-            if (res.data.current_academic_year) {
-                const [start, end] = res.data.current_academic_year.split('-').map(Number);
-                setNewYear(`${start + 1}-${end + 1}`);
+            if (res.data && res.data.current_academic_year) {
+                try {
+                    const parts = res.data.current_academic_year.split('-');
+                    if (parts.length === 2) {
+                        const start = parseInt(parts[0]);
+                        const end = parseInt(parts[1]);
+                        if (!isNaN(start) && !isNaN(end)) {
+                            setNewYear(`${start + 1}-${end + 1}`);
+                        }
+                    }
+                } catch (splitErr) {
+                    console.error("Error parsing year:", splitErr);
+                }
             }
         } catch (err) {
-            console.error(err);
+            console.error("Fetch settings error:", err);
+            setStatus({ type: 'error', message: 'Failed to load system settings. Please check server connection.' });
         }
     };
 
@@ -58,8 +72,8 @@ const AdminSettings = () => {
 
             {status.message && (
                 <div className={`p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 ${status.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-                        status.type === 'error' ? 'bg-red-50 text-red-700 border border-red-100' :
-                            'bg-blue-50 text-blue-700 border border-blue-100'
+                    status.type === 'error' ? 'bg-red-50 text-red-700 border border-red-100' :
+                        'bg-blue-50 text-blue-700 border border-blue-100'
                     }`}>
                     {status.type === 'error' ? <Trash2 size={20} /> : <AlertCircle size={20} />}
                     <span className="font-semibold">{status.message}</span>

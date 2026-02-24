@@ -119,11 +119,20 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: CheckCircle, label: 'No Due Clearance', path: '/no-due' },
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],
+        admin: [
+            { icon: LayoutDashboard, label: 'Admin Dashboard', path: '/' },
+            { icon: GraduationCap, label: 'Faculty Management', path: '/faculty' },
+            { icon: Users, label: 'Student Management', path: '/students' },
+            { icon: CheckCircle, label: 'No Due Approval', path: '/no-due' },
+            { icon: FileText, label: 'OD Approvals', path: '/od-requests' },
+            { icon: Settings, label: 'Global Settings', path: '/settings' },
+            { icon: BarChart, label: 'Reports', path: '/reports' },
+            { icon: Bell, label: 'Notices', path: '/notices' },
+        ],
     };
 
     const currentRole = user?.role || 'student';
     let filteredItems = menus[currentRole] || menus['student'];
-    if (currentRole === 'admin') filteredItems = menus['principal'];
 
     return (
         <aside className={`
