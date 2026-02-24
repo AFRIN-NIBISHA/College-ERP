@@ -13,8 +13,14 @@ const Login = () => {
     const [role, setRole] = useState('student'); // 'student', 'staff', 'hod', 'principal', 'office'
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
-    const { login } = useAuth();
+    const { user, login } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user) {
+            navigate('/');
+        }
+    }, [user, navigate]);
 
     // Student Data
     const [studentData, setStudentData] = useState({ username: '', password: '', year: '3', section: 'A' });

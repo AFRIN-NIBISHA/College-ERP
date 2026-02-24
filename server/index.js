@@ -1032,7 +1032,21 @@ app.post('/api/notices', async (req, res) => {
             "INSERT INTO notices (title, content) VALUES ($1, $2) RETURNING *",
             [title, content]
         );
-        res.json(result.rows[0]);
+        const notice = result.rows[0];
+
+        // Notify all active users about the new notice asynchronously
+        (async () => {
+            try {
+                const users = await db.query("SELECT id FROM users");
+                for (const u of users.rows) {
+                    await createNotification(u.id, 'New Notice', title, 'notice');
+                }
+            } catch (e) {
+                console.error("Notice notification error:", e);
+            }
+        })();
+
+        res.json(notice);
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

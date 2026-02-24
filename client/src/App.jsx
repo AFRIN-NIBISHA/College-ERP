@@ -24,10 +24,12 @@ import StudentLibrary from './pages/StudentLibrary';
 import AdminSettings from './pages/AdminSettings';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { registerPushNotifications } from './utils/pushNotification';
 
 const PrivateRoute = ({ children }) => {
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
+    if (loading) return <div className="flex items-center justify-center h-screen bg-slate-50"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
     if (!user) return <Navigate to="/login" />;
     return children;
 };
@@ -35,6 +37,12 @@ const PrivateRoute = ({ children }) => {
 const Layout = ({ children }) => {
     const { user } = useAuth();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    useEffect(() => {
+        if (user?.id) {
+            registerPushNotifications(user.id);
+        }
+    }, [user]);
 
     return (
         <div className="flex h-screen text-slate-800 overflow-hidden font-sans selection:bg-blue-100 selection:text-blue-900 bg-slate-50">
