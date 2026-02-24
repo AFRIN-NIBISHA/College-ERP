@@ -260,3 +260,7 @@ CREATE TABLE IF NOT EXISTS book_issues (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Seed data for Staff
+INSERT INTO staff (staff_id, name, department) 
+VALUES ('9606ECE001', 'Mrs. ABISHA MANO', 'ECE')
+ON CONFLICT (staff_id) DO UPDATE SET name = EXCLUDED.name, department = EXCLUDED.department;
