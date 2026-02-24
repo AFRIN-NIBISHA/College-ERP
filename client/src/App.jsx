@@ -21,6 +21,7 @@ import StudentOD from './pages/StudentOD';
 import BusManagement from './pages/BusManagement';
 import Library from './pages/Library';
 import StudentLibrary from './pages/StudentLibrary';
+import AdminSettings from './pages/AdminSettings';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
@@ -129,6 +130,7 @@ function App() {
                                 <Route path="/od-requests" element={<StudentOD />} />
                                 <Route path="/bus-management" element={<BusManagement />} />
                                 <Route path="/library" element={<LibraryRouter />} />
+                                <Route path="/settings" element={<AdminSettings />} />
                                 <Route path="*" element={<div className="text-center mt-20 text-slate-400 font-light text-xl">Page not found</div>} />
                             </Routes>
                         </Layout>

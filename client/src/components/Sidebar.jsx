@@ -100,6 +100,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: Book, label: 'Library', path: '/library' },
             { icon: Settings, label: 'Bus Management', path: '/bus-management' },
             { icon: Bell, label: 'Notices', path: '/notices' },
+            { icon: Settings, label: 'Settings', path: '/settings' },
         ],
         office: [
             { icon: LayoutDashboard, label: 'Office Dashboard', path: '/' },
@@ -115,6 +116,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
             { icon: Users, label: 'Student Records', path: '/students' },
             { icon: Book, label: 'Library Mgmt', path: '/library' },
+            { icon: CheckCircle, label: 'No Due Clearance', path: '/no-due' },
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],
     };
