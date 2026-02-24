@@ -357,6 +357,13 @@ const initDb = async () => {
             }
         }
 
+        // Seed Abisha Mano for Login
+        await db.query(`
+            INSERT INTO staff (staff_id, name, department) 
+            VALUES ('9606ECE001', 'Mrs. ABISHA MANO', 'ECE') 
+            ON CONFLICT (staff_id) DO UPDATE SET name = EXCLUDED.name, department = EXCLUDED.department
+        `);
+
 
         // Ensure all students have user accounts for push notifications
         const orphanStudents = await db.query("SELECT id, roll_no, name FROM students WHERE user_id IS NULL");
