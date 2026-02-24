@@ -525,7 +525,7 @@ const NoDue = () => {
                                                         return (
                                                             <div key={idx} className={`flex items-center justify-between p-2 rounded-lg border text-xs ${isRelevantStaff && sub.status === 'Pending' ? 'bg-blue-50 border-blue-200' : 'bg-white border-slate-100'}`}>
                                                                 <div>
-                                                                    <p className="font-bold text-slate-700">{sub.subject_code}</p>
+                                                                    <p className="font-bold text-slate-700">{sub.subject_name}</p>
                                                                     <p className="text-slate-500 truncate max-w-[120px]">{sub.staff_name}</p>
                                                                 </div>
                                                                 <div className="flex items-center gap-2">
