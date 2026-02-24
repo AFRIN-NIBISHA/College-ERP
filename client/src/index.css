@@ -80,6 +80,12 @@ body::before {
     overflow-x: auto;
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 transparent;
+    -webkit-overflow-scrolling: touch;
+    cursor: grab;
+}
+
+.scroll-hint:active {
+    cursor: grabbing;
 }
 
 .scroll-hint::-webkit-scrollbar {
@@ -95,39 +101,58 @@ body::before {
     border-radius: 20px;
 }
 
+/* Glass Table Utility */
+.glass-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.glass-table thead th {
+    background: rgba(248, 250, 252, 0.8);
+    backdrop-filter: blur(8px);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
 @media (max-width: 640px) {
     .hide-on-mobile {
-        display: none;
+        display: none !important;
     }
 
     .table-container {
-        border-radius: 1rem;
+        border-radius: 1.5rem;
         overflow: hidden;
     }
 
-    /* Stacked card view for tables on mobile */
+    /* Premium Stacked Card View for Mobile */
     .mobile-stack tr {
-        display: block;
-        margin-bottom: 1rem;
-        border: 1px solid #e2e8f0;
-        border-radius: 1rem;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1.25rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 1.5rem;
         background: white;
-        padding: 0.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
     }
 
     .mobile-stack td {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.75rem 1rem;
+        padding: 0.875rem 0.5rem;
         border: none;
-        border-bottom: 1px solid #f1f5f9;
+        border-bottom: 1px solid #f8fafc;
         text-align: right;
+        min-height: 3rem;
+        /* Better touch target */
     }
 
     .mobile-stack td:last-child {
         border-bottom: none;
+        margin-top: 0.5rem;
+        justify-content: flex-end;
     }
 
     .mobile-stack thead {
@@ -136,12 +161,22 @@ body::before {
 
     .mobile-stack td::before {
         content: attr(data-label);
-        font-weight: 600;
-        color: #64748b;
-        font-size: 0.75rem;
+        font-weight: 700;
+        color: #94a3b8;
+        font-size: 10px;
         text-transform: uppercase;
-        margin-right: 1rem;
+        letter-spacing: 0.05em;
+        margin-right: 1.5rem;
         text-align: left;
+    }
+
+    /* Responsive spacing tweaks */
+    .p-6 {
+        padding: 1.25rem;
+    }
+
+    .gap-8 {
+        gap: 1.25rem;
     }
 }
 

@@ -221,26 +221,26 @@ const Fees = () => {
             )}
 
 
-            <div className="glass-card rounded-2xl overflow-hidden bg-white border border-slate-200 table-container">
-                <div className="scroll-hint">
-                    <table className="w-full text-left border-collapse">
-                        <thead className="bg-slate-50 border-b border-slate-200">
+            <div className="glass-card rounded-2xl overflow-hidden bg-white border border-slate-200">
+                <div className="overflow-x-auto scroll-hint">
+                    <table className="w-full text-left border-collapse min-w-[800px] md:min-w-full">
+                        <thead className="bg-slate-50 border-b border-slate-200 hidden md:table-header-group">
                             <tr>
-                                <th className="p-4 font-semibold text-slate-600">Roll No</th>
-                                <th className="p-4 font-semibold text-slate-600">Student Name</th>
-                                <th className="p-4 font-semibold text-slate-600">Total Fee</th>
-                                <th className="p-4 font-semibold text-slate-600">Paid</th>
-                                <th className="p-4 font-semibold text-slate-600 hide-on-mobile">Balance</th>
-                                <th className="p-4 font-semibold text-slate-600 hide-on-mobile">Last Payment</th>
-                                <th className="p-4 font-semibold text-slate-600">Status</th>
-                                <th className="p-4 font-semibold text-slate-600 text-right">Action</th>
+                                <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider">Roll No</th>
+                                <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Student Name</th>
+                                <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Total Fee</th>
+                                <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Paid</th>
+                                <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100 hide-on-mobile">Balance</th>
+                                <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100 hide-on-mobile">Last Payment</th>
+                                <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Status</th>
+                                <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider text-right border-l border-slate-100">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 mobile-stack">
                             {filteredStudents.length === 0 ? (
                                 <tr>
-                                    <td colSpan="8" className="p-8 text-center text-slate-500">
-                                        {loading ? "Loading..." : "No students found for this selection."}
+                                    <td colSpan="8" className="p-8 text-center text-slate-500 font-medium">
+                                        {loading ? "Loading..." : "No records found."}
                                     </td>
                                 </tr>
                             ) : (
@@ -248,34 +248,35 @@ const Fees = () => {
                                     const total = parseFloat(student.total_fee || 0);
                                     const paid = parseFloat(student.paid_amount || 0);
                                     const balance = total - paid;
+                                    const isPaid = paid >= total && total > 0;
 
                                     return (
-                                        <tr key={student.id} className="hover:bg-slate-50/50 transition-colors">
-                                            <td className="p-4 text-slate-700 font-medium" data-label="Roll No">{student.roll_no}</td>
+                                        <tr key={student.id} className="hover:bg-slate-50/50 transition-colors group">
+                                            <td className="p-4 text-slate-700 font-semibold md:font-medium" data-label="Roll No">{student.roll_no}</td>
                                             <td
-                                                className={`p-4 font-bold flex items-center gap-2 ${canEditFees ? 'text-blue-600 hover:underline cursor-pointer' : 'text-slate-700'}`}
+                                                className={`p-4 font-bold border-l-0 md:border-l border-slate-100 ${canEditFees ? 'text-blue-600 hover:text-blue-700 cursor-pointer' : 'text-slate-700'}`}
                                                 onClick={() => canEditFees && handleEditClick(student)}
                                                 data-label="Student"
                                             >
                                                 {student.name}
                                             </td>
-                                            <td className="p-4 text-slate-600" data-label="Total">₹{total.toLocaleString()}</td>
-                                            <td className="p-4 text-emerald-600 font-medium" data-label="Paid">₹{paid.toLocaleString()}</td>
-                                            <td className="p-4 text-red-500 font-medium hide-on-mobile" data-label="Balance">₹{balance > 0 ? balance.toLocaleString() : 0}</td>
-                                            <td className="p-4 text-slate-500 text-sm hide-on-mobile" data-label="Last Payment">{student.payment_date ? new Date(student.payment_date).toLocaleDateString() : '-'}</td>
-                                            <td className="p-4" data-label="Status">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${paid >= total && total > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                                            <td className="p-4 text-slate-600 border-l-0 md:border-l border-slate-100" data-label="Total Fee">₹{total.toLocaleString()}</td>
+                                            <td className="p-4 text-emerald-600 font-bold border-l-0 md:border-l border-slate-100" data-label="Paid Amt">₹{paid.toLocaleString()}</td>
+                                            <td className="p-4 text-red-500 font-bold border-l-0 md:border-l border-slate-100 hide-on-mobile" data-label="Balance">₹{balance > 0 ? balance.toLocaleString() : 0}</td>
+                                            <td className="p-4 text-slate-500 text-xs border-l-0 md:border-l border-slate-100 hide-on-mobile" data-label="Date">{student.payment_date ? new Date(student.payment_date).toLocaleDateString() : '-'}</td>
+                                            <td className="p-4 border-l-0 md:border-l border-slate-100" data-label="Status">
+                                                <span className={`px-2 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider ${isPaid ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'
                                                     }`}>
-                                                    {paid >= total && total > 0 ? 'Completed' : 'Next Payment'}
+                                                    {isPaid ? 'Completed' : 'Pending'}
                                                 </span>
                                             </td>
-                                            <td className="p-4 text-right" data-label="Action">
+                                            <td className="p-4 text-right border-l-0 md:border-l border-slate-100" data-label="Action">
                                                 {canEditFees && (
                                                     <button
                                                         onClick={() => handleEditClick(student)}
-                                                        className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+                                                        className="p-2 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
                                                     >
-                                                        <Edit2 size={16} />
+                                                        <Edit2 size={14} />
                                                     </button>
                                                 )}
                                             </td>

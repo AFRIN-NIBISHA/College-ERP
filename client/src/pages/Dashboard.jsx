@@ -151,28 +151,28 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="space-y-10">
+        <div className="space-y-6 md:space-y-10">
             <PushNotificationManager />
-            <div className="flex justify-between items-end">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                 <div>
-                    <h2 className="text-4xl font-bold text-slate-800 tracking-tight mb-2">Dashboard Overview</h2>
-                    <p className="text-slate-500 font-medium">Welcome back, {user?.role}! Here's what's happening today.</p>
+                    <h2 className="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight mb-1 md:mb-2">Dashboard Overview</h2>
+                    <p className="text-sm md:text-base text-slate-500 font-medium tracking-tight">Welcome back, {user?.role}! Here's what's happening today.</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex w-full md:w-auto gap-3">
                     {['admin', 'staff', 'hod', 'principal', 'office'].includes(user?.role) && (
                         <button
                             onClick={handleDownloadReport}
-                            className="px-5 py-2.5 bg-white text-slate-600 font-semibold rounded-xl shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors"
+                            className="flex-1 md:flex-none px-4 md:px-5 py-2.5 bg-white text-slate-600 font-semibold rounded-2xl shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors text-sm"
                         >
-                            Download Report
+                            Report
                         </button>
                     )}
                     {user?.role !== 'student' && (
                         <button
                             onClick={() => setShowNoticeModal(true)}
-                            className="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all"
+                            className="flex-1 md:flex-none px-4 md:px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-2xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all text-sm"
                         >
-                            Create Notice
+                            Notice
                         </button>
                     )}
                 </div>
