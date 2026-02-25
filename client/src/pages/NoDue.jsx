@@ -427,6 +427,15 @@ const NoDue = () => {
                                                     <Trash2 size={14} /> Delete Request
                                                 </button>
                                             )}
+                                            {req.remarks && (req.office_status === 'Rejected' || req.librarian_status === 'Rejected' || req.staff_status === 'Rejected' || req.hod_status === 'Rejected' || req.principal_status === 'Rejected' || req.status === 'Rejected' || (req.subjects && req.subjects.some(s => s.status === 'Rejected'))) && (
+                                                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl relative overflow-hidden group">
+                                                    <div className="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
+                                                    <p className="text-[10px] text-red-700 font-bold mb-1 uppercase tracking-wider flex items-center gap-1">
+                                                        <XCircle size={10} /> Rejection Reason / Note from Staff
+                                                    </p>
+                                                    <p className="text-sm text-red-600 font-medium pl-1">{req.remarks}</p>
+                                                </div>
+                                            )}
                                         </>
                                     ) : (
                                         <div className="mt-4">
