@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Bus, User, Phone, Plus, Edit2, Trash2, X, Check, Search, AlertCircle, RefreshCw } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const BusManagement = () => {
+    const { user } = useAuth();
+    const isViewer = user?.role === 'student';
+
     const [buses, setBuses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -124,13 +128,15 @@ const BusManagement = () => {
                     >
                         <RefreshCw size={24} className={loading ? 'animate-spin' : ''} />
                     </button>
-                    <button
-                        onClick={() => handleOpenModal()}
-                        className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all"
-                    >
-                        <Plus size={20} />
-                        Add New Bus
-                    </button>
+                    {!isViewer && (
+                        <button
+                            onClick={() => handleOpenModal()}
+                            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all"
+                        >
+                            <Plus size={20} />
+                            Add New Bus
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -159,20 +165,22 @@ const BusManagement = () => {
                                 <div className="bg-blue-50 p-4 rounded-2xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner">
                                     <Bus size={28} />
                                 </div>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => handleOpenModal(bus)}
-                                        className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
-                                    >
-                                        <Edit2 size={20} />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(bus.id)}
-                                        className="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
-                                    >
-                                        <Trash2 size={20} />
-                                    </button>
-                                </div>
+                                {!isViewer && (
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => handleOpenModal(bus)}
+                                            className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                                        >
+                                            <Edit2 size={20} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(bus.id)}
+                                            className="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                                        >
+                                            <Trash2 size={20} />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
                             <h3 className="text-2xl font-black text-slate-800 mb-6 tracking-tight">{bus.bus_number}</h3>

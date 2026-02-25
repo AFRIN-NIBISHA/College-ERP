@@ -61,6 +61,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: CheckCircle, label: 'No Due', path: '/no-due' },
             { icon: FileText, label: 'OD / Leave', path: '/od-requests' },
             { icon: Book, label: 'Library', path: '/library' },
+            { icon: Settings, label: 'Bus Management', path: '/bus-management' },
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],
         staff: [
