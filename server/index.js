@@ -2593,21 +2593,26 @@ app.post('/api/login', async (req, res) => {
             let profileId = null;
             let year = null;
             let section = null;
+            let name = null;
             if (user.role === 'student') {
-                const sRes = await db.query("SELECT id, year, section FROM students WHERE user_id = $1", [user.id]);
+                const sRes = await db.query("SELECT id, name, year, section FROM students WHERE user_id = $1", [user.id]);
                 if (sRes.rows.length > 0) {
                     profileId = sRes.rows[0].id;
+                    name = sRes.rows[0].name;
                     year = sRes.rows[0].year?.toString().trim();
                     section = sRes.rows[0].section?.toString().trim().toUpperCase();
                 }
             } else if (['staff', 'hod', 'principal', 'office'].includes(user.role)) {
-                const stRes = await db.query("SELECT id FROM staff WHERE user_id = $1", [user.id]);
-                if (stRes.rows.length > 0) profileId = stRes.rows[0].id;
+                const stRes = await db.query("SELECT id, name FROM staff WHERE user_id = $1", [user.id]);
+                if (stRes.rows.length > 0) {
+                    profileId = stRes.rows[0].id;
+                    name = stRes.rows[0].name;
+                }
             }
 
             return res.json({
                 message: 'Login successful',
-                user: { ...user, profileId, year, section }
+                user: { ...user, profileId, name, year, section }
             });
         }
 
