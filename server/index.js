@@ -1847,7 +1847,7 @@ app.get('/api/no-due', async (req, res) => {
         if (role === 'staff' && profile_id) {
             params.push(profile_id);
             // Relaxed check: Staff can see if they are linked via ID OR Name in the timetable for that class
-            // And Office must have Approved
+            // Handles missing or differing prefixes (e.g., Mr. ARUN VENKADESH vs Mrs. Arun Venkadesh)
             query += ` 
                 AND (s.year, s.section) IN (
                     SELECT DISTINCT t.year, t.section 
@@ -1855,6 +1855,7 @@ app.get('/api/no-due', async (req, res) => {
                     LEFT JOIN staff st ON t.staff_id = st.id
                     WHERE t.staff_id = $${params.length} 
                     OR t.staff_name_text = (SELECT name FROM staff WHERE id = $${params.length})
+                    OR LOWER(t.staff_name_text) LIKE '%' || SPLIT_PART((SELECT LOWER(name) FROM staff WHERE id = $${params.length}), ' ', 2) || '%'
                 )
                 AND nd.office_status = 'Approved'
             `;

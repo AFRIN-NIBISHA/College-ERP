@@ -243,9 +243,13 @@ const NoDue = () => {
 
                 // Name Match (Fallback for manual entries)
                 if (userName && staffName) {
-                    return userName === staffName ||
-                        userName.includes(staffName) ||
-                        staffName.includes(userName);
+                    const cleanName = (name) => name.replace(/^(mr\.|mrs\.|ms\.|dr\.|prof\.)\s*/, '').trim();
+                    const cleanUser = cleanName(userName);
+                    const cleanStaff = cleanName(staffName);
+
+                    return cleanUser === cleanStaff ||
+                        cleanUser.includes(cleanStaff) ||
+                        cleanStaff.includes(cleanUser);
                 }
 
                 return false;
@@ -317,11 +321,15 @@ const NoDue = () => {
                     const isDemo = ['admin', 'staff', 'hod', 'principal'].includes(user?.username?.toLowerCase());
 
                     const mySubjects = req.subjects.filter(subject => {
-                        const userName = user?.name?.trim().toLowerCase() || user?.username?.trim().toLowerCase();
-                        const staffName = subject.staff_name?.trim().toLowerCase();
+                        const userName = user?.name?.trim().toLowerCase() || user?.username?.trim().toLowerCase() || '';
+                        const staffName = subject.staff_name?.trim().toLowerCase() || '';
 
                         const isIdMatch = user?.profileId && subject.staff_profile_id && (Number(user.profileId) === Number(subject.staff_profile_id));
-                        const isNameMatch = userName && staffName && (userName === staffName || userName.includes(staffName) || staffName.includes(userName));
+
+                        const cleanName = (name) => name.replace(/^(mr\.|mrs\.|ms\.|dr\.|prof\.)\s*/, '').trim();
+                        const cleanUser = cleanName(userName);
+                        const cleanStaff = cleanName(staffName);
+                        const isNameMatch = cleanUser && cleanStaff && (cleanUser === cleanStaff || cleanUser.includes(cleanStaff) || cleanStaff.includes(cleanUser));
 
                         return (isIdMatch || isNameMatch) && subject.status === 'Pending';
                     });
@@ -537,14 +545,17 @@ const NoDue = () => {
                                                 <div className="space-y-2">
                                                     {req.subjects.map((sub, idx) => {
                                                         // Logic to show approval buttons only to relevant staff
-                                                        const userName = user?.name?.trim().toLowerCase() || user?.username?.trim().toLowerCase();
-                                                        const staffName = sub.staff_name?.trim().toLowerCase();
+                                                        const userName = user?.name?.trim().toLowerCase() || user?.username?.trim().toLowerCase() || '';
+                                                        const staffName = sub.staff_name?.trim().toLowerCase() || '';
 
                                                         // Priority match: Profile ID comparison
                                                         const isIdMatch = user?.profileId && sub.staff_profile_id && (Number(user.profileId) === Number(sub.staff_profile_id));
 
                                                         // Fallback match: Name string comparison
-                                                        const isNameMatch = userName && staffName && (userName === staffName || userName.includes(staffName) || staffName.includes(userName));
+                                                        const cleanName = (name) => name.replace(/^(mr\.|mrs\.|ms\.|dr\.|prof\.)\s*/, '').trim();
+                                                        const cleanUser = cleanName(userName);
+                                                        const cleanStaff = cleanName(staffName);
+                                                        const isNameMatch = cleanUser && cleanStaff && (cleanUser === cleanStaff || cleanUser.includes(cleanStaff) || cleanStaff.includes(cleanUser));
 
                                                         const isMySubject = isIdMatch || isNameMatch;
 
