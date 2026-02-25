@@ -434,6 +434,7 @@ const createNotification = async (userId, title, message, type = 'info') => {
         console.log(`Notification created for User ${userId}: ${title}`);
 
         // 2. Send Push Notification to all registered devices for this user
+        /* Disabled Native OS Push Notifications by user request
         const subRes = await db.query("SELECT subscription FROM push_subscriptions WHERE user_id = $1", [userId]);
 
         const payload = JSON.stringify({
@@ -455,6 +456,7 @@ const createNotification = async (userId, title, message, type = 'info') => {
                 }
             }
         }
+        */
     } catch (err) {
         console.error("Error creating notification:", err);
     }
