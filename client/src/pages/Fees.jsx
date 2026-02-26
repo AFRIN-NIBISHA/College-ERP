@@ -276,6 +276,7 @@ const Fees = () => {
                                                 <span>{student.name}</span>
                                             </td>
                                             <td className="p-4 text-slate-600 border-l-0 md:border-l border-slate-100" data-label="Total Fee"><span>₹{total.toLocaleString()}</span></td>
+                                            <td className="p-4 text-emerald-600 font-bold border-l-0 md:border-l border-slate-100" data-label="Paid"><span>₹{paid.toLocaleString()}</span></td>
                                             <td className="p-4 text-blue-600 font-bold border-l-0 md:border-l border-slate-100" data-label="Bus Fee"><span>₹{bus.toLocaleString()}</span></td>
                                             <td className="p-4 text-orange-600 font-bold border-l-0 md:border-l border-slate-100" data-label="Sch Amt"><span>₹{sch.toLocaleString()}</span></td>
                                             <td className="p-4 text-indigo-600 font-bold border-l-0 md:border-l border-slate-100 text-xs" data-label="Sch Type"><span>{student.scholarship_type && student.scholarship_type !== 'None' ? (student.scholarship_type === 'Other' ? student.scholarship_details : student.scholarship_type) : '-'}</span></td>
