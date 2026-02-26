@@ -25,7 +25,8 @@ const BusManagement = () => {
         starting_point: '',
         ending_point: '',
         photo_data: '',
-        registration_number: ''
+        registration_number: '',
+        route_pdf: ''
     });
     const [imageSrc, setImageSrc] = useState(null);
     const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -63,7 +64,8 @@ const BusManagement = () => {
                 starting_point: bus.starting_point || '',
                 ending_point: bus.ending_point || '',
                 photo_data: bus.photo_data || '',
-                registration_number: bus.registration_number || ''
+                registration_number: bus.registration_number || '',
+                route_pdf: bus.route_pdf || ''
             });
         } else {
             setEditingBus(null);
@@ -74,7 +76,8 @@ const BusManagement = () => {
                 starting_point: '',
                 ending_point: '',
                 photo_data: '',
-                registration_number: ''
+                registration_number: '',
+                route_pdf: ''
             });
         }
         setIsModalOpen(true);
@@ -109,6 +112,30 @@ const BusManagement = () => {
             setImageSrc(null);
         } catch (e) {
             console.error(e);
+        }
+    };
+
+    const handlePdfUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                alert("File too large. Max 2MB.");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData({ ...formData, route_pdf: reader.result });
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleViewRoute = (bus) => {
+        if (bus.route_pdf) {
+            const win = window.open();
+            win.document.write('<iframe src="' + bus.route_pdf + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+        } else {
+            alert("No route PDF uploaded for this bus.");
         }
     };
 
@@ -370,13 +397,13 @@ const BusManagement = () => {
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    handleShareBusInfo(bus, true);
+                                                    handleViewRoute(bus);
                                                 }}
                                                 className="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all flex items-center gap-1 text-[10px] font-bold"
-                                                title="Share via Mobile"
+                                                title="View Route PDF"
                                             >
                                                 <Share2 size={14} />
-                                                Share
+                                                View Route
                                             </button>
                                             <button
                                                 onClick={(e) => {
@@ -384,7 +411,7 @@ const BusManagement = () => {
                                                     handleShareBusInfo(bus, false);
                                                 }}
                                                 className="p-2 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-all flex items-center"
-                                                title="Download PDF"
+                                                title="Download Info"
                                             >
                                                 <FileDown size={14} />
                                             </button>
@@ -511,15 +538,39 @@ const BusManagement = () => {
                                 </div>
                             </div>
 
+                            <div className="space-y-4">
+                                <label className="block text-slate-500 font-black text-sm uppercase tracking-widest pl-2">
+                                    Route PDF (Optional)
+                                </label>
+                                <div className="p-6 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl text-center">
+                                    <input
+                                        type="file"
+                                        accept="application/pdf"
+                                        onChange={handlePdfUpload}
+                                        className="hidden"
+                                        id="pdf-upload"
+                                    />
+                                    <label htmlFor="pdf-upload" className="cursor-pointer">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <FileDown className="text-blue-500" />
+                                            <span className="text-slate-600 font-bold">
+                                                {formData.route_pdf ? "Update Route PDF" : "Upload Route PDF"}
+                                            </span>
+                                            {formData.route_pdf && <span className="text-[10px] text-emerald-500 font-black italic">✓ PDF Loaded</span>}
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
                             {editingBus && (
                                 <div className="grid grid-cols-2 gap-4">
                                     <button
                                         type="button"
-                                        onClick={() => handleShareBusInfo({ ...editingBus, ...formData }, true)}
+                                        onClick={() => handleViewRoute({ ...editingBus, ...formData })}
                                         className="bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl transition-all flex items-center justify-center gap-2 group shadow-lg shadow-blue-500/30"
                                     >
                                         <Share2 size={18} />
-                                        SHARE
+                                        VIEW ROUTE
                                     </button>
                                     <button
                                         type="button"
@@ -527,7 +578,7 @@ const BusManagement = () => {
                                         className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-black py-4 rounded-2xl transition-all flex items-center justify-center gap-2"
                                     >
                                         <FileDown size={18} />
-                                        SAVE PDF
+                                        SAVE INFO
                                     </button>
                                 </div>
                             )}

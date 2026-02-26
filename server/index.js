@@ -3025,11 +3025,11 @@ app.get('/api/bus', async (req, res) => {
 
 // Add New Bus
 app.post('/api/bus', async (req, res) => {
-    const { bus_number, driver_name, driver_phone, starting_point, ending_point, photo_data, registration_number } = req.body;
+    const { bus_number, driver_name, driver_phone, starting_point, ending_point, photo_data, registration_number, route_pdf } = req.body;
     try {
         const result = await db.query(
-            "INSERT INTO bus (bus_number, driver_name, driver_phone, starting_point, ending_point, photo_data, registration_number) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
-            [bus_number, driver_name, driver_phone, starting_point, ending_point, photo_data, registration_number]
+            "INSERT INTO bus (bus_number, driver_name, driver_phone, starting_point, ending_point, photo_data, registration_number, route_pdf) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
+            [bus_number, driver_name, driver_phone, starting_point, ending_point, photo_data, registration_number, route_pdf]
         );
         res.json(result.rows[0]);
     } catch (err) {
@@ -3042,11 +3042,11 @@ app.post('/api/bus', async (req, res) => {
 // Update Bus
 app.put('/api/bus/:id', async (req, res) => {
     const { id } = req.params;
-    const { bus_number, driver_name, driver_phone, starting_point, ending_point, photo_data, registration_number } = req.body;
+    const { bus_number, driver_name, driver_phone, starting_point, ending_point, photo_data, registration_number, route_pdf } = req.body;
     try {
         const result = await db.query(
-            "UPDATE bus SET bus_number = $1, driver_name = $2, driver_phone = $3, starting_point = $4, ending_point = $5, photo_data = $7, registration_number = $8 WHERE id = $6 RETURNING *",
-            [bus_number, driver_name, driver_phone, starting_point, ending_point, id, photo_data, registration_number]
+            "UPDATE bus SET bus_number = $1, driver_name = $2, driver_phone = $3, starting_point = $4, ending_point = $5, photo_data = $7, registration_number = $8, route_pdf = $9 WHERE id = $6 RETURNING *",
+            [bus_number, driver_name, driver_phone, starting_point, ending_point, id, photo_data, registration_number, route_pdf]
         );
         res.json(result.rows[0]);
     } catch (err) {
