@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, User, Bus, Phone, Info, Milestone, GraduationCap, MapPin, Hash, CheckCircle, Share2, FileDown } from 'lucide-react';
+import { Search, User, Bus, Phone, Info, Milestone, GraduationCap, MapPin, Hash, CheckCircle, Share2, FileDown, FileText } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { jsPDF } from 'jspdf';
