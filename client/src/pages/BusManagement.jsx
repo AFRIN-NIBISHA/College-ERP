@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Bus, User, Phone, Plus, Edit2, Trash2, X, Check, Search, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Cropper from 'react-easy-crop';
+import getCroppedImg from '../utils/cropImage';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -22,6 +24,10 @@ const BusManagement = () => {
         ending_point: '',
         photo_data: ''
     });
+    const [imageSrc, setImageSrc] = useState(null);
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
@@ -69,6 +75,7 @@ const BusManagement = () => {
         setIsModalOpen(true);
         setError('');
         setSuccess('');
+        setImageSrc(null);
     };
 
     const handlePhotoUpload = (e) => {
@@ -76,9 +83,27 @@ const BusManagement = () => {
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setFormData({ ...formData, photo_data: reader.result });
+                setImageSrc(reader.result);
+                // reset cropper safely
+                setCrop({ x: 0, y: 0 });
+                setZoom(1);
             };
             reader.readAsDataURL(file);
+        }
+        e.target.value = ''; // allowing uploading of the same file again
+    };
+
+    const onCropComplete = (croppedArea, croppedAreaPixels) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+    };
+
+    const confirmCrop = async () => {
+        try {
+            const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels);
+            setFormData({ ...formData, photo_data: croppedImage });
+            setImageSrc(null);
+        } catch (e) {
+            console.error(e);
         }
     };
 
@@ -364,6 +389,54 @@ const BusManagement = () => {
                                 {editingBus ? 'UPDATE BUS' : 'SAVE BUS RECORD'}
                             </button>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Cropper Modal */}
+            {imageSrc && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-md" onClick={() => setImageSrc(null)}></div>
+                    <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-8 relative z-10 shadow-3xl animate-in zoom-in-95 flex flex-col items-center">
+                        <h3 className="text-2xl font-black text-slate-800 mb-4 tracking-tighter">Crop Image</h3>
+                        <div className="relative w-full h-[300px] mb-6 rounded-2xl overflow-hidden bg-slate-100">
+                            <Cropper
+                                image={imageSrc}
+                                crop={crop}
+                                zoom={zoom}
+                                aspect={1} // 1:1 Aspect ratio for bus icon/picture
+                                onCropChange={setCrop}
+                                onCropComplete={onCropComplete}
+                                onZoomChange={setZoom}
+                            />
+                        </div>
+                        <div className="w-full mb-6">
+                            <label className="text-xs font-bold text-slate-400 mb-2 block">Zoom</label>
+                            <input
+                                type="range"
+                                value={zoom}
+                                min={1}
+                                max={3}
+                                step={0.1}
+                                aria-labelledby="Zoom"
+                                onChange={(e) => setZoom(e.target.value)}
+                                className="w-full accent-blue-600"
+                            />
+                        </div>
+                        <div className="flex gap-4 w-full">
+                            <button
+                                onClick={() => setImageSrc(null)}
+                                className="flex-1 px-4 py-3 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmCrop}
+                                className="flex-1 px-4 py-3 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-lg"
+                            >
+                                Confirm Crop
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
