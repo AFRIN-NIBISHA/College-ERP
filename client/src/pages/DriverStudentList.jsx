@@ -125,6 +125,11 @@ const DriverStudentList = () => {
         XLSX.writeFile(workbook, `student_bus_list_${selectedBus}.xlsx`);
     };
 
+    const normalizeBusNumber = (bn) => {
+        if (!bn) return '';
+        return bn.toString().toLowerCase().replace(/[^a-z0-9]/g, '').replace(/(bus|route)(no)?/, '');
+    };
+
     const handleUploadRoutePdf = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -139,10 +144,10 @@ const DriverStudentList = () => {
         const username = user?.username;
 
         if (userRole === 'admin') {
-            busToUpdate = buses.find(b => b.bus_number === selectedBus);
+            busToUpdate = buses.find(b => b.bus_number === selectedBus || normalizeBusNumber(b.bus_number) === normalizeBusNumber(selectedBus));
         } else {
             // For driver, try to find a bus they are assigned to
-            busToUpdate = buses.find(b => b.driver_name === username || b.bus_number === selectedBus);
+            busToUpdate = buses.find(b => b.driver_name === username || b.bus_number === selectedBus || normalizeBusNumber(b.bus_number) === normalizeBusNumber(selectedBus));
         }
 
         if (!busToUpdate && selectedBus === 'All') {
@@ -176,7 +181,8 @@ const DriverStudentList = () => {
     };
 
     const handleViewRouteMap = () => {
-        const bus = buses.find(b => b.bus_number === (selectedBus === 'All' ? students[0]?.bus_no : selectedBus));
+        const targetBusNo = selectedBus === 'All' ? students[0]?.bus_no : selectedBus;
+        const bus = buses.find(b => b.bus_number === targetBusNo || normalizeBusNumber(b.bus_number) === normalizeBusNumber(targetBusNo));
         if (bus && bus.route_pdf) {
             const win = window.open();
             win.document.write('<iframe src="' + bus.route_pdf + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
@@ -188,7 +194,9 @@ const DriverStudentList = () => {
     const filteredStudents = students.filter(s => {
         const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             s.roll_no.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesBus = selectedBus === 'All' || s.bus_no === selectedBus;
+        const matchesBus = selectedBus === 'All' ||
+            s.bus_no === selectedBus ||
+            normalizeBusNumber(s.bus_no) === normalizeBusNumber(selectedBus);
         return matchesSearch && matchesBus && s.bus_no;
     });
 
