@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Bus, User, Phone, Plus, Edit2, Trash2, X, Check, Search, AlertCircle, RefreshCw, Share2, FileDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import Cropper from 'react-easy-crop';
 import getCroppedImg from '../utils/cropImage';
 
@@ -181,7 +181,7 @@ const BusManagement = () => {
                 ["Generation Date", new Date().toLocaleString()]
             ];
 
-            doc.autoTable({
+            autoTable(doc, {
                 startY: 55,
                 head: [details[0]],
                 body: details.slice(1),

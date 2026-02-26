@@ -3,7 +3,8 @@ import { Search, User, Bus, Phone, Info, Milestone, GraduationCap, MapPin, Hash,
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 const DriverStudentList = () => {
     const { user } = useAuth();
@@ -57,19 +58,16 @@ const DriverStudentList = () => {
         doc.setTextColor(100);
         doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 40);
 
-        const tableColumn = ["Roll No", "Student Name", "Year", "Dept", "Bus No", "Driver"];
-        const tableRows = filteredStudents.map(s => [
-            s.roll_no,
-            s.name,
-            s.year,
-            s.department,
-            s.bus_no,
-            s.bus_driver_name || 'N/A'
-        ]);
-
-        doc.autoTable({
-            head: [tableColumn],
-            body: tableRows,
+        autoTable(doc, {
+            head: [["Roll No", "Student Name", "Year", "Dept", "Bus No", "Driver"]],
+            body: filteredStudents.map(s => [
+                s.roll_no,
+                s.name,
+                s.year,
+                s.department,
+                s.bus_no,
+                s.bus_driver_name || 'N/A'
+            ]),
             startY: 45,
             theme: 'grid',
             headStyles: { fillColor: [59, 130, 246] },
@@ -97,6 +95,21 @@ const DriverStudentList = () => {
             console.error("PDF delivery failed", err);
             doc.save(fileName);
         }
+    };
+
+    const handleExportExcel = () => {
+        const worksheet = XLSX.utils.json_to_sheet(filteredStudents.map(s => ({
+            'Roll No': s.roll_no,
+            'Name': s.name,
+            'Year': s.year,
+            'Department': s.department,
+            'Bus Number': s.bus_no,
+            'Driver Name': s.bus_driver_name || 'N/A',
+            'Starting Point': s.bus_starting_point || 'N/A'
+        })));
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
+        XLSX.writeFile(workbook, `student_bus_list_${selectedBus}.xlsx`);
     };
 
     const filteredStudents = students.filter(s => {
@@ -128,6 +141,31 @@ const DriverStudentList = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-center gap-4">
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => handleDownloadPDF(false)}
+                                className="p-4 bg-white hover:bg-slate-50 text-blue-600 rounded-3xl border border-slate-100 shadow-xl shadow-blue-900/5 group transition-all"
+                                title="Download PDF"
+                            >
+                                <FileDown size={24} />
+                            </button>
+                            <button
+                                onClick={handleExportExcel}
+                                className="p-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-500/5 group transition-all"
+                                title="Export Excel"
+                            >
+                                <Hash size={24} />
+                            </button>
+                            <button
+                                onClick={() => handleDownloadPDF(true)}
+                                className="p-4 bg-blue-600 hover:bg-blue-500 text-white rounded-3xl shadow-xl shadow-blue-500/20 group transition-all flex items-center gap-2 pr-6"
+                                title="Share via Mobile"
+                            >
+                                <Share2 size={24} />
+                                <span className="font-bold">Share</span>
+                            </button>
+                        </div>
+
                         <div className="bg-white/80 p-4 rounded-3xl border border-slate-100 shadow-xl shadow-blue-900/5 flex items-center gap-4 min-w-[200px]">
                             <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
                                 <GraduationCap size={24} />
