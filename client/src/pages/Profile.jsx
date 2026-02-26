@@ -53,92 +53,125 @@ const Profile = () => {
                         </span>
                     </div>
 
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                         <div>
                             <div>
-                                <h1 className="text-2xl font-bold text-slate-900">{displayData?.name || displayData?.username || 'User'}</h1>
-                                <p className="text-slate-500 font-medium">
-                                    {displayData?.roll_no ? `Roll No: ${displayData.roll_no}` : `ID: ${displayData?.id || 'N/A'}`}
+                                <h1 className="text-3xl font-extrabold text-slate-900 leading-tight">{displayData?.name || displayData?.username || 'User'}</h1>
+                                <p className="text-slate-500 font-medium flex items-center gap-2">
+                                    <Hash size={16} />
+                                    {displayData?.roll_no ? `Roll Number: ${displayData.roll_no}` : `ID: ${displayData?.id || 'N/A'}`}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-100">
-                            <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl">
-                                <div className="p-2 bg-white rounded-xl shadow-sm text-slate-600">
-                                    <Shield size={20} />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold text-slate-400 uppercase">Role</p>
-                                    <p className="font-semibold text-slate-700 capitalize">{user?.role}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl">
-                                <div className="p-2 bg-white rounded-xl shadow-sm text-slate-600">
+                        {/* Basic Info Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div className="p-2 bg-white rounded-xl shadow-sm text-blue-600">
                                     <Mail size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-xs font-bold text-slate-400 uppercase">Email</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Email Address</p>
                                     <p className="font-semibold text-slate-700">{displayData?.email || 'N/A'}</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl">
-                                <div className="p-2 bg-white rounded-xl shadow-sm text-slate-600">
+                            <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div className="p-2 bg-white rounded-xl shadow-sm text-emerald-600">
                                     <Phone size={20} />
                                 </div>
                                 <div>
-                                    <p className="text-xs font-bold text-slate-400 uppercase">Phone</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Phone Number</p>
                                     <p className="font-semibold text-slate-700">{displayData?.phone || 'N/A'}</p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl">
-                                <div className="p-2 bg-white rounded-xl shadow-sm text-slate-600">
-                                    <Book size={20} />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold text-slate-400 uppercase">Department</p>
-                                    <p className="font-semibold text-slate-700">{displayData?.department || 'CSE'}</p>
-                                </div>
-                            </div>
-
-                            {/* Additional Fields for Students */}
                             {user?.role === 'student' && (
                                 <>
-                                    <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl">
-                                        <div className="p-2 bg-white rounded-xl shadow-sm text-slate-600">
+                                    <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <div className="p-2 bg-white rounded-xl shadow-sm text-orange-600">
                                             <Calendar size={20} />
                                         </div>
                                         <div>
-                                            <p className="text-xs font-bold text-slate-400 uppercase">Year</p>
-                                            <p className="font-semibold text-slate-700">{getYearDisplay(displayData?.year)}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl">
-                                        <div className="p-2 bg-white rounded-xl shadow-sm text-slate-600">
-                                            <Hash size={20} />
-                                        </div>
-                                        <div>
-                                            <p className="text-xs font-bold text-slate-400 uppercase">Section</p>
-                                            <p className="font-semibold text-slate-700">{displayData?.section || 'N/A'}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl">
-                                        <div className="p-2 bg-white rounded-xl shadow-sm text-slate-600">
-                                            <Calendar size={20} />
-                                        </div>
-                                        <div>
-                                            <p className="text-xs font-bold text-slate-400 uppercase">Date of Birth</p>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Date of Birth</p>
                                             <p className="font-semibold text-slate-700">{displayData?.dob ? new Date(displayData.dob).toLocaleDateString() : 'N/A'}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <div className="p-2 bg-white rounded-xl shadow-sm text-rose-600">
+                                            <User size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Blood Group</p>
+                                            <p className="font-semibold text-slate-700">{displayData?.blood_group || 'N/A'}</p>
                                         </div>
                                     </div>
                                 </>
                             )}
                         </div>
+
+                        {/* Student Specific Sections */}
+                        {user?.role === 'student' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                                {/* Academic Column */}
+                                <div className="space-y-4">
+                                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest px-1">Academic Status</h4>
+                                    <div className="space-y-3 bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
+                                        <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                                            <span className="text-sm text-slate-500">Year</span>
+                                            <span className="font-bold text-slate-800 bg-white px-3 py-1 rounded-full shadow-sm border border-slate-100">{getYearDisplay(displayData?.year)}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                                            <span className="text-sm text-slate-500">Section</span>
+                                            <span className="font-bold text-slate-800 bg-white px-3 py-1 rounded-full shadow-sm border border-slate-100">{displayData?.section || 'N/A'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-2">
+                                            <span className="text-sm text-slate-500">Department</span>
+                                            <span className="font-bold text-slate-800 bg-white px-3 py-1 rounded-full shadow-sm border border-slate-100">CSE</span>
+                                        </div>
+                                    </div>
+
+                                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest px-1 mt-6">Family Details</h4>
+                                    <div className="space-y-3 bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
+                                        <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                                            <span className="text-sm text-slate-500">Father's Name</span>
+                                            <span className="font-bold text-slate-800">{displayData?.father_name || 'N/A'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-2">
+                                            <span className="text-sm text-slate-500">Mother's Name</span>
+                                            <span className="font-bold text-slate-800">{displayData?.mother_name || 'N/A'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Community Column */}
+                                <div className="space-y-4">
+                                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest px-1">Identity & Community</h4>
+                                    <div className="space-y-3 bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
+                                        <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                                            <span className="text-sm text-slate-500">Religion</span>
+                                            <span className="font-bold text-slate-700">{displayData?.religion || 'N/A'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                                            <span className="text-sm text-slate-500">Caste</span>
+                                            <span className="font-bold text-slate-700">{displayData?.caste || 'N/A'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-2">
+                                            <span className="text-sm text-slate-500">Nationality</span>
+                                            <span className="font-bold text-slate-700">{displayData?.nationality || 'N/A'}</span>
+                                        </div>
+                                    </div>
+
+                                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest px-1 mt-6">Contact Address</h4>
+                                    <div className="p-4 bg-slate-50/50 rounded-3xl border border-slate-100 min-h-[100px]">
+                                        <p className="text-slate-600 text-sm leading-relaxed italic">
+                                            {displayData?.address || 'No address provided.'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

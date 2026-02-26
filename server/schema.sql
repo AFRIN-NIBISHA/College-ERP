@@ -39,6 +39,13 @@ CREATE TABLE IF NOT EXISTS students (
     library_status VARCHAR(20) DEFAULT 'Active',
     emis_no VARCHAR(50),
     umis_no VARCHAR(50),
+    father_name VARCHAR(100),
+    mother_name VARCHAR(100),
+    address TEXT,
+    blood_group VARCHAR(10),
+    religion VARCHAR(50),
+    caste VARCHAR(50),
+    nationality VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 
 -- Student On Duty (OD) table

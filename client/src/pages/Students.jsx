@@ -18,14 +18,27 @@ const Students = () => {
 
     // Form State
     const [formData, setFormData] = useState({
+        name: '',
+        roll_no: '',
+        year: '1',
+        section: 'A',
+        email: '',
         phone: '',
         dob: '',
         bus_no: '',
         bus_driver_name: '',
         bus_driver_phone: '',
+        bus_starting_point: '',
         bus_ending_point: '',
         emis_no: '',
-        umis_no: ''
+        umis_no: '',
+        father_name: '',
+        mother_name: '',
+        address: '',
+        blood_group: '',
+        religion: '',
+        caste: '',
+        nationality: ''
     });
 
     const classOptions = [
@@ -136,7 +149,14 @@ const Students = () => {
             bus_starting_point: '',
             bus_ending_point: '',
             emis_no: '',
-            umis_no: ''
+            umis_no: '',
+            father_name: '',
+            mother_name: '',
+            address: '',
+            blood_group: '',
+            religion: '',
+            caste: '',
+            nationality: ''
         });
         setEditingId(null);
         setShowAddModal(false);
@@ -157,7 +177,14 @@ const Students = () => {
             bus_starting_point: student.bus_starting_point || '',
             bus_ending_point: student.bus_ending_point || '',
             emis_no: student.emis_no || '',
-            umis_no: student.umis_no || ''
+            umis_no: student.umis_no || '',
+            father_name: student.father_name || '',
+            mother_name: student.mother_name || '',
+            address: student.address || '',
+            blood_group: student.blood_group || '',
+            religion: student.religion || '',
+            caste: student.caste || '',
+            nationality: student.nationality || ''
         });
         setEditingId(student.id);
         setShowAddModal(true);
@@ -406,68 +433,116 @@ const Students = () => {
                     <div className="bg-white w-full max-w-lg rounded-2xl p-6 relative animate-in fade-in zoom-in duration-200 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200">
                         <h3 className="text-xl font-bold text-slate-800 mb-6">{editingId ? 'Edit Student' : 'Add New Student'}</h3>
 
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-500">Full Name</label>
-                                    <input required name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            {/* Section 1: Basic Information */}
+                            <div className="space-y-4">
+                                <h4 className="text-xs font-bold text-blue-600 uppercase tracking-widest border-b border-blue-100 pb-1">Basic Information</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Full Name</label>
+                                        <input required name="name" value={formData.name} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Roll Number</label>
+                                        <input required name="roll_no" value={formData.roll_no} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
                                 </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-500">Roll Number</label>
-                                    <input required name="roll_no" value={formData.roll_no} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Year</label>
+                                        <select name="year" value={formData.year} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20">
+                                            <option value="1">1st Year</option>
+                                            <option value="2">2nd Year</option>
+                                            <option value="3">3rd Year</option>
+                                            <option value="4">4th Year</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Section</label>
+                                        <select name="section" value={formData.section} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20">
+                                            <option value="A">A</option>
+                                            <option value="B">B</option>
+                                            <option value="C">C</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Email Address</label>
+                                        <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Phone</label>
+                                        <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Date of Birth</label>
+                                        <input type="date" required name="dob" value={formData.dob} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Blood Group</label>
+                                        <input name="blood_group" value={formData.blood_group} onChange={handleInputChange} placeholder="e.g. O+ve" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-500">Year</label>
-                                    <select name="year" value={formData.year} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20">
-                                        <option value="1">1st Year</option>
-                                        <option value="2">2nd Year</option>
-                                        <option value="3">3rd Year</option>
-                                        <option value="4">4th Year</option>
-                                    </select>
+                            {/* Section 2: Family Details */}
+                            <div className="space-y-4">
+                                <h4 className="text-xs font-bold text-blue-600 uppercase tracking-widest border-b border-blue-100 pb-1">Family Details</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Father's Name</label>
+                                        <input name="father_name" value={formData.father_name} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Mother's Name</label>
+                                        <input name="mother_name" value={formData.mother_name} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-500">Section</label>
-                                    <select name="section" value={formData.section} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20">
-                                        <option value="A">A</option>
-                                        <option value="B">B</option>
-                                        <option value="C">C</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-xs font-medium text-slate-500">Email Address</label>
-                                <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-500">Phone</label>
-                                    <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-500">Date of Birth</label>
-                                    <input type="date" required name="dob" value={formData.dob} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    <label className="text-xs font-medium text-slate-500">Address</label>
+                                    <textarea name="address" value={formData.address} onChange={handleInputChange} rows="2" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20 text-sm"></textarea>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-500">EMIS Number</label>
-                                    <input name="emis_no" value={formData.emis_no} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                            {/* Section 3: Community & Identity */}
+                            <div className="space-y-4">
+                                <h4 className="text-xs font-bold text-blue-600 uppercase tracking-widest border-b border-blue-100 pb-1">Community & Identity</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Religion</label>
+                                        <input name="religion" value={formData.religion} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Caste</label>
+                                        <input name="caste" value={formData.caste} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Nationality</label>
+                                        <input name="nationality" value={formData.nationality} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">EMIS No</label>
+                                        <input name="emis_no" value={formData.emis_no} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-500">UMIS Number</label>
+                                    <label className="text-xs font-medium text-slate-500">UMIS No</label>
                                     <input name="umis_no" value={formData.umis_no} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
                                 </div>
                             </div>
 
-                            <div className="pt-4 border-t border-slate-100">
-                                <h4 className="text-sm font-bold text-slate-700 mb-4">Transport Details</h4>
-                                <div className="grid grid-cols-2 gap-4 mb-4">
+                            {/* Section 4: Transport Details */}
+                            <div className="space-y-4">
+                                <h4 className="text-xs font-bold text-blue-600 uppercase tracking-widest border-b border-blue-100 pb-1">Transport Details</h4>
+                                <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <label className="text-xs font-medium text-slate-500">Bus Number</label>
                                         <input name="bus_no" value={formData.bus_no} onChange={handleInputChange} placeholder="e.g. TN 74 AD 1234" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
@@ -477,7 +552,7 @@ const Students = () => {
                                         <input name="bus_driver_name" value={formData.bus_driver_name} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
                                     </div>
                                 </div>
-                                <div className="space-y-4">
+                                <div className="grid grid-cols-1 gap-4">
                                     <div className="space-y-1">
                                         <label className="text-xs font-medium text-slate-500">Driver Mobile</label>
                                         <input type="tel" name="bus_driver_phone" value={formData.bus_driver_phone} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
@@ -495,9 +570,9 @@ const Students = () => {
                                 </div>
                             </div>
 
-                            <div className="flex gap-3 pt-4 border-t border-slate-100 mt-6 md:justify-end">
-                                <button type="button" onClick={resetForm} className="px-4 py-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors">Cancel</button>
-                                <button type="submit" className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg shadow-lg shadow-blue-500/20 transition-all">{editingId ? 'Update Student' : 'Save Student'}</button>
+                            <div className="flex gap-3 pt-6 border-t border-slate-100 justify-end">
+                                <button type="button" onClick={resetForm} className="px-6 py-2.5 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors font-semibold">Cancel</button>
+                                <button type="submit" className="px-8 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-500/20 transition-all font-bold">{editingId ? 'Update Record' : 'Save Record'}</button>
                             </div>
                         </form>
                     </div>
