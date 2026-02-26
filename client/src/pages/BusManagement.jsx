@@ -11,7 +11,7 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const BusManagement = () => {
     const { user } = useAuth();
-    const isViewer = user?.role === 'student';
+    const isViewer = !['admin', 'driver'].includes(user?.role);
 
     const [buses, setBuses] = useState([]);
     const [loading, setLoading] = useState(true);
