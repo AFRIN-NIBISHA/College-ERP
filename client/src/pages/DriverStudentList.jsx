@@ -57,12 +57,14 @@ const DriverStudentList = () => {
         doc.setTextColor(100);
         doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 40);
 
-        const tableColumn = ["Roll No", "Student Name", "Bus Number", "Starting Point"];
+        const tableColumn = ["Roll No", "Student Name", "Year", "Dept", "Bus No", "Driver"];
         const tableRows = filteredStudents.map(s => [
             s.roll_no,
             s.name,
+            s.year,
+            s.department,
             s.bus_no,
-            s.bus_starting_point || 'N/A'
+            s.bus_driver_name || 'N/A'
         ]);
 
         doc.autoTable({
@@ -170,7 +172,7 @@ const DriverStudentList = () => {
                 </div>
             </div>
 
-            {/* Grid View */}
+            {/* Table View (Excel Style) */}
             {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-32 space-y-4">
                     <div className="w-16 h-16 border-4 border-blue-600/10 border-t-blue-600 rounded-full animate-spin" />
@@ -187,60 +189,58 @@ const DriverStudentList = () => {
                     </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {filteredStudents.map((student) => (
-                        <div key={student.id} className="group bg-white/60 backdrop-blur-md p-8 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 hover:shadow-blue-900/10 transition-all hover:-translate-y-1 hover:bg-white">
-                            <div className="flex items-center gap-6 mb-8">
-                                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-all duration-500">
-                                    {student.name.substring(0, 1)}
-                                </div>
-                                <div className="space-y-1 overflow-hidden">
-                                    <h3 className="text-xl font-black text-slate-900 tracking-tight truncate pr-2" title={student.name}>
-                                        {student.name}
-                                    </h3>
-                                    <div className="flex items-center gap-2">
-                                        <Hash size={14} className="text-blue-500" />
-                                        <p className="text-xs font-mono font-black text-slate-400 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100">
+                <div className="overflow-x-auto bg-white/60 backdrop-blur-md rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 animate-in slide-in-from-bottom duration-700">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-blue-600 text-white">
+                                <th className="p-6 font-black uppercase tracking-widest text-[10px] first:rounded-tl-[2.5rem]">Student Name</th>
+                                <th className="p-6 font-black uppercase tracking-widest text-[10px]">Reg No</th>
+                                <th className="p-6 font-black uppercase tracking-widest text-[10px]">Year</th>
+                                <th className="p-6 font-black uppercase tracking-widest text-[10px]">Department</th>
+                                <th className="p-6 font-black uppercase tracking-widest text-[10px]">Bus Number</th>
+                                <th className="p-6 font-black uppercase tracking-widest text-[10px] last:rounded-tr-[2.5rem]">Driver Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredStudents.map((student) => (
+                                <tr key={student.id} className="border-b border-slate-100 hover:bg-white transition-all group">
+                                    <td className="p-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs">
+                                                {student.name.charAt(0)}
+                                            </div>
+                                            <span className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors uppercase">{student.name}</span>
+                                        </div>
+                                    </td>
+                                    <td className="p-6">
+                                        <span className="font-mono font-black text-slate-500 bg-slate-50 px-2 py-1 rounded-md border border-slate-100 text-xs uppercase">
                                             {student.roll_no}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-4 p-5 bg-blue-50/50 rounded-3xl border border-blue-100/30">
-                                    <div className="flex items-center gap-2 text-blue-600">
-                                        <Bus size={18} />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">Bus Route</span>
-                                    </div>
-                                    <p className="text-lg font-black text-blue-950 truncate" title={student.bus_no}>
-                                        {student.bus_no}
-                                    </p>
-                                </div>
-                                <div className="space-y-4 p-5 bg-emerald-50/50 rounded-3xl border border-emerald-100/30">
-                                    <div className="flex items-center gap-2 text-emerald-600">
-                                        <CheckCircle size={18} />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">Status</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <p className="text-lg font-black text-emerald-950 leading-tight">Assigned</p>
-                                        <span className="text-[10px] font-black text-emerald-600 uppercase">Authorized</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mt-6 pt-6 border-t border-slate-50 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Verified Log</span>
-                                </div>
-                                <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-full text-slate-500">
-                                    <MapPin size={12} />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Zone {student.bus_starting_point?.substring(0, 3) || 'NA'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
+                                        </span>
+                                    </td>
+                                    <td className="p-6">
+                                        <span className="font-bold text-slate-700 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-xs">
+                                            Year {student.year}
+                                        </span>
+                                    </td>
+                                    <td className="p-6 font-bold text-slate-500 uppercase text-xs">{student.department}</td>
+                                    <td className="p-6">
+                                        <div className="flex items-center gap-2">
+                                            <Bus size={14} className="text-blue-500" />
+                                            <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-lg font-black text-xs border border-blue-100 shadow-sm leading-none flex items-center">
+                                                {student.bus_no}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td className="p-6">
+                                        <div className="flex items-center gap-2 text-slate-700 font-bold uppercase text-xs">
+                                            <User size={14} className="text-slate-400" />
+                                            {student.bus_driver_name || 'NOT ASSIGNED'}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             )}
 

@@ -983,9 +983,9 @@ app.get('/api/students', async (req, res) => {
 // Specialized endpoint for Drivers - Limited fields for privacy
 app.get('/api/students/bus-list', async (req, res) => {
     try {
-        // Only return name, roll_no, bus_no, and starting_point
+        // Return name, roll_no, bus_no, starting_point, year, department, and driver_name
         const result = await db.query(
-            "SELECT id, name, roll_no, bus_no, bus_starting_point FROM students WHERE bus_no IS NOT NULL AND bus_no != '' ORDER BY bus_no, roll_no"
+            "SELECT id, name, roll_no, bus_no, bus_starting_point, year, department, bus_driver_name FROM students WHERE bus_no IS NOT NULL AND bus_no != '' ORDER BY bus_no, roll_no"
         );
         res.json(result.rows);
     } catch (err) {
