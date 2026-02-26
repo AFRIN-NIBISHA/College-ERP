@@ -241,8 +241,8 @@ const Fees = () => {
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Total Fee</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Paid</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Bus Fee</th>
-                                <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Scholarship Amt</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Scholarship Type</th>
+                                <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Scholarship Amt</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100 hide-on-mobile">Balance</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100 hide-on-mobile">Last Payment</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Status</th>
@@ -278,8 +278,8 @@ const Fees = () => {
                                             <td className="p-4 text-slate-600 border-l-0 md:border-l border-slate-100" data-label="Total Fee"><span>₹{total.toLocaleString()}</span></td>
                                             <td className="p-4 text-emerald-600 font-bold border-l-0 md:border-l border-slate-100" data-label="Paid"><span>₹{paid.toLocaleString()}</span></td>
                                             <td className="p-4 text-blue-600 font-bold border-l-0 md:border-l border-slate-100" data-label="Bus Fee"><span>₹{bus.toLocaleString()}</span></td>
-                                            <td className="p-4 text-orange-600 font-bold border-l-0 md:border-l border-slate-100" data-label="Sch Amt"><span>₹{sch.toLocaleString()}</span></td>
                                             <td className="p-4 text-indigo-600 font-bold border-l-0 md:border-l border-slate-100 text-xs" data-label="Sch Type"><span>{student.scholarship_type && student.scholarship_type !== 'None' ? (student.scholarship_type === 'Other' ? student.scholarship_details : student.scholarship_type) : '-'}</span></td>
+                                            <td className="p-4 text-orange-600 font-bold border-l-0 md:border-l border-slate-100" data-label="Sch Amt"><span>₹{sch.toLocaleString()}</span></td>
                                             <td className="p-4 text-red-500 font-bold border-l-0 md:border-l border-slate-100 hide-on-mobile" data-label="Balance"><span>₹{balance > 0 ? balance.toLocaleString() : 0}</span></td>
                                             <td className="p-4 text-slate-500 text-xs border-l-0 md:border-l border-slate-100 hide-on-mobile" data-label="Date"><span>{student.payment_date ? new Date(student.payment_date).toLocaleDateString() : '-'}</span></td>
                                             <td className="p-4 border-l-0 md:border-l border-slate-100" data-label="Status">

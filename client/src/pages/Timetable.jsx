@@ -149,8 +149,6 @@ const Timetable = () => {
                         subjectId: entry.subjectId || null,
                         staffId: entry.staffId || null,
                         subjectNameText: entry.subjectNameText || null,
-                        staffId: entry.staffId || null,
-                        subjectNameText: entry.subjectNameText || null,
                         staffNameText: entry.staffNameText || null,
                         subjectCodeText: entry.subjectCodeText || null,
                         subjectCreditText: entry.subjectCreditText || null
