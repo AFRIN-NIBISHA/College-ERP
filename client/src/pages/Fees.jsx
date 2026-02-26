@@ -29,7 +29,8 @@ const Fees = () => {
         status: 'Pending',
         scholarship_type: 'None',
         scholarship_details: '',
-        bus_fee: ''
+        bus_fee: '',
+        scholarship_amount: ''
     });
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
@@ -70,7 +71,8 @@ const Fees = () => {
                     total_fee: feeRecord.total_fee || '0',
                     paid_amount: feeRecord.paid_amount || '0',
                     bus_fee: feeRecord.bus_fee || '0',
-                    status: feeRecord.status || ((parseFloat(feeRecord.paid_amount) >= (parseFloat(feeRecord.total_fee || 0) + parseFloat(feeRecord.bus_fee || 0))) && (parseFloat(feeRecord.total_fee) + parseFloat(feeRecord.bus_fee)) > 0 ? 'Paid' : 'Pending')
+                    scholarship_amount: feeRecord.scholarship_amount || '0',
+                    status: feeRecord.status || ((parseFloat(feeRecord.paid_amount || 0) + parseFloat(feeRecord.scholarship_amount || 0) >= (parseFloat(feeRecord.total_fee || 0) + parseFloat(feeRecord.bus_fee || 0))) && (parseFloat(feeRecord.total_fee) + parseFloat(feeRecord.bus_fee)) > 0 ? 'Paid' : 'Pending')
                 };
             });
 
@@ -93,7 +95,8 @@ const Fees = () => {
             status: student.status || 'Pending',
             scholarship_type: student.scholarship_type || 'None',
             scholarship_details: student.scholarship_details || '',
-            bus_fee: student.bus_fee || '0'
+            bus_fee: student.bus_fee || '0',
+            scholarship_amount: student.scholarship_amount || '0'
         });
     };
 
@@ -103,7 +106,7 @@ const Fees = () => {
             const payload = {
                 student_id: editingStudent.id,
                 ...feeForm,
-                status: parseFloat(feeForm.paid_amount) >= (parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) ? 'Paid' : 'Pending'
+                status: (parseFloat(feeForm.paid_amount || 0) + parseFloat(feeForm.scholarship_amount || 0)) >= (parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) ? 'Paid' : 'Pending'
             };
 
             await axios.post('/api/fees', payload);
@@ -238,7 +241,8 @@ const Fees = () => {
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Total Fee</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Paid</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Bus Fee</th>
-                                <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Scholarship</th>
+                                <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Scholarship Amt</th>
+                                <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Scholarship Type</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100 hide-on-mobile">Balance</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100 hide-on-mobile">Last Payment</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Status</th>
@@ -256,9 +260,10 @@ const Fees = () => {
                                 filteredStudents.map(student => {
                                     const total = parseFloat(student.total_fee || 0);
                                     const bus = parseFloat(student.bus_fee || 0);
+                                    const sch = parseFloat(student.scholarship_amount || 0);
                                     const paid = parseFloat(student.paid_amount || 0);
-                                    const balance = (total + bus) - paid;
-                                    const isPaid = paid >= (total + bus) && (total + bus) > 0;
+                                    const balance = (total + bus) - (sch + paid);
+                                    const isPaid = (paid + sch) >= (total + bus) && (total + bus) > 0;
 
                                     return (
                                         <tr key={student.id} className="hover:bg-slate-50/50 transition-colors group">
@@ -272,8 +277,8 @@ const Fees = () => {
                                             </td>
                                             <td className="p-4 text-slate-600 border-l-0 md:border-l border-slate-100" data-label="Total Fee"><span>₹{total.toLocaleString()}</span></td>
                                             <td className="p-4 text-blue-600 font-bold border-l-0 md:border-l border-slate-100" data-label="Bus Fee"><span>₹{bus.toLocaleString()}</span></td>
-                                            <td className="p-4 text-emerald-600 font-bold border-l-0 md:border-l border-slate-100" data-label="Paid Amt"><span>₹{paid.toLocaleString()}</span></td>
-                                            <td className="p-4 text-indigo-600 font-bold border-l-0 md:border-l border-slate-100 text-xs" data-label="Scholarship"><span>{student.scholarship_type && student.scholarship_type !== 'None' ? (student.scholarship_type === 'Other' ? student.scholarship_details : student.scholarship_type) : '-'}</span></td>
+                                            <td className="p-4 text-orange-600 font-bold border-l-0 md:border-l border-slate-100" data-label="Sch Amt"><span>₹{sch.toLocaleString()}</span></td>
+                                            <td className="p-4 text-indigo-600 font-bold border-l-0 md:border-l border-slate-100 text-xs" data-label="Sch Type"><span>{student.scholarship_type && student.scholarship_type !== 'None' ? (student.scholarship_type === 'Other' ? student.scholarship_details : student.scholarship_type) : '-'}</span></td>
                                             <td className="p-4 text-red-500 font-bold border-l-0 md:border-l border-slate-100 hide-on-mobile" data-label="Balance"><span>₹{balance > 0 ? balance.toLocaleString() : 0}</span></td>
                                             <td className="p-4 text-slate-500 text-xs border-l-0 md:border-l border-slate-100 hide-on-mobile" data-label="Date"><span>{student.payment_date ? new Date(student.payment_date).toLocaleDateString() : '-'}</span></td>
                                             <td className="p-4 border-l-0 md:border-l border-slate-100" data-label="Status">
@@ -315,103 +320,40 @@ const Fees = () => {
                             <h3 className="text-xl font-bold text-slate-800 mb-1">Update Fees</h3>
                             <p className="text-slate-500 mb-6">For {editingStudent.name} ({editingStudent.roll_no})</p>
 
-                            <form onSubmit={handleSaveFee} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Total Fee Amount</label>
-                                    <div className="relative">
-                                        <IndianRupee size={16} className="absolute left-3 top-3.5 text-slate-400" />
-                                        <input
-                                            type="number"
-                                            required
-                                            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all"
-                                            value={feeForm.total_fee}
-                                            onChange={e => setFeeForm({ ...feeForm, total_fee: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Bus Fee Amount</label>
-                                    <div className="relative">
-                                        <IndianRupee size={16} className="absolute left-3 top-3.5 text-slate-400" />
-                                        <input
-                                            type="number"
-                                            required
-                                            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all"
-                                            value={feeForm.bus_fee}
-                                            onChange={e => setFeeForm({ ...feeForm, bus_fee: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Paid Amount</label>
-                                    <div className="relative">
-                                        <IndianRupee size={16} className="absolute left-3 top-3.5 text-slate-400" />
-                                        <input
-                                            type="number"
-                                            required
-                                            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all"
-                                            value={feeForm.paid_amount}
-                                            onChange={e => setFeeForm({ ...feeForm, paid_amount: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                            <form onSubmit={handleSaveFee} className="space-y-4 max-h-[70vh] overflow-y-auto px-1 pr-2">
+                                <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Payment Status</p>
-                                        <p className={`text-lg font-extrabold ${((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - parseFloat(feeForm.paid_amount || 0)) > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
-                                            {((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - parseFloat(feeForm.paid_amount || 0)) > 0
-                                                ? `Next Payment: ₹${((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - parseFloat(feeForm.paid_amount || 0)).toLocaleString()}`
-                                                : 'Status: Completed'}
-                                        </p>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Academic Fee</label>
+                                        <div className="relative">
+                                            <IndianRupee size={12} className="absolute left-3 top-3.5 text-slate-400" />
+                                            <input
+                                                type="number"
+                                                required
+                                                className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all text-sm"
+                                                value={feeForm.total_fee}
+                                                onChange={e => setFeeForm({ ...feeForm, total_fee: e.target.value })}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - parseFloat(feeForm.paid_amount || 0)) > 0 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                                        {((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - parseFloat(feeForm.paid_amount || 0)) > 0 ? <RefreshCw size={20} /> : <Check size={20} />}
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Bus Fee</label>
+                                        <div className="relative">
+                                            <IndianRupee size={12} className="absolute left-3 top-3.5 text-slate-400" />
+                                            <input
+                                                type="number"
+                                                className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all text-sm"
+                                                value={feeForm.bus_fee}
+                                                onChange={e => setFeeForm({ ...feeForm, bus_fee: e.target.value })}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Payment Date</label>
-                                        <input
-                                            type="date"
-                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
-                                            value={feeForm.payment_date}
-                                            onChange={e => setFeeForm({ ...feeForm, payment_date: e.target.value })}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Mode</label>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Scholarship Type</label>
                                         <select
-                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
-                                            value={feeForm.payment_mode}
-                                            onChange={e => setFeeForm({ ...feeForm, payment_mode: e.target.value })}
-                                        >
-                                            <option>Cash</option>
-                                            <option>UPI</option>
-                                            <option>Bank Transfer</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Receipt No</label>
-                                    <input
-                                        type="text"
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all"
-                                        placeholder="Optional"
-                                        value={feeForm.receipt_no}
-                                        onChange={e => setFeeForm({ ...feeForm, receipt_no: e.target.value })}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 mb-1">Scholarship Type</label>
-                                        <select
-                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
+                                            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none text-sm"
                                             value={feeForm.scholarship_type}
                                             onChange={e => setFeeForm({ ...feeForm, scholarship_type: e.target.value, scholarship_details: e.target.value === 'Other' ? '' : e.target.value })}
                                         >
@@ -424,25 +366,105 @@ const Fees = () => {
                                         </select>
                                     </div>
                                     <div>
-                                        {feeForm.scholarship_type === 'Other' && (
-                                            <>
-                                                <label className="block text-sm font-medium text-slate-700 mb-1">Details manually</label>
-                                                <input
-                                                    type="text"
-                                                    required
-                                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all"
-                                                    placeholder="Enter details..."
-                                                    value={feeForm.scholarship_details}
-                                                    onChange={e => setFeeForm({ ...feeForm, scholarship_details: e.target.value })}
-                                                />
-                                            </>
-                                        )}
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Scholarship Amount</label>
+                                        <div className="relative">
+                                            <IndianRupee size={12} className="absolute left-3 top-3.5 text-slate-400" />
+                                            <input
+                                                type="number"
+                                                className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all text-sm"
+                                                value={feeForm.scholarship_amount}
+                                                onChange={e => setFeeForm({ ...feeForm, scholarship_amount: e.target.value })}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="pt-2">
-                                    <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all">
-                                        Save & Update
+                                {feeForm.scholarship_type === 'Other' && (
+                                    <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Details manually</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all text-sm"
+                                            placeholder="Enter scholarship details..."
+                                            value={feeForm.scholarship_details}
+                                            onChange={e => setFeeForm({ ...feeForm, scholarship_details: e.target.value })}
+                                        />
+                                    </div>
+                                )}
+
+                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Calculated Balance</p>
+                                        <div className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - (parseFloat(feeForm.scholarship_amount || 0) + parseFloat(feeForm.paid_amount || 0))) > 0 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                            {((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - (parseFloat(feeForm.scholarship_amount || 0) + parseFloat(feeForm.paid_amount || 0))) > 0 ? 'Outstanding' : 'Cleared'}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-end justify-between">
+                                        <div>
+                                            <p className="text-2xl font-black text-slate-800 tracking-tight">
+                                                ₹{Math.max(0, ((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - (parseFloat(feeForm.scholarship_amount || 0) + parseFloat(feeForm.paid_amount || 0)))).toLocaleString()}
+                                            </p>
+                                            <p className="text-[10px] text-slate-400 mt-1">Total Payable: ₹{(parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0) - parseFloat(feeForm.scholarship_amount || 0)).toLocaleString()}</p>
+                                        </div>
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - (parseFloat(feeForm.scholarship_amount || 0) + parseFloat(feeForm.paid_amount || 0))) > 0 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                            {((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - (parseFloat(feeForm.scholarship_amount || 0) + parseFloat(feeForm.paid_amount || 0))) > 0 ? <RefreshCw size={20} /> : <Check size={20} />}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Paid Amount</label>
+                                    <div className="relative">
+                                        <IndianRupee size={12} className="absolute left-3 top-3.5 text-slate-400" />
+                                        <input
+                                            type="number"
+                                            required
+                                            className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all text-sm font-bold text-emerald-600"
+                                            value={feeForm.paid_amount}
+                                            onChange={e => setFeeForm({ ...feeForm, paid_amount: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Last Pay Date</label>
+                                        <input
+                                            type="date"
+                                            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none text-sm"
+                                            value={feeForm.payment_date}
+                                            onChange={e => setFeeForm({ ...feeForm, payment_date: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pay Mode</label>
+                                        <select
+                                            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none text-sm"
+                                            value={feeForm.payment_mode}
+                                            onChange={e => setFeeForm({ ...feeForm, payment_mode: e.target.value })}
+                                        >
+                                            <option>Cash</option>
+                                            <option>UPI</option>
+                                            <option>Bank Transfer</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Receipt No</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all text-sm"
+                                        placeholder="Optional receipt number"
+                                        value={feeForm.receipt_no}
+                                        onChange={e => setFeeForm({ ...feeForm, receipt_no: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="pt-2 sticky bottom-0 bg-white pb-1">
+                                    <button type="submit" className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]">
+                                        Save & Update Record
                                     </button>
                                 </div>
                             </form>

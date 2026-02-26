@@ -276,6 +276,8 @@ const initDb = async () => {
             END $$;
             ALTER TABLE fees ADD COLUMN IF NOT EXISTS total_fee DECIMAL(10, 2) DEFAULT 0;
             ALTER TABLE fees ADD COLUMN IF NOT EXISTS bus_fee DECIMAL(10, 2) DEFAULT 0;
+            ALTER TABLE fees ADD COLUMN IF NOT EXISTS scholarship_amount DECIMAL(10, 2) DEFAULT 0;
+            ALTER TABLE fees ADD COLUMN IF NOT EXISTS scholarship_amount DECIMAL(10, 2) DEFAULT 0;
 
             -- Ensure No Due Constraints
             ALTER TABLE no_dues DROP CONSTRAINT IF EXISTS no_dues_student_id_semester_key;
@@ -709,7 +711,7 @@ app.get('/api/fees', async (req, res) => {
     try {
         let query = `
             SELECT s.id as student_id, s.name, s.roll_no, s.department, s.year, s.section, 
-                   f.total_fee, f.paid_amount, f.bus_fee, 
+                   f.total_fee, f.paid_amount, f.bus_fee, f.scholarship_amount,
                    COALESCE(f.status, 'Pending') as status,
                    f.payment_date, f.payment_mode, f.receipt_no,
                    f.scholarship_type, f.scholarship_details
@@ -741,7 +743,7 @@ app.get('/api/fees', async (req, res) => {
 });
 
 app.post('/api/fees', async (req, res) => {
-    const { student_id, total_fee, paid_amount, bus_fee, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details } = req.body;
+    const { student_id, total_fee, paid_amount, bus_fee, scholarship_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details } = req.body;
     try {
         const academicYear = await getCurrentYear();
 
@@ -757,15 +759,15 @@ app.post('/api/fees', async (req, res) => {
                     total_fee = $1, paid_amount = $2, payment_date = $3, 
                     payment_mode = $4, receipt_no = $5, status = $6,
                     scholarship_type = $8, scholarship_details = $9,
-                    academic_year = $10, bus_fee = $11
+                    academic_year = $10, bus_fee = $11, scholarship_amount = $12
                 WHERE id = $7`,
-                [total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, check.rows[0].id, scholarship_type, scholarship_details, academicYear, bus_fee]
+                [total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, check.rows[0].id, scholarship_type, scholarship_details, academicYear, bus_fee, scholarship_amount]
             );
         } else {
             await db.query(
-                `INSERT INTO fees (student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details, academic_year, bus_fee)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-                [student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details, academicYear, bus_fee]
+                `INSERT INTO fees (student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details, academic_year, bus_fee, scholarship_amount)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+                [student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details, academicYear, bus_fee, scholarship_amount]
             );
         }
         res.json({ message: "Fee record updated" });
@@ -1839,7 +1841,7 @@ app.get('/api/no-due', async (req, res) => {
                 COALESCE(nd.created_at, s.created_at) as created_at,
                 s.name, s.roll_no, s.year, s.section, s.department,
                 f.total_fee, f.paid_amount, f.status as fee_status,
-                f.scholarship_type, f.scholarship_details,
+                f.scholarship_type, f.scholarship_details, f.scholarship_amount,
                 (
                     SELECT JSON_AGG(JSON_BUILD_OBJECT('title', b.title, 'due_date', bi.due_date))
                     FROM book_issues bi
@@ -1849,6 +1851,7 @@ app.get('/api/no-due', async (req, res) => {
             FROM students s
             LEFT JOIN no_dues nd ON s.id = nd.student_id
             LEFT JOIN fees f ON s.id = f.student_id AND f.academic_year = (SELECT value FROM settings WHERE key = 'current_academic_year' LIMIT 1)
+            f.scholarship_amount,
             WHERE 1=1
         `;
         const params = [];

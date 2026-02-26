@@ -469,13 +469,23 @@ const NoDue = () => {
                                                         <span className="font-bold">₹{Number(req.total_fee || 0).toLocaleString()}</span>
                                                     </div>
                                                     <div className="flex justify-between">
+                                                        <span>Bus Fees:</span>
+                                                        <span className="font-bold text-blue-600">₹{Number(req.bus_fee || 0).toLocaleString()}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
                                                         <span>Paid:</span>
                                                         <span className="text-green-600 font-bold">₹{Number(req.paid_amount || 0).toLocaleString()}</span>
                                                     </div>
+                                                    {Number(req.scholarship_amount || 0) > 0 && (
+                                                        <div className="flex justify-between text-orange-600 font-medium italic">
+                                                            <span>Scholarship:</span>
+                                                            <span>- ₹{Number(req.scholarship_amount).toLocaleString()}</span>
+                                                        </div>
+                                                    )}
                                                     <div className="flex justify-between border-t border-slate-100 pt-1 mt-1">
                                                         <span>Pending:</span>
-                                                        <span className={`font-bold ${(Number(req.total_fee || 0) - Number(req.paid_amount || 0)) > 0 ? 'text-red-600' : 'text-slate-700'}`}>
-                                                            ₹{Number((req.total_fee || 0) - (req.paid_amount || 0)).toLocaleString()}
+                                                        <span className={`font-bold ${(Number(req.total_fee || 0) + Number(req.bus_fee || 0) - Number(req.scholarship_amount || 0) - Number(req.paid_amount || 0)) > 0 ? 'text-red-600' : 'text-slate-700'}`}>
+                                                            ₹{Number((Number(req.total_fee || 0) + Number(req.bus_fee || 0)) - (Number(req.scholarship_amount || 0) + Number(req.paid_amount || 0))).toLocaleString()}
                                                         </span>
                                                     </div>
 
