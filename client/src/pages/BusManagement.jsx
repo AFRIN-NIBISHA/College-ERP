@@ -181,7 +181,7 @@ const BusManagement = () => {
                 ["Generation Date", new Date().toLocaleString()]
             ];
 
-            autoTable(doc, {
+            const tableConfig = {
                 startY: 55,
                 head: [details[0]],
                 body: details.slice(1),
@@ -189,10 +189,26 @@ const BusManagement = () => {
                 headStyles: { fillColor: [59, 130, 246], fontStyle: 'bold' },
                 bodyStyles: { textColor: [50, 50, 50] },
                 alternateRowStyles: { fillColor: [245, 247, 250] }
-            });
+            };
 
-            // Safe Y calculation for signatures
-            const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 30 : 200;
+            // ULTRA ROBUST CALL
+            if (typeof autoTable === 'function') {
+                autoTable(doc, tableConfig);
+            } else if (doc.autoTable) {
+                doc.autoTable(tableConfig);
+            } else {
+                let currentY = 55;
+                details.forEach(row => {
+                    doc.text(`${row[0]}: ${row[1]}`, 14, currentY);
+                    currentY += 10;
+                });
+            }
+
+            // Safe Y calculation
+            let finalY = 200;
+            if (doc.lastAutoTable && doc.lastAutoTable.finalY) {
+                finalY = doc.lastAutoTable.finalY + 30;
+            }
 
             doc.setFontSize(10);
             doc.text('Transport In-charge Signature', 14, finalY);
@@ -207,7 +223,7 @@ const BusManagement = () => {
 
                 navigator.share({
                     title: `${bus.bus_number} Route`,
-                    text: `Bus details for ${bus.bus_number}`,
+                    text: `Transport details for ${bus.bus_number}`,
                     files: [file]
                 }).catch(err => {
                     console.error("Share failed", err);
@@ -218,8 +234,7 @@ const BusManagement = () => {
             }
         } catch (err) {
             console.error("PDF Failed:", err);
-            alert("Error: " + err.message);
-            // Fallback
+            alert("PDF Error: " + err.message);
             try {
                 const docSimple = new jsPDF();
                 docSimple.text(`Bus: ${bus.bus_number}`, 10, 10);

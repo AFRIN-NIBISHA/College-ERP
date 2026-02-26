@@ -58,7 +58,7 @@ const DriverStudentList = () => {
         doc.setTextColor(100);
         doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 40);
 
-        autoTable(doc, {
+        const tableConfig = {
             head: [["Roll No", "Student Name", "Year", "Dept", "Bus No", "Driver"]],
             body: filteredStudents.map(s => [
                 s.roll_no,
@@ -72,7 +72,19 @@ const DriverStudentList = () => {
             theme: 'grid',
             headStyles: { fillColor: [59, 130, 246] },
             margin: { top: 45 }
-        });
+        };
+
+        if (typeof autoTable === 'function') {
+            autoTable(doc, tableConfig);
+        } else if (doc.autoTable) {
+            doc.autoTable(tableConfig);
+        } else {
+            let currentY = 45;
+            filteredStudents.forEach(s => {
+                doc.text(`${s.roll_no} - ${s.name}`, 14, currentY);
+                currentY += 10;
+            });
+        }
 
         const fileName = `${busTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
 
