@@ -250,6 +250,7 @@ const initDb = async () => {
             ALTER TABLE students ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'Active';
             ALTER TABLE students ADD COLUMN IF NOT EXISTS emis_no VARCHAR(50);
             ALTER TABLE students ADD COLUMN IF NOT EXISTS umis_no VARCHAR(50);
+            ALTER TABLE bus ADD COLUMN IF NOT EXISTS photo_data TEXT;
             ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
             ALTER TABLE attendance ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
             ALTER TABLE no_dues ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
@@ -2934,11 +2935,11 @@ app.get('/api/bus', async (req, res) => {
 
 // Add New Bus
 app.post('/api/bus', async (req, res) => {
-    const { bus_number, driver_name, driver_phone, starting_point, ending_point } = req.body;
+    const { bus_number, driver_name, driver_phone, starting_point, ending_point, photo_data } = req.body;
     try {
         const result = await db.query(
-            "INSERT INTO bus (bus_number, driver_name, driver_phone, starting_point, ending_point) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-            [bus_number, driver_name, driver_phone, starting_point, ending_point]
+            "INSERT INTO bus (bus_number, driver_name, driver_phone, starting_point, ending_point, photo_data) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            [bus_number, driver_name, driver_phone, starting_point, ending_point, photo_data]
         );
         res.json(result.rows[0]);
     } catch (err) {
@@ -2951,11 +2952,11 @@ app.post('/api/bus', async (req, res) => {
 // Update Bus
 app.put('/api/bus/:id', async (req, res) => {
     const { id } = req.params;
-    const { bus_number, driver_name, driver_phone, starting_point, ending_point } = req.body;
+    const { bus_number, driver_name, driver_phone, starting_point, ending_point, photo_data } = req.body;
     try {
         const result = await db.query(
-            "UPDATE bus SET bus_number = $1, driver_name = $2, driver_phone = $3, starting_point = $4, ending_point = $5 WHERE id = $6 RETURNING *",
-            [bus_number, driver_name, driver_phone, starting_point, ending_point, id]
+            "UPDATE bus SET bus_number = $1, driver_name = $2, driver_phone = $3, starting_point = $4, ending_point = $5, photo_data = $7 WHERE id = $6 RETURNING *",
+            [bus_number, driver_name, driver_phone, starting_point, ending_point, id, photo_data]
         );
         res.json(result.rows[0]);
     } catch (err) {

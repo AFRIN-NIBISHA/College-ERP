@@ -235,6 +235,8 @@ CREATE TABLE IF NOT EXISTS bus (
     driver_name VARCHAR(100) NOT NULL,
     driver_phone VARCHAR(15),
     starting_point VARCHAR(255),
+    ending_point VARCHAR(255),
+    photo_data TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -19,7 +19,8 @@ const BusManagement = () => {
         driver_name: '',
         driver_phone: '',
         starting_point: '',
-        ending_point: ''
+        ending_point: '',
+        photo_data: ''
     });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -51,7 +52,8 @@ const BusManagement = () => {
                 driver_name: bus.driver_name,
                 driver_phone: bus.driver_phone || '',
                 starting_point: bus.starting_point || '',
-                ending_point: bus.ending_point || ''
+                ending_point: bus.ending_point || '',
+                photo_data: bus.photo_data || ''
             });
         } else {
             setEditingBus(null);
@@ -60,12 +62,24 @@ const BusManagement = () => {
                 driver_name: '',
                 driver_phone: '',
                 starting_point: '',
-                ending_point: ''
+                ending_point: '',
+                photo_data: ''
             });
         }
         setIsModalOpen(true);
         setError('');
         setSuccess('');
+    };
+
+    const handlePhotoUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData({ ...formData, photo_data: reader.result });
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -162,8 +176,12 @@ const BusManagement = () => {
                     {filteredBuses.map(bus => (
                         <div key={bus.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 group hover:shadow-blue-900/10 transition-all hover:-translate-y-1">
                             <div className="flex justify-between items-start mb-6">
-                                <div className="bg-blue-50 p-4 rounded-2xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner">
-                                    <Bus size={28} />
+                                <div className={`flex items-center justify-center rounded-2xl transition-all shadow-inner ${bus.photo_data ? 'w-16 h-16 p-0 overflow-hidden outline outline-2 outline-offset-2 outline-blue-100' : 'bg-blue-50 p-4 text-blue-600 group-hover:bg-blue-600 group-hover:text-white'}`}>
+                                    {bus.photo_data ? (
+                                        <img src={bus.photo_data} alt="driver" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <Bus size={28} />
+                                    )}
                                 </div>
                                 {!isViewer && (
                                     <div className="flex gap-2">
@@ -279,6 +297,25 @@ const BusManagement = () => {
                                     value={formData.driver_phone}
                                     onChange={(e) => setFormData({ ...formData, driver_phone: e.target.value })}
                                 />
+                            </div>
+
+                            <div className="space-y-4">
+                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Driver Photo / Bus Image (Optional)</label>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 rounded-2xl bg-white border-2 border-slate-100 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-inner">
+                                        {formData.photo_data ? (
+                                            <img src={formData.photo_data} alt="preview" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <User size={24} className="text-slate-300" />
+                                        )}
+                                    </div>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handlePhotoUpload}
+                                        className="w-full text-slate-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 transition-all cursor-pointer font-medium"
+                                    />
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
