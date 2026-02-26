@@ -5,7 +5,7 @@ import { Search, Filter, Edit2, Check, X, CreditCard, IndianRupee, RefreshCw } f
 
 const Fees = () => {
     const { user } = useAuth();
-    const canEditFees = ['admin', 'office'].includes(user?.role);
+    const canEditFees = ['admin', 'office', 'staff', 'hod', 'principal'].includes(user?.role);
     const isStudent = user?.role === 'student';
 
     // Default to 1st Year, A Section (Common default) - or maintain user selection
