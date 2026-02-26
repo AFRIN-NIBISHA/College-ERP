@@ -463,6 +463,15 @@ const createNotification = async (userId, title, message, type = 'info') => {
             return;
         }
 
+        const userRes = await db.query("SELECT role FROM users WHERE id = $1", [userId]);
+        if (userRes.rows.length > 0) {
+            const userRole = userRes.rows[0].role;
+            if (userRole === 'driver' && type !== 'bus' && type !== 'notice') {
+                console.log(`Skipping non-bus notification for driver ${userId}: ${title}`);
+                return;
+            }
+        }
+
         // 1. Save to Database
         await db.query(
             "INSERT INTO notifications (user_id, title, message, type) VALUES ($1, $2, $3, $4)",
