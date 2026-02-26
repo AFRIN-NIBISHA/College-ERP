@@ -234,6 +234,7 @@ const Fees = () => {
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Student Name</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Total Fee</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Paid</th>
+                                <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Scholarship</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100 hide-on-mobile">Balance</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100 hide-on-mobile">Last Payment</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Status</th>
@@ -243,7 +244,7 @@ const Fees = () => {
                         <tbody className="divide-y divide-slate-100 mobile-stack">
                             {filteredStudents.length === 0 ? (
                                 <tr>
-                                    <td colSpan="8" className="p-8 text-center text-slate-500 font-medium">
+                                    <td colSpan="9" className="p-8 text-center text-slate-500 font-medium">
                                         {loading ? "Loading..." : "No records found."}
                                     </td>
                                 </tr>
@@ -266,6 +267,7 @@ const Fees = () => {
                                             </td>
                                             <td className="p-4 text-slate-600 border-l-0 md:border-l border-slate-100" data-label="Total Fee"><span>₹{total.toLocaleString()}</span></td>
                                             <td className="p-4 text-emerald-600 font-bold border-l-0 md:border-l border-slate-100" data-label="Paid Amt"><span>₹{paid.toLocaleString()}</span></td>
+                                            <td className="p-4 text-indigo-600 font-bold border-l-0 md:border-l border-slate-100 text-xs" data-label="Scholarship"><span>{student.scholarship_type && student.scholarship_type !== 'None' ? (student.scholarship_type === 'Other' ? student.scholarship_details : student.scholarship_type) : '-'}</span></td>
                                             <td className="p-4 text-red-500 font-bold border-l-0 md:border-l border-slate-100 hide-on-mobile" data-label="Balance"><span>₹{balance > 0 ? balance.toLocaleString() : 0}</span></td>
                                             <td className="p-4 text-slate-500 text-xs border-l-0 md:border-l border-slate-100 hide-on-mobile" data-label="Date"><span>{student.payment_date ? new Date(student.payment_date).toLocaleDateString() : '-'}</span></td>
                                             <td className="p-4 border-l-0 md:border-l border-slate-100" data-label="Status">
