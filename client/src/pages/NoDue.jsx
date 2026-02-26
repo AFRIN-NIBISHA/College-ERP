@@ -481,9 +481,9 @@ const NoDue = () => {
 
                                                     {(req.scholarship_type && req.scholarship_type !== 'None') && (
                                                         <div className="border-t border-slate-100 pt-1 mt-1">
-                                                            <div className="flex justify-between">
+                                                            <div className="flex justify-between items-center">
                                                                 <span className="text-slate-500">Scholarship:</span>
-                                                                <span className="font-bold text-blue-600">
+                                                                <span className="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-[10px]">
                                                                     {req.scholarship_type === 'Other' ? req.scholarship_details : req.scholarship_type}
                                                                 </span>
                                                             </div>
