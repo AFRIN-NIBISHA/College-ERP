@@ -330,7 +330,7 @@ const Fees = () => {
                                             <input
                                                 type="number"
                                                 required
-                                                className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all text-sm"
+                                                className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all text-sm font-bold"
                                                 value={feeForm.total_fee}
                                                 onChange={e => setFeeForm({ ...feeForm, total_fee: e.target.value })}
                                             />
@@ -342,7 +342,7 @@ const Fees = () => {
                                             <IndianRupee size={12} className="absolute left-3 top-3.5 text-slate-400" />
                                             <input
                                                 type="number"
-                                                className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all text-sm"
+                                                className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all text-sm font-bold"
                                                 value={feeForm.bus_fee}
                                                 onChange={e => setFeeForm({ ...feeForm, bus_fee: e.target.value })}
                                             />
@@ -372,7 +372,7 @@ const Fees = () => {
                                             <IndianRupee size={12} className="absolute left-3 top-3.5 text-slate-400" />
                                             <input
                                                 type="number"
-                                                className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all text-sm"
+                                                className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all text-sm font-bold"
                                                 value={feeForm.scholarship_amount}
                                                 onChange={e => setFeeForm({ ...feeForm, scholarship_amount: e.target.value })}
                                             />
@@ -382,7 +382,7 @@ const Fees = () => {
 
                                 {feeForm.scholarship_type === 'Other' && (
                                     <div className="animate-in fade-in slide-in-from-top-2 duration-200">
-                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Details manually</label>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Scholarship Details</label>
                                         <input
                                             type="text"
                                             required
@@ -394,37 +394,59 @@ const Fees = () => {
                                     </div>
                                 )}
 
-                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Calculated Balance</p>
-                                        <div className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - (parseFloat(feeForm.scholarship_amount || 0) + parseFloat(feeForm.paid_amount || 0))) > 0 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                                            {((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - (parseFloat(feeForm.scholarship_amount || 0) + parseFloat(feeForm.paid_amount || 0))) > 0 ? 'Outstanding' : 'Cleared'}
-                                        </div>
-                                    </div>
-                                    <div className="flex items-end justify-between">
-                                        <div>
-                                            <p className="text-2xl font-black text-slate-800 tracking-tight">
-                                                ₹{Math.max(0, ((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - (parseFloat(feeForm.scholarship_amount || 0) + parseFloat(feeForm.paid_amount || 0)))).toLocaleString()}
-                                            </p>
-                                            <p className="text-[10px] text-slate-400 mt-1">Total Payable: ₹{(parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0) - parseFloat(feeForm.scholarship_amount || 0)).toLocaleString()}</p>
-                                        </div>
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - (parseFloat(feeForm.scholarship_amount || 0) + parseFloat(feeForm.paid_amount || 0))) > 0 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                                            {((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - (parseFloat(feeForm.scholarship_amount || 0) + parseFloat(feeForm.paid_amount || 0))) > 0 ? <RefreshCw size={20} /> : <Check size={20} />}
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <div>
-                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Paid Amount</label>
+                                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Paid Amount (Manual Entry)</label>
                                     <div className="relative">
-                                        <IndianRupee size={12} className="absolute left-3 top-3.5 text-slate-400" />
+                                        <IndianRupee size={12} className="absolute left-3 top-3.5 text-emerald-500" />
                                         <input
                                             type="number"
                                             required
-                                            className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all text-sm font-bold text-emerald-600"
+                                            className="w-full pl-8 pr-3 py-2.5 bg-emerald-50/30 border border-emerald-100 rounded-xl focus:border-emerald-500 outline-none transition-all text-sm font-bold text-emerald-700"
                                             value={feeForm.paid_amount}
                                             onChange={e => setFeeForm({ ...feeForm, paid_amount: e.target.value })}
                                         />
+                                    </div>
+                                </div>
+
+                                <div className="p-5 bg-slate-900 rounded-2xl shadow-inner overflow-hidden relative">
+                                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                                        <IndianRupee size={80} className="text-white" />
+                                    </div>
+
+                                    <div className="relative z-10 space-y-3">
+                                        <div className="flex justify-between items-center pb-2 border-b border-white/10">
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest Italies">Live Math Summary</p>
+                                            <div className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - (parseFloat(feeForm.scholarship_amount || 0) + parseFloat(feeForm.paid_amount || 0))) > 0 ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                                                {((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - (parseFloat(feeForm.scholarship_amount || 0) + parseFloat(feeForm.paid_amount || 0))) > 0 ? 'Outstanding' : 'Cleared ✅'}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <div className="flex justify-between text-xs text-slate-300">
+                                                <span>Academic + Bus:</span>
+                                                <span className="font-mono">₹{(parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)).toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between text-xs text-slate-400 italic">
+                                                <span>Scholarship Applied:</span>
+                                                <span className="font-mono">- ₹{parseFloat(feeForm.scholarship_amount || 0).toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between text-xs text-emerald-400 font-bold">
+                                                <span>Total Paid:</span>
+                                                <span className="font-mono">- ₹{parseFloat(feeForm.paid_amount || 0).toLocaleString()}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-2 mt-2 border-t border-white/20 flex justify-between items-end">
+                                            <div>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase">Automatic Balance</p>
+                                                <p className="text-3xl font-black text-white tracking-tighter">
+                                                    ₹{Math.max(0, ((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - (parseFloat(feeForm.scholarship_amount || 0) + parseFloat(feeForm.paid_amount || 0)))).toLocaleString()}
+                                                </p>
+                                            </div>
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - (parseFloat(feeForm.scholarship_amount || 0) + parseFloat(feeForm.paid_amount || 0))) > 0 ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'}`}>
+                                                {((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - (parseFloat(feeForm.scholarship_amount || 0) + parseFloat(feeForm.paid_amount || 0))) > 0 ? <RefreshCw size={18} className="animate-spin-slow" /> : <Check size={18} />}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
