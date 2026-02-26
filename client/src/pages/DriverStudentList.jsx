@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Search, User, Bus, Phone, Info, Milestone, GraduationCap, MapPin, Hash, CheckCircle } from 'lucide-react';
+import { Search, User, Bus, Phone, Info, Milestone, GraduationCap, MapPin, Hash, CheckCircle, Share2, FileDown } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
+import logoImg from '../assets/dmi_logo.png';
 
 const DriverStudentList = () => {
     const { user } = useAuth();
@@ -37,6 +40,59 @@ const DriverStudentList = () => {
         }
     };
 
+    const handleDownloadPDF = (share = false) => {
+        const doc = new jsPDF();
+        const busTitle = selectedBus === 'All' ? 'All Bus Routes' : `Bus Route: ${selectedBus}`;
+
+        // Header
+        doc.setFontSize(18);
+        doc.setTextColor(40);
+        doc.text('DMI Engineering College', 105, 15, { align: 'center' });
+        doc.setFontSize(12);
+        doc.text('Computer Science and Engineering - Transport List', 105, 22, { align: 'center' });
+        doc.line(20, 25, 190, 25);
+
+        doc.setFontSize(14);
+        doc.text(busTitle, 14, 35);
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 40);
+
+        const tableColumn = ["Roll No", "Student Name", "Bus Number", "Starting Point"];
+        const tableRows = filteredStudents.map(s => [
+            s.roll_no,
+            s.name,
+            s.bus_no,
+            s.bus_starting_point || 'N/A'
+        ]);
+
+        doc.autoTable({
+            head: [tableColumn],
+            body: tableRows,
+            startY: 45,
+            theme: 'grid',
+            headStyles: { fillColor: [59, 130, 246] }, // Blue-600 logic
+            margin: { top: 45 }
+        });
+
+        const fileName = `${busTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
+
+        if (share && navigator.share) {
+            const blob = doc.output('blob');
+            const file = new File([blob], fileName, { type: 'application/pdf' });
+            navigator.share({
+                title: busTitle,
+                text: `Student list for ${busTitle}`,
+                files: [file]
+            }).catch(err => {
+                console.error("Sharing failed", err);
+                doc.save(fileName);
+            });
+        } else {
+            doc.save(fileName);
+        }
+    };
+
     const filteredStudents = students.filter(s => {
         const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             s.roll_no.toLowerCase().includes(searchTerm.toLowerCase());
@@ -65,7 +121,25 @@ const DriverStudentList = () => {
                         </p>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => handleDownloadPDF(false)}
+                                className="p-4 bg-white hover:bg-slate-50 text-blue-600 rounded-3xl border border-slate-100 shadow-xl shadow-blue-900/5 group transition-all"
+                                title="Download PDF"
+                            >
+                                <FileDown size={24} className="group-hover:scale-110 transition-transform" />
+                            </button>
+                            <button
+                                onClick={() => handleDownloadPDF(true)}
+                                className="p-4 bg-blue-600 hover:bg-blue-500 text-white rounded-3xl shadow-xl shadow-blue-500/20 group transition-all flex items-center gap-2 pr-6"
+                                title="Share Route"
+                            >
+                                <Share2 size={24} className="group-hover:rotate-12 transition-transform" />
+                                <span className="font-bold underline">Share Route</span>
+                            </button>
+                        </div>
+
                         <div className="bg-white/80 p-4 rounded-3xl border border-slate-100 shadow-xl shadow-blue-900/5 flex items-center gap-4 min-w-[200px]">
                             <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
                                 <GraduationCap size={24} />
