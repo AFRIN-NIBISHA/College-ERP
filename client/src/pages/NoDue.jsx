@@ -305,22 +305,13 @@ const NoDue = () => {
                 const req = requests.find(r => r.id === id);
                 if (!req) continue;
 
-                if (role === 'office') {
+                if (role === 'office' || (role === 'admin' && req.office_status !== 'Approved')) {
                     await handleUpdate(id, 'office', 'Approved');
-                } else if (role === 'librarian') {
+                } else if (role === 'librarian' || (role === 'admin' && req.librarian_status !== 'Approved')) {
                     await handleUpdate(id, 'librarian', 'Approved');
-                } else if (role === 'hod') {
-                    await handleUpdate(id, 'hod', 'Approved');
-                } else if (role === 'principal') {
-                    await handleUpdate(id, 'principal', 'Approved');
-                } else if (role === 'staff') {
-                    // For staff, we need to approve ALL subjects assigned to this staff for this student
-                    const userName = user?.name?.trim().toLowerCase() || user?.username?.trim().toLowerCase();
-
-                    // Demo Mode
-                    const isDemo = ['admin', 'staff', 'hod', 'principal'].includes(user?.username?.toLowerCase());
-
+                } else if (role === 'staff' || (role === 'admin' && req.subjects && req.subjects.some(s => s.status === 'Pending'))) {
                     const mySubjects = req.subjects.filter(subject => {
+                        if (role === 'admin') return subject.status === 'Pending';
                         const userName = user?.name?.trim().toLowerCase() || user?.username?.trim().toLowerCase() || '';
                         const staffName = subject.staff_name?.trim().toLowerCase() || '';
 
@@ -335,9 +326,12 @@ const NoDue = () => {
                     });
 
                     for (const sub of mySubjects) {
-                        // Use derivedCode (which handles MANUAL fallback)
                         await handleUpdate(id, null, 'Approved', null, sub.derivedCode || sub.subject_code);
                     }
+                } else if (role === 'hod' || (role === 'admin' && req.hod_status !== 'Approved')) {
+                    await handleUpdate(id, 'hod', 'Approved');
+                } else if (role === 'principal' || (role === 'admin' && req.principal_status !== 'Approved')) {
+                    await handleUpdate(id, 'principal', 'Approved');
                 }
             }
             setSelectedRequests([]);
