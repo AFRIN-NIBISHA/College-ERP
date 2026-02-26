@@ -217,17 +217,19 @@ const DriverStudentList = () => {
                         <div className="flex gap-2">
                             <button
                                 onClick={() => handleDownloadPDF(false)}
-                                className="p-4 bg-white hover:bg-slate-50 text-blue-600 rounded-3xl border border-slate-100 shadow-xl shadow-blue-900/5 group transition-all"
+                                className="p-4 bg-white hover:bg-slate-50 text-blue-600 rounded-3xl border border-slate-100 shadow-xl shadow-blue-900/5 group transition-all flex items-center gap-2 pr-6"
                                 title="Download PDF"
                             >
                                 <FileDown size={24} />
+                                <span className="font-bold">PDF</span>
                             </button>
                             <button
                                 onClick={handleExportExcel}
-                                className="p-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-500/5 group transition-all"
+                                className="p-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-500/5 group transition-all flex items-center gap-2 pr-6"
                                 title="Export Excel"
                             >
-                                <Hash size={24} />
+                                <FileText size={20} className="text-emerald-500" />
+                                <span className="font-bold">Excel</span>
                             </button>
                             <button
                                 onClick={() => handleDownloadPDF(true)}
