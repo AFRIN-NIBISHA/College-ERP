@@ -99,6 +99,15 @@ const initDb = async () => {
             ALTER TABLE students ADD COLUMN IF NOT EXISTS bus_driver_phone VARCHAR(15);
             ALTER TABLE students ADD COLUMN IF NOT EXISTS bus_starting_point VARCHAR(255);
             ALTER TABLE students ADD COLUMN IF NOT EXISTS bus_ending_point VARCHAR(255);
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS father_name VARCHAR(100);
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS mother_name VARCHAR(100);
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS address TEXT;
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS blood_group VARCHAR(10);
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS religion VARCHAR(50);
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS caste VARCHAR(50);
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS nationality VARCHAR(50);
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS emis_no VARCHAR(50);
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS umis_no VARCHAR(50);
 
             ALTER TABLE staff ADD COLUMN IF NOT EXISTS bus_no VARCHAR(50);
             ALTER TABLE staff ADD COLUMN IF NOT EXISTS bus_driver_name VARCHAR(100);
