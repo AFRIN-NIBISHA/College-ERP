@@ -135,11 +135,14 @@ const DriverStudentList = () => {
 
         // Find the bus to update
         let busToUpdate = null;
-        if (user.role === 'admin') {
+        const userRole = user?.role;
+        const username = user?.username;
+
+        if (userRole === 'admin') {
             busToUpdate = buses.find(b => b.bus_number === selectedBus);
         } else {
             // For driver, try to find a bus they are assigned to
-            busToUpdate = buses.find(b => b.driver_name === user.username || b.bus_number === selectedBus);
+            busToUpdate = buses.find(b => b.driver_name === username || b.bus_number === selectedBus);
         }
 
         if (!busToUpdate && selectedBus === 'All') {
@@ -235,7 +238,7 @@ const DriverStudentList = () => {
                                 <span className="font-bold">Share</span>
                             </button>
 
-                            {(user.role === 'driver' || user.role === 'admin') && (
+                            {(user?.role === 'driver' || user?.role === 'admin') && (
                                 <>
                                     <input
                                         type="file"
@@ -246,7 +249,7 @@ const DriverStudentList = () => {
                                     />
                                     <label
                                         htmlFor="manual-route-upload"
-                                        className={`p-4 ${uploading ? 'bg-slate-100' : 'bg-indigo-600 hover:bg-indigo-500'} text-white rounded-3xl shadow-xl shadow-indigo-500/20 group transition-all flex items-center gap-2 pr-6 cursor-pointer`}
+                                        className={`p-4 ${uploading ? 'bg-slate-100 text-slate-400' : 'bg-indigo-600 text-white hover:bg-indigo-500'} rounded-3xl shadow-xl shadow-indigo-500/20 group transition-all flex items-center gap-2 pr-6 cursor-pointer`}
                                     >
                                         <FileDown size={24} />
                                         <span className="font-bold">{uploading ? 'Uploading...' : 'Upload Route'}</span>
@@ -259,7 +262,7 @@ const DriverStudentList = () => {
                                 className="p-4 bg-slate-800 hover:bg-slate-700 text-white rounded-3xl shadow-xl shadow-slate-900/20 group transition-all flex items-center gap-2 pr-6"
                             >
                                 <Milestone size={24} />
-                                <span className="font-bold">View Route</span>
+                                <span className="font-bold text-sm">View Route</span>
                             </button>
                         </div>
 
