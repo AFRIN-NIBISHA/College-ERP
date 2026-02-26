@@ -255,15 +255,22 @@ const initDb = async () => {
             ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
             ALTER TABLE attendance ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
             ALTER TABLE no_dues ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
-            ALTER TABLE fees ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
-            ALTER TABLE fees ADD COLUMN IF NOT EXISTS scholarship_type VARCHAR(100);
-            ALTER TABLE fees ADD COLUMN IF NOT EXISTS scholarship_details TEXT;
-            ALTER TABLE student_od ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
+            -- Update existing null academic years to default if they exist
+            UPDATE fees SET academic_year = '2025-2026' WHERE academic_year IS NULL;
+            UPDATE students SET academic_year = '2025-2026' WHERE academic_year IS NULL;
+            UPDATE internal_marks SET academic_year = '2025-2026' WHERE academic_year IS NULL;
+            UPDATE no_dues SET academic_year = '2025-2026' WHERE academic_year IS NULL;
+
+            -- Ensure scholarship columns are text for safety
+            ALTER TABLE fees ALTER COLUMN scholarship_type TYPE VARCHAR(100);
+            ALTER TABLE fees ALTER COLUMN scholarship_details TYPE TEXT;
 
             -- Ensure Fee Naming Consistency safely
             DO $$ 
             BEGIN 
-                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='fees' AND column_name='total_amount') THEN
+                -- If total_fee doesn't exist but total_amount does, rename it
+                IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'fees' AND column_name = 'total_amount') 
+                   AND NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'fees' AND column_name = 'total_fee') THEN
                     ALTER TABLE fees RENAME COLUMN total_amount TO total_fee;
                 END IF;
             END $$;
@@ -707,7 +714,7 @@ app.get('/api/fees', async (req, res) => {
                    f.payment_date, f.payment_mode, f.receipt_no,
                    f.scholarship_type, f.scholarship_details
             FROM students s
-            LEFT JOIN fees f ON s.id = f.student_id
+            LEFT JOIN fees f ON s.id = f.student_id AND (f.academic_year = (SELECT value FROM settings WHERE key = 'current_academic_year' LIMIT 1) OR f.academic_year IS NULL)
             WHERE 1=1
         `;
         const params = [];
@@ -736,22 +743,29 @@ app.get('/api/fees', async (req, res) => {
 app.post('/api/fees', async (req, res) => {
     const { student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details } = req.body;
     try {
-        const check = await db.query("SELECT * FROM fees WHERE student_id = $1", [student_id]);
+        const academicYear = await getCurrentYear();
+
+        // Find existing record for THIS year OR any legacy record for this student
+        const check = await db.query(
+            "SELECT * FROM fees WHERE student_id = $1 AND (academic_year = $2 OR academic_year IS NULL) LIMIT 1",
+            [student_id, academicYear]
+        );
 
         if (check.rows.length > 0) {
             await db.query(
                 `UPDATE fees SET 
                     total_fee = $1, paid_amount = $2, payment_date = $3, 
                     payment_mode = $4, receipt_no = $5, status = $6,
-                    scholarship_type = $8, scholarship_details = $9
-                WHERE student_id = $7`,
-                [total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, student_id, scholarship_type, scholarship_details]
+                    scholarship_type = $8, scholarship_details = $9,
+                    academic_year = $10
+                WHERE id = $7`,
+                [total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, check.rows[0].id, scholarship_type, scholarship_details, academicYear]
             );
         } else {
             await db.query(
-                `INSERT INTO fees (student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-                [student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details]
+                `INSERT INTO fees (student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details, academic_year)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+                [student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details, academicYear]
             );
         }
         res.json({ message: "Fee record updated" });
@@ -3172,8 +3186,10 @@ app.get(/.*/, (req, res) => {
     res.sendFile(path.join(clientBuildPath, 'index.html'));
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`Server running on port ${PORT}`);
+    // Initialize DB tables and migrations on startup
+    await initDb();
 });
 
 

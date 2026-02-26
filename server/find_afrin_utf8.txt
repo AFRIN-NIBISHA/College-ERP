@@ -1,0 +1,5 @@
+[dotenv@17.2.3] injecting env (10) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+Connected to the PostgreSQL database
+STUDENT_ID: [{"id":422,"name":"Afrin Nibisha"}]
+FEE_RECORDS: [{"id":25,"student_id":422,"total_fee":"50000.00","paid_amount":"0.00","payment_date":null,"payment_mode":null,"receipt_no":null,"status":"Pending","scholarship_type":null,"scholarship_details":null}]
+ND_RECORDS: [{"id":14,"student_id":422,"semester":6,"office_status":"Approved","staff_status":"Pending","hod_status":"Pending","status":"Pending","created_at":"2026-02-08T14:30:12.971Z","remarks":null,"principal_status":"Pending","ccs336_status":"Pending","ccs337_status":"Pending","ccs338_status":"Pending","ccs354_status":"Pending","ccs356_status":"Pending","cs3491_status":"Pending","nm001_status":"Pending","nm002_status":"Pending","obt352_status":"Pending","ss001_status":"Pending","nm_status":"Pending","ccs336_sta_status":"Approved","ccs354_lab_status":"Pending","ccs356_lab_status":"Pending","softskill_status":"Pending","cs3691_lab_status":"Pending"}]
