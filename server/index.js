@@ -275,6 +275,7 @@ const initDb = async () => {
                 END IF;
             END $$;
             ALTER TABLE fees ADD COLUMN IF NOT EXISTS total_fee DECIMAL(10, 2) DEFAULT 0;
+            ALTER TABLE fees ADD COLUMN IF NOT EXISTS bus_fee DECIMAL(10, 2) DEFAULT 0;
 
             -- Ensure No Due Constraints
             ALTER TABLE no_dues DROP CONSTRAINT IF EXISTS no_dues_student_id_semester_key;
@@ -708,8 +709,7 @@ app.get('/api/fees', async (req, res) => {
     try {
         let query = `
             SELECT s.id as student_id, s.name, s.roll_no, s.department, s.year, s.section, 
-                   COALESCE(f.total_fee, 50000) as total_fee, 
-                   COALESCE(f.paid_amount, 0) as paid_amount, 
+                   f.total_fee, f.paid_amount, f.bus_fee, 
                    COALESCE(f.status, 'Pending') as status,
                    f.payment_date, f.payment_mode, f.receipt_no,
                    f.scholarship_type, f.scholarship_details
@@ -741,7 +741,7 @@ app.get('/api/fees', async (req, res) => {
 });
 
 app.post('/api/fees', async (req, res) => {
-    const { student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details } = req.body;
+    const { student_id, total_fee, paid_amount, bus_fee, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details } = req.body;
     try {
         const academicYear = await getCurrentYear();
 
@@ -757,15 +757,15 @@ app.post('/api/fees', async (req, res) => {
                     total_fee = $1, paid_amount = $2, payment_date = $3, 
                     payment_mode = $4, receipt_no = $5, status = $6,
                     scholarship_type = $8, scholarship_details = $9,
-                    academic_year = $10
+                    academic_year = $10, bus_fee = $11
                 WHERE id = $7`,
-                [total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, check.rows[0].id, scholarship_type, scholarship_details, academicYear]
+                [total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, check.rows[0].id, scholarship_type, scholarship_details, academicYear, bus_fee]
             );
         } else {
             await db.query(
-                `INSERT INTO fees (student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details, academic_year)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-                [student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details, academicYear]
+                `INSERT INTO fees (student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details, academic_year, bus_fee)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+                [student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details, academicYear, bus_fee]
             );
         }
         res.json({ message: "Fee record updated" });

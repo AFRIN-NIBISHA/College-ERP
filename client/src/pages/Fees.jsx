@@ -28,7 +28,8 @@ const Fees = () => {
         receipt_no: '',
         status: 'Pending',
         scholarship_type: 'None',
-        scholarship_details: ''
+        scholarship_details: '',
+        bus_fee: ''
     });
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
@@ -66,9 +67,10 @@ const Fees = () => {
                     ...student,
                     id: student.id,
                     name: student.name,
-                    total_fee: feeRecord.total_fee || '50000',
+                    total_fee: feeRecord.total_fee || '0',
                     paid_amount: feeRecord.paid_amount || '0',
-                    status: feeRecord.status || (parseFloat(feeRecord.paid_amount) >= parseFloat(feeRecord.total_fee) && feeRecord.total_fee > 0 ? 'Paid' : 'Pending')
+                    bus_fee: feeRecord.bus_fee || '0',
+                    status: feeRecord.status || ((parseFloat(feeRecord.paid_amount) >= (parseFloat(feeRecord.total_fee || 0) + parseFloat(feeRecord.bus_fee || 0))) && (parseFloat(feeRecord.total_fee) + parseFloat(feeRecord.bus_fee)) > 0 ? 'Paid' : 'Pending')
                 };
             });
 
@@ -90,7 +92,8 @@ const Fees = () => {
             receipt_no: student.receipt_no || '',
             status: student.status || 'Pending',
             scholarship_type: student.scholarship_type || 'None',
-            scholarship_details: student.scholarship_details || ''
+            scholarship_details: student.scholarship_details || '',
+            bus_fee: student.bus_fee || '0'
         });
     };
 
@@ -100,7 +103,7 @@ const Fees = () => {
             const payload = {
                 student_id: editingStudent.id,
                 ...feeForm,
-                status: parseFloat(feeForm.paid_amount) >= parseFloat(feeForm.total_fee) ? 'Paid' : 'Pending'
+                status: parseFloat(feeForm.paid_amount) >= (parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) ? 'Paid' : 'Pending'
             };
 
             await axios.post('/api/fees', payload);
@@ -234,6 +237,7 @@ const Fees = () => {
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Student Name</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Total Fee</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Paid</th>
+                                <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Bus Fee</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100">Scholarship</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100 hide-on-mobile">Balance</th>
                                 <th className="p-4 font-bold text-slate-600 uppercase text-[10px] tracking-wider border-l border-slate-100 hide-on-mobile">Last Payment</th>
@@ -251,9 +255,10 @@ const Fees = () => {
                             ) : (
                                 filteredStudents.map(student => {
                                     const total = parseFloat(student.total_fee || 0);
+                                    const bus = parseFloat(student.bus_fee || 0);
                                     const paid = parseFloat(student.paid_amount || 0);
-                                    const balance = total - paid;
-                                    const isPaid = paid >= total && total > 0;
+                                    const balance = (total + bus) - paid;
+                                    const isPaid = paid >= (total + bus) && (total + bus) > 0;
 
                                     return (
                                         <tr key={student.id} className="hover:bg-slate-50/50 transition-colors group">
@@ -266,6 +271,7 @@ const Fees = () => {
                                                 <span>{student.name}</span>
                                             </td>
                                             <td className="p-4 text-slate-600 border-l-0 md:border-l border-slate-100" data-label="Total Fee"><span>₹{total.toLocaleString()}</span></td>
+                                            <td className="p-4 text-blue-600 font-bold border-l-0 md:border-l border-slate-100" data-label="Bus Fee"><span>₹{bus.toLocaleString()}</span></td>
                                             <td className="p-4 text-emerald-600 font-bold border-l-0 md:border-l border-slate-100" data-label="Paid Amt"><span>₹{paid.toLocaleString()}</span></td>
                                             <td className="p-4 text-indigo-600 font-bold border-l-0 md:border-l border-slate-100 text-xs" data-label="Scholarship"><span>{student.scholarship_type && student.scholarship_type !== 'None' ? (student.scholarship_type === 'Other' ? student.scholarship_details : student.scholarship_type) : '-'}</span></td>
                                             <td className="p-4 text-red-500 font-bold border-l-0 md:border-l border-slate-100 hide-on-mobile" data-label="Balance"><span>₹{balance > 0 ? balance.toLocaleString() : 0}</span></td>
@@ -325,6 +331,20 @@ const Fees = () => {
                                 </div>
 
                                 <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-1">Bus Fee Amount</label>
+                                    <div className="relative">
+                                        <IndianRupee size={16} className="absolute left-3 top-3.5 text-slate-400" />
+                                        <input
+                                            type="number"
+                                            required
+                                            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all"
+                                            value={feeForm.bus_fee}
+                                            onChange={e => setFeeForm({ ...feeForm, bus_fee: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-1">Paid Amount</label>
                                     <div className="relative">
                                         <IndianRupee size={16} className="absolute left-3 top-3.5 text-slate-400" />
@@ -341,14 +361,14 @@ const Fees = () => {
                                 <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
                                     <div>
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Payment Status</p>
-                                        <p className={`text-lg font-extrabold ${parseFloat(feeForm.total_fee || 0) - parseFloat(feeForm.paid_amount || 0) > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
-                                            {parseFloat(feeForm.total_fee || 0) - parseFloat(feeForm.paid_amount || 0) > 0
-                                                ? `Next Payment: ₹${(parseFloat(feeForm.total_fee || 0) - parseFloat(feeForm.paid_amount || 0)).toLocaleString()}`
+                                        <p className={`text-lg font-extrabold ${((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - parseFloat(feeForm.paid_amount || 0)) > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                                            {((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - parseFloat(feeForm.paid_amount || 0)) > 0
+                                                ? `Next Payment: ₹${((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - parseFloat(feeForm.paid_amount || 0)).toLocaleString()}`
                                                 : 'Status: Completed'}
                                         </p>
                                     </div>
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${parseFloat(feeForm.total_fee || 0) - parseFloat(feeForm.paid_amount || 0) > 0 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
-                                        {parseFloat(feeForm.total_fee || 0) - parseFloat(feeForm.paid_amount || 0) > 0 ? <RefreshCw size={20} /> : <Check size={20} />}
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - parseFloat(feeForm.paid_amount || 0)) > 0 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                        {((parseFloat(feeForm.total_fee || 0) + parseFloat(feeForm.bus_fee || 0)) - parseFloat(feeForm.paid_amount || 0)) > 0 ? <RefreshCw size={20} /> : <Check size={20} />}
                                     </div>
                                 </div>
 
