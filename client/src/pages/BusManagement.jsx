@@ -191,13 +191,8 @@ const BusManagement = () => {
                 alternateRowStyles: { fillColor: [245, 247, 250] }
             });
 
-            // Calculate Y safely for signatures
-            let finalY = 180;
-            if (doc.lastAutoTable && doc.lastAutoTable.finalY) {
-                finalY = doc.lastAutoTable.finalY + 30;
-            } else if (doc.autoTable && doc.autoTable.previous && doc.autoTable.previous.finalY) {
-                finalY = doc.autoTable.previous.finalY + 30;
-            }
+            // Safe Y calculation for signatures
+            const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 30 : 200;
 
             doc.setFontSize(10);
             doc.text('Transport In-charge Signature', 14, finalY);
@@ -206,35 +201,30 @@ const BusManagement = () => {
             const safeBusNum = (bus.bus_number || 'bus').replace(/[^a-z0-9]/gi, '_');
             const fileName = `${safeBusNum}_route.pdf`;
 
-            if (directShare && navigator.share && navigator.canShare) {
+            if (directShare && navigator.share) {
                 const blob = doc.output('blob');
                 const file = new File([blob], fileName, { type: 'application/pdf' });
 
-                if (navigator.canShare({ files: [file] })) {
-                    navigator.share({
-                        title: `${bus.bus_number} Route`,
-                        text: `Bus details for ${bus.bus_number}`,
-                        files: [file]
-                    }).catch(err => {
-                        console.error("Share failed, saving instead", err);
-                        doc.save(fileName);
-                    });
-                } else {
+                navigator.share({
+                    title: `${bus.bus_number} Route`,
+                    text: `Bus details for ${bus.bus_number}`,
+                    files: [file]
+                }).catch(err => {
+                    console.error("Share failed", err);
                     doc.save(fileName);
-                }
+                });
             } else {
                 doc.save(fileName);
             }
         } catch (err) {
-            console.error("PDF generation failed:", err);
-            alert("PDF generation failed. We will try to download it directly.");
+            console.error("PDF Failed:", err);
+            alert("Error: " + err.message);
+            // Fallback
             try {
                 const docSimple = new jsPDF();
                 docSimple.text(`Bus: ${bus.bus_number}`, 10, 10);
                 docSimple.save('bus_info_fallback.pdf');
-            } catch (e) {
-                alert("Critical error. Please refresh the page.");
-            }
+            } catch (e) { }
         }
     };
 
@@ -361,16 +351,29 @@ const BusManagement = () => {
                                             <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Reg No</span>
                                             <span className="font-bold text-blue-700 tracking-tight text-xs">{bus.registration_number}</span>
                                         </div>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleShareBusInfo(bus);
-                                            }}
-                                            className="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all flex items-center gap-1 text-[10px] font-bold"
-                                        >
-                                            <Share2 size={14} />
-                                            Share
-                                        </button>
+                                        <div className="flex gap-1">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleShareBusInfo(bus, true);
+                                                }}
+                                                className="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all flex items-center gap-1 text-[10px] font-bold"
+                                                title="Share via Mobile"
+                                            >
+                                                <Share2 size={14} />
+                                                Share
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleShareBusInfo(bus, false);
+                                                }}
+                                                className="p-2 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-200 transition-all flex items-center"
+                                                title="Download PDF"
+                                            >
+                                                <FileDown size={14} />
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </div>
