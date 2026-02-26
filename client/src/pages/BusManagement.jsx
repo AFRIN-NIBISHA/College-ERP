@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Bus, User, Phone, Plus, Edit2, Trash2, X, Check, Search, AlertCircle, RefreshCw } from 'lucide-react';
+import { Bus, User, Phone, Plus, Edit2, Trash2, X, Check, Search, AlertCircle, RefreshCw, Share2, FileDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 import Cropper from 'react-easy-crop';
 import getCroppedImg from '../utils/cropImage';
 
@@ -147,6 +149,70 @@ const BusManagement = () => {
         }
     };
 
+    const handleShareBusInfo = (bus) => {
+        const doc = new jsPDF();
+
+        // Header
+        doc.setFontSize(22);
+        doc.setTextColor(44, 62, 80);
+        doc.text('DMI ENGINEERING COLLEGE', 105, 20, { align: 'center' });
+        doc.setFontSize(14);
+        doc.text('Computer Science and Engineering - Transport Portal', 105, 28, { align: 'center' });
+        doc.setLineWidth(0.5);
+        doc.line(20, 32, 190, 32);
+
+        // Body Info
+        doc.setFontSize(16);
+        doc.setTextColor(59, 130, 246);
+        doc.text(`Official Document: ${bus.bus_number}`, 14, 45);
+
+        doc.setFontSize(12);
+        doc.setTextColor(50);
+
+        const details = [
+            ["Attribute", "Information"],
+            ["Bus Number", bus.bus_number],
+            ["Registration No", bus.registration_number || 'N/A'],
+            ["Driver Name", bus.driver_name],
+            ["Driver Contact", bus.driver_phone || 'N/A'],
+            ["Starting Point", bus.starting_point || 'N/A'],
+            ["Ending Point", bus.ending_point || 'N/A'],
+            ["Generation Date", new Date().toLocaleString()]
+        ];
+
+        doc.autoTable({
+            startY: 55,
+            head: [details[0]],
+            body: details.slice(1),
+            theme: 'grid',
+            headStyles: { fillColor: [59, 130, 246], fontStyle: 'bold' },
+            bodyStyles: { textColor: [50, 50, 50] },
+            alternateRowStyles: { fillColor: [245, 247, 250] }
+        });
+
+        // Signatures Placeholder
+        const finalY = (doc).lastAutoTable.cursor.y + 30;
+        doc.text('Transport In-charge Signature', 14, finalY);
+        doc.text('HOD/Principal Signature', 140, finalY);
+
+        const fileName = `${bus.bus_number.replace(/\s+/g, '_')}_details.pdf`;
+
+        if (navigator.share) {
+            const blob = doc.output('blob');
+            const file = new File([blob], fileName, { type: 'application/pdf' });
+            navigator.share({
+                title: `${bus.bus_number} Route Info`,
+                text: `Transport details for ${bus.bus_number} - ${bus.registration_number}`,
+                files: [file]
+            }).catch(err => {
+                console.error("Share failed", err);
+                doc.save(fileName);
+            });
+        } else {
+            doc.save(fileName);
+        }
+    };
+
     const filteredBuses = buses.filter(bus =>
         (bus.bus_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (bus.driver_name || '').toLowerCase().includes(searchTerm.toLowerCase())
@@ -266,10 +332,20 @@ const BusManagement = () => {
                                         <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-blue-600">
                                             <Check size={18} />
                                         </div>
-                                        <div className="flex flex-col">
+                                        <div className="flex flex-col flex-1">
                                             <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Reg No</span>
                                             <span className="font-bold text-blue-700 tracking-tight text-xs">{bus.registration_number}</span>
                                         </div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleShareBusInfo(bus);
+                                            }}
+                                            className="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all flex items-center gap-1 text-[10px] font-bold"
+                                        >
+                                            <Share2 size={14} />
+                                            Share
+                                        </button>
                                     </div>
                                 )}
                             </div>
