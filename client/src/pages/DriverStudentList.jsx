@@ -4,7 +4,6 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
-import logoImg from '../assets/dmi_logo.png';
 
 const DriverStudentList = () => {
     const { user } = useAuth();
@@ -71,24 +70,29 @@ const DriverStudentList = () => {
             body: tableRows,
             startY: 45,
             theme: 'grid',
-            headStyles: { fillColor: [59, 130, 246] }, // Blue-600 logic
+            headStyles: { fillColor: [59, 130, 246] },
             margin: { top: 45 }
         });
 
         const fileName = `${busTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf`;
 
-        if (share && navigator.share) {
-            const blob = doc.output('blob');
-            const file = new File([blob], fileName, { type: 'application/pdf' });
-            navigator.share({
-                title: busTitle,
-                text: `Student list for ${busTitle}`,
-                files: [file]
-            }).catch(err => {
-                console.error("Sharing failed", err);
+        try {
+            if (share && navigator.share) {
+                const blob = doc.output('blob');
+                const file = new File([blob], fileName, { type: 'application/pdf' });
+                navigator.share({
+                    title: busTitle,
+                    text: `Student list for ${busTitle}`,
+                    files: [file]
+                }).catch(err => {
+                    console.error("Sharing failed", err);
+                    doc.save(fileName);
+                });
+            } else {
                 doc.save(fileName);
-            });
-        } else {
+            }
+        } catch (err) {
+            console.error("PDF delivery failed", err);
             doc.save(fileName);
         }
     };
@@ -97,7 +101,7 @@ const DriverStudentList = () => {
         const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             s.roll_no.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesBus = selectedBus === 'All' || s.bus_no === selectedBus;
-        return matchesSearch && matchesBus && s.bus_no; // Only show students with a bus assigned
+        return matchesSearch && matchesBus && s.bus_no;
     });
 
     return (
