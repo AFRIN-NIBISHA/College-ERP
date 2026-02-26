@@ -43,14 +43,25 @@ const initDb = async () => {
                 id SERIAL PRIMARY KEY,
                 username VARCHAR(50) UNIQUE NOT NULL,
                 password VARCHAR(255) NOT NULL,
-                role VARCHAR(20) CHECK (role IN ('admin', 'staff', 'student', 'hod', 'principal', 'office', 'librarian')) NOT NULL,
+                role VARCHAR(20) NOT NULL,
                 is_setup BOOLEAN DEFAULT FALSE
             );
+            
+            -- Ensure role check exists with new roles
+            ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
+            ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'staff', 'student', 'hod', 'principal', 'office', 'librarian', 'driver'));
+
             CREATE TABLE IF NOT EXISTS settings (
                 key VARCHAR(50) PRIMARY KEY,
                 value TEXT NOT NULL
             );
             INSERT INTO settings (key, value) VALUES ('current_academic_year', '2025-2026') ON CONFLICT (key) DO NOTHING;
+            
+            -- Initialize Default Driver Account
+            INSERT INTO users (username, password, role, is_setup) 
+            VALUES ('DMI drivers', 'dmidriver@', 'driver', TRUE) 
+            ON CONFLICT (username) DO NOTHING;
+
             CREATE TABLE IF NOT EXISTS students (
                 id SERIAL PRIMARY KEY,
                 user_id INT REFERENCES users(id) ON DELETE CASCADE,
@@ -965,6 +976,20 @@ app.get('/api/students', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Specialized endpoint for Drivers - Limited fields for privacy
+app.get('/api/students/bus-list', async (req, res) => {
+    try {
+        // Only return name, roll_no, bus_no, and starting_point
+        const result = await db.query(
+            "SELECT id, name, roll_no, bus_no, bus_starting_point FROM students WHERE bus_no IS NOT NULL AND bus_no != '' ORDER BY bus_no, roll_no"
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error("Error fetching student bus list:", err);
         res.status(500).json({ message: 'Server error' });
     }
 });

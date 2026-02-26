@@ -130,6 +130,12 @@ const Sidebar = ({ isOpen, onClose }) => {
             { icon: BarChart, label: 'Reports', path: '/reports' },
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],
+        driver: [
+            { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+            { icon: Users, label: 'Student Bus List', path: '/driver-students' },
+            { icon: Settings, label: 'Bus Management', path: '/bus-management' },
+            { icon: Bell, label: 'Notices', path: '/notices' },
+        ],
     };
 
     const currentRole = user?.role || 'student';

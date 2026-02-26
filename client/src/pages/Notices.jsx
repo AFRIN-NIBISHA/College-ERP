@@ -10,8 +10,8 @@ const Notices = () => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [formData, setFormData] = useState({ title: '', content: '' });
 
-    // Check if user is staff or admin
-    const canManage = user?.role === 'staff' || user?.role === 'admin';
+    // Check if user is staff or admin OR driver
+    const canManage = user?.role === 'staff' || user?.role === 'admin' || user?.role === 'driver';
 
     useEffect(() => {
         fetchNotices();
