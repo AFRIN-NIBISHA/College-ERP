@@ -13,6 +13,7 @@ const DriverStudentList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedBus, setSelectedBus] = useState('All');
     const [buses, setBuses] = useState([]);
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -124,6 +125,63 @@ const DriverStudentList = () => {
         XLSX.writeFile(workbook, `student_bus_list_${selectedBus}.xlsx`);
     };
 
+    const handleUploadRoutePdf = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+            alert("File is too large! Max size is 2MB.");
+            return;
+        }
+
+        // Find the bus to update
+        let busToUpdate = null;
+        if (user.role === 'admin') {
+            busToUpdate = buses.find(b => b.bus_number === selectedBus);
+        } else {
+            // For driver, try to find a bus they are assigned to
+            busToUpdate = buses.find(b => b.driver_name === user.username || b.bus_number === selectedBus);
+        }
+
+        if (!busToUpdate && selectedBus === 'All') {
+            alert("Please select a specific bus from the dropdown first.");
+            return;
+        }
+
+        if (!busToUpdate) {
+            alert("Could not identify the bus record to update.");
+            return;
+        }
+
+        setUploading(true);
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            try {
+                await axios.put(`/api/bus/${busToUpdate.id}`, {
+                    ...busToUpdate,
+                    route_pdf: reader.result
+                });
+                alert("Route Map Uploaded Successfully!");
+                fetchBuses();
+            } catch (err) {
+                console.error("Upload failed", err);
+                alert("Upload failed. Please try again.");
+            } finally {
+                setUploading(false);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleViewRouteMap = () => {
+        const bus = buses.find(b => b.bus_number === (selectedBus === 'All' ? students[0]?.bus_no : selectedBus));
+        if (bus && bus.route_pdf) {
+            const win = window.open();
+            win.document.write('<iframe src="' + bus.route_pdf + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+        } else {
+            alert("No manual route map uploaded yet.");
+        }
+    };
+
     const filteredStudents = students.filter(s => {
         const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             s.roll_no.toLowerCase().includes(searchTerm.toLowerCase());
@@ -175,6 +233,33 @@ const DriverStudentList = () => {
                             >
                                 <Share2 size={24} />
                                 <span className="font-bold">Share</span>
+                            </button>
+
+                            {(user.role === 'driver' || user.role === 'admin') && (
+                                <>
+                                    <input
+                                        type="file"
+                                        accept="application/pdf"
+                                        id="manual-route-upload"
+                                        className="hidden"
+                                        onChange={handleUploadRoutePdf}
+                                    />
+                                    <label
+                                        htmlFor="manual-route-upload"
+                                        className={`p-4 ${uploading ? 'bg-slate-100' : 'bg-indigo-600 hover:bg-indigo-500'} text-white rounded-3xl shadow-xl shadow-indigo-500/20 group transition-all flex items-center gap-2 pr-6 cursor-pointer`}
+                                    >
+                                        <FileDown size={24} />
+                                        <span className="font-bold">{uploading ? 'Uploading...' : 'Upload Route'}</span>
+                                    </label>
+                                </>
+                            )}
+
+                            <button
+                                onClick={handleViewRouteMap}
+                                className="p-4 bg-slate-800 hover:bg-slate-700 text-white rounded-3xl shadow-xl shadow-slate-900/20 group transition-all flex items-center gap-2 pr-6"
+                            >
+                                <Milestone size={24} />
+                                <span className="font-bold">View Route</span>
                             </button>
                         </div>
 
