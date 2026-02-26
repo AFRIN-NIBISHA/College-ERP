@@ -1851,7 +1851,6 @@ app.get('/api/no-due', async (req, res) => {
             FROM students s
             LEFT JOIN no_dues nd ON s.id = nd.student_id
             LEFT JOIN fees f ON s.id = f.student_id AND f.academic_year = (SELECT value FROM settings WHERE key = 'current_academic_year' LIMIT 1)
-            f.scholarship_amount,
             WHERE 1=1
         `;
         const params = [];
