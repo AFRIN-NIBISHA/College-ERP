@@ -126,24 +126,6 @@ const DriverStudentList = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-center gap-4">
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => handleDownloadPDF(false)}
-                                className="p-4 bg-white hover:bg-slate-50 text-blue-600 rounded-3xl border border-slate-100 shadow-xl shadow-blue-900/5 group transition-all"
-                                title="Download PDF"
-                            >
-                                <FileDown size={24} className="group-hover:scale-110 transition-transform" />
-                            </button>
-                            <button
-                                onClick={() => handleDownloadPDF(true)}
-                                className="p-4 bg-blue-600 hover:bg-blue-500 text-white rounded-3xl shadow-xl shadow-blue-500/20 group transition-all flex items-center gap-2 pr-6"
-                                title="Share Route"
-                            >
-                                <Share2 size={24} className="group-hover:rotate-12 transition-transform" />
-                                <span className="font-bold underline">Share Route</span>
-                            </button>
-                        </div>
-
                         <div className="bg-white/80 p-4 rounded-3xl border border-slate-100 shadow-xl shadow-blue-900/5 flex items-center gap-4 min-w-[200px]">
                             <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
                                 <GraduationCap size={24} />

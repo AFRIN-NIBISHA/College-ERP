@@ -468,6 +468,17 @@ const BusManagement = () => {
                                 </div>
                             </div>
 
+                            {editingBus && (
+                                <button
+                                    type="button"
+                                    onClick={() => handleShareBusInfo({ ...editingBus, ...formData })}
+                                    className="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 font-black py-4 rounded-2xl border-2 border-dashed border-blue-200 transition-all flex items-center justify-center gap-3 group"
+                                >
+                                    <Share2 size={20} className="group-hover:rotate-12 transition-all" />
+                                    SHARE ROUTE PDF
+                                </button>
+                            )}
+
                             {error && (
                                 <div className="p-5 bg-red-50 text-red-600 text-sm font-bold rounded-2xl border border-red-100 flex items-center gap-3 animate-in shake duration-300">
                                     <AlertCircle size={20} className="shrink-0" />
