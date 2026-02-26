@@ -150,66 +150,77 @@ const BusManagement = () => {
     };
 
     const handleShareBusInfo = (bus) => {
-        const doc = new jsPDF();
+        try {
+            const doc = new jsPDF();
 
-        // Header
-        doc.setFontSize(22);
-        doc.setTextColor(44, 62, 80);
-        doc.text('DMI ENGINEERING COLLEGE', 105, 20, { align: 'center' });
-        doc.setFontSize(14);
-        doc.text('Computer Science and Engineering - Transport Portal', 105, 28, { align: 'center' });
-        doc.setLineWidth(0.5);
-        doc.line(20, 32, 190, 32);
+            // Header
+            doc.setFontSize(22);
+            doc.setTextColor(44, 62, 80);
+            doc.text('DMI ENGINEERING COLLEGE', 105, 20, { align: 'center' });
+            doc.setFontSize(14);
+            doc.text('Computer Science and Engineering - Transport Portal', 105, 28, { align: 'center' });
+            doc.setLineWidth(0.5);
+            doc.line(20, 32, 190, 32);
 
-        // Body Info
-        doc.setFontSize(16);
-        doc.setTextColor(59, 130, 246);
-        doc.text(`Official Document: ${bus.bus_number}`, 14, 45);
+            // Body Info
+            doc.setFontSize(16);
+            doc.setTextColor(59, 130, 246);
+            doc.text(`Official Document: ${bus.bus_number}`, 14, 45);
 
-        doc.setFontSize(12);
-        doc.setTextColor(50);
+            doc.setFontSize(12);
+            doc.setTextColor(50);
 
-        const details = [
-            ["Attribute", "Information"],
-            ["Bus Number", bus.bus_number],
-            ["Registration No", bus.registration_number || 'N/A'],
-            ["Driver Name", bus.driver_name],
-            ["Driver Contact", bus.driver_phone || 'N/A'],
-            ["Starting Point", bus.starting_point || 'N/A'],
-            ["Ending Point", bus.ending_point || 'N/A'],
-            ["Generation Date", new Date().toLocaleString()]
-        ];
+            const details = [
+                ["Attribute", "Information"],
+                ["Bus Number", bus.bus_number],
+                ["Registration No", bus.registration_number || 'N/A'],
+                ["Driver Name", bus.driver_name],
+                ["Driver Contact", bus.driver_phone || 'N/A'],
+                ["Starting Point", bus.starting_point || 'N/A'],
+                ["Ending Point", bus.ending_point || 'N/A'],
+                ["Generation Date", new Date().toLocaleString()]
+            ];
 
-        doc.autoTable({
-            startY: 55,
-            head: [details[0]],
-            body: details.slice(1),
-            theme: 'grid',
-            headStyles: { fillColor: [59, 130, 246], fontStyle: 'bold' },
-            bodyStyles: { textColor: [50, 50, 50] },
-            alternateRowStyles: { fillColor: [245, 247, 250] }
-        });
-
-        // Signatures Placeholder
-        const finalY = (doc).lastAutoTable.cursor.y + 30;
-        doc.text('Transport In-charge Signature', 14, finalY);
-        doc.text('HOD/Principal Signature', 140, finalY);
-
-        const fileName = `${bus.bus_number.replace(/\s+/g, '_')}_details.pdf`;
-
-        if (navigator.share) {
-            const blob = doc.output('blob');
-            const file = new File([blob], fileName, { type: 'application/pdf' });
-            navigator.share({
-                title: `${bus.bus_number} Route Info`,
-                text: `Transport details for ${bus.bus_number} - ${bus.registration_number}`,
-                files: [file]
-            }).catch(err => {
-                console.error("Share failed", err);
-                doc.save(fileName);
+            doc.autoTable({
+                startY: 55,
+                head: [details[0]],
+                body: details.slice(1),
+                theme: 'grid',
+                headStyles: { fillColor: [59, 130, 246], fontStyle: 'bold' },
+                bodyStyles: { textColor: [50, 50, 50] },
+                alternateRowStyles: { fillColor: [245, 247, 250] }
             });
-        } else {
-            doc.save(fileName);
+
+            // Signatures Placeholder - Safely calculation
+            let finalY = 200; // Default fallback position
+            if (doc.lastAutoTable && doc.lastAutoTable.cursor) {
+                finalY = doc.lastAutoTable.cursor.y + 30;
+            }
+
+            doc.setFontSize(10);
+            doc.text('Transport In-charge Signature', 14, finalY);
+            doc.text('HOD/Principal Signature', 140, finalY);
+
+            const safeBusNum = (bus.bus_number || 'bus').replace(/\s+/g, '_');
+            const fileName = `${safeBusNum}_route_info.pdf`;
+
+            if (navigator.share && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                const blob = doc.output('blob');
+                const file = new File([blob], fileName, { type: 'application/pdf' });
+                navigator.share({
+                    title: `${bus.bus_number} Route Info`,
+                    text: `Transport details for ${bus.bus_number}`,
+                    files: [file]
+                }).catch(err => {
+                    console.error("Web Share failed, downloading instead", err);
+                    doc.save(fileName);
+                });
+            } else {
+                doc.save(fileName);
+            }
+        } catch (err) {
+            console.error("PDF generation failed:", err);
+            alert("Failed to generate PDF. Please try again.");
         }
     };
 
