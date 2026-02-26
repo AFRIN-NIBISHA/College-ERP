@@ -213,8 +213,8 @@ const DriverStudentList = () => {
                         </p>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-center gap-4">
-                        <div className="flex gap-2">
+                    <div className="flex flex-col xl:flex-row items-center gap-4 w-full md:w-auto justify-center md:justify-end mt-6 md:mt-0">
+                        <div className="flex flex-wrap justify-center gap-3 w-full md:w-auto">
                             <button
                                 onClick={() => handleDownloadPDF(false)}
                                 className="p-4 bg-white hover:bg-slate-50 text-blue-600 rounded-3xl border border-slate-100 shadow-xl shadow-blue-900/5 group transition-all flex items-center gap-2 pr-6"
