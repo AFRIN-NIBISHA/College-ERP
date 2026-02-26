@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Filter, MoreHorizontal, User, Edit, Trash2, ArrowLeft, GraduationCap, FileText } from 'lucide-react';
+import { Search, Plus, Filter, MoreHorizontal, User, Edit, Trash2, ArrowLeft, GraduationCap, FileText, ChevronDown, ChevronUp, Info, Home, Heart, Milestone, Globe2, UserCheck } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
@@ -14,6 +14,7 @@ const Students = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeSection, setActiveSection] = useState('All');
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+    const [expandedId, setExpandedId] = useState(null);
     const [buses, setBuses] = useState([]);
 
     // Form State
@@ -375,49 +376,135 @@ const Students = () => {
                                         }
 
                                         return filteredStudents.map((student) => (
-                                            <tr key={student.id} className="hover:bg-slate-50 transition-colors group">
-                                                <td className="p-4" data-label="Student">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 border border-slate-200">
-                                                            <User size={20} />
-                                                        </div>
-                                                        <div>
-                                                            <p className="font-semibold text-slate-800">{student.name}</p>
-                                                            <p className="text-xs text-slate-500">CSE Dept</p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="p-4 text-slate-600 font-mono text-sm" data-label="Roll No">{student.roll_no}</td>
-                                                <td className="p-4 text-slate-600 font-medium hide-on-mobile" data-label="Year/Sec">{student.year} - {student.section}</td>
-                                                <td className="p-4 text-slate-500 text-sm hide-on-mobile" data-label="DOB">{student.dob ? new Date(student.dob).toLocaleDateString() : '-'}</td>
-                                                <td className="p-4 text-slate-500 text-sm hide-on-mobile" data-label="Email">{student.email}</td>
-                                                <td className="p-4 text-slate-500 text-sm hide-on-mobile" data-label="Bus No">{student.bus_no || '-'}</td>
-                                                <td className="p-4" data-label="Status">
-                                                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
-                                                        Active
-                                                    </span>
-                                                </td>
-                                                {canEditStudents && (
-                                                    <td className="p-4" data-label="Actions">
-                                                        <div className="flex items-center gap-2">
-                                                            <button
-                                                                onClick={() => handleEdit(student)}
-                                                                className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors"
-                                                                title="Edit"
-                                                            >
-                                                                <Edit size={18} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleDelete(student.id)}
-                                                                className="p-2 hover:bg-red-50 text-red-600 rounded-lg transition-colors"
-                                                                title="Delete"
-                                                            >
-                                                                <Trash2 size={18} />
-                                                            </button>
+                                            <div key={student.id} className="contents break-inside-avoid">
+                                                <tr
+                                                    onClick={() => setExpandedId(expandedId === student.id ? null : student.id)}
+                                                    className={`hover:bg-blue-50/50 transition-all cursor-pointer group ${expandedId === student.id ? 'bg-blue-50/40' : ''}`}
+                                                >
+                                                    <td className="p-4" data-label="Student">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors border ${expandedId === student.id ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-100 text-slate-500 border-slate-200 group-hover:bg-white group-hover:border-blue-200'}`}>
+                                                                <User size={20} />
+                                                            </div>
+                                                            <div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <p className="font-bold text-slate-800">{student.name}</p>
+                                                                    {expandedId === student.id ? <ChevronUp size={14} className="text-blue-500" /> : <ChevronDown size={14} className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />}
+                                                                </div>
+                                                                <p className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">CSE Dept</p>
+                                                            </div>
                                                         </div>
                                                     </td>
+                                                    <td className="p-4 text-slate-600 font-mono text-sm" data-label="Roll No">{student.roll_no}</td>
+                                                    <td className="p-4 text-slate-600 font-medium hide-on-mobile" data-label="Year/Sec">{student.year} - {student.section}</td>
+                                                    <td className="p-4 text-slate-500 text-sm hide-on-mobile" data-label="DOB">{student.dob ? new Date(student.dob).toLocaleDateString() : '-'}</td>
+                                                    <td className="p-4 text-slate-500 text-sm hide-on-mobile" data-label="Email">{student.email}</td>
+                                                    <td className="p-4 text-slate-500 text-sm hide-on-mobile" data-label="Bus No">{student.bus_no || '-'}</td>
+                                                    <td className="p-4" data-label="Status">
+                                                        <span className="px-2 py-1 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-700 border border-emerald-200">
+                                                            Active
+                                                        </span>
+                                                    </td>
+                                                    {canEditStudents && (
+                                                        <td className="p-4" data-label="Actions">
+                                                            <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                                                <button
+                                                                    onClick={() => handleEdit(student)}
+                                                                    className="p-2 hover:bg-blue-600 hover:text-white text-blue-600 rounded-lg transition-all border border-transparent hover:border-blue-600"
+                                                                    title="Edit"
+                                                                >
+                                                                    <Edit size={16} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDelete(student.id)}
+                                                                    className="p-2 hover:bg-red-600 hover:text-white text-red-600 rounded-lg transition-all border border-transparent hover:border-red-600"
+                                                                    title="Delete"
+                                                                >
+                                                                    <Trash2 size={16} />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    )}
+                                                </tr>
+
+                                                {/* Expanded Details Row */}
+                                                {expandedId === student.id && (
+                                                    <tr className="bg-blue-50/20 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                        <td colSpan={canEditStudents ? 8 : 7} className="p-0 border-b border-blue-100/50">
+                                                            <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6 pointer-events-none">
+                                                                {/* Column 1: Parents */}
+                                                                <div className="space-y-3">
+                                                                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
+                                                                        <UserCheck size={14} /> Family Details
+                                                                    </p>
+                                                                    <div className="space-y-2">
+                                                                        <div>
+                                                                            <p className="text-[10px] text-slate-400 font-bold uppercase">Father</p>
+                                                                            <p className="text-sm font-semibold text-slate-700">{student.father_name || 'Not Provided'}</p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-[10px] text-slate-400 font-bold uppercase">Mother</p>
+                                                                            <p className="text-sm font-semibold text-slate-700">{student.mother_name || 'Not Provided'}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Column 2: Address */}
+                                                                <div className="md:col-span-1 space-y-3">
+                                                                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
+                                                                        <Home size={14} /> Permanent Address
+                                                                    </p>
+                                                                    <p className="text-sm font-medium text-slate-600 leading-relaxed bg-white/40 p-3 rounded-xl border border-blue-100/30">
+                                                                        {student.address || 'Address details not entered.'}
+                                                                    </p>
+                                                                </div>
+
+                                                                {/* Column 3: Identity */}
+                                                                <div className="space-y-3">
+                                                                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
+                                                                        <Milestone size={14} /> Community & Identity
+                                                                    </p>
+                                                                    <div className="grid grid-cols-2 gap-y-3">
+                                                                        <div>
+                                                                            <p className="text-[10px] text-slate-400 font-bold uppercase">Religion</p>
+                                                                            <p className="text-sm font-semibold text-slate-700">{student.religion || '-'}</p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-[10px] text-slate-400 font-bold uppercase">Caste</p>
+                                                                            <p className="text-sm font-semibold text-slate-700">{student.caste || '-'}</p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-[10px] text-slate-400 font-bold uppercase">Blood Group</p>
+                                                                            <p className="text-sm font-bold text-rose-600 flex items-center gap-1"><Heart size={12} fill="currentColor" /> {student.blood_group || '-'}</p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-[10px] text-slate-400 font-bold uppercase">Nationality</p>
+                                                                            <p className="text-sm font-semibold text-slate-700">{student.nationality || 'Indian'}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Column 4: IDs */}
+                                                                <div className="space-y-3">
+                                                                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest flex items-center gap-2">
+                                                                        <FileText size={14} /> Identification
+                                                                    </p>
+                                                                    <div className="space-y-2 bg-white/40 p-3 rounded-xl border border-blue-100/30">
+                                                                        <div>
+                                                                            <p className="text-[10px] text-slate-400 font-bold uppercase">EMIS No</p>
+                                                                            <p className="text-xs font-mono font-bold text-slate-800">{student.emis_no || '-'}</p>
+                                                                        </div>
+                                                                        <div className="pt-2 border-t border-blue-100/30">
+                                                                            <p className="text-[10px] text-slate-400 font-bold uppercase">UMIS No</p>
+                                                                            <p className="text-xs font-mono font-bold text-slate-800">{student.umis_no || '-'}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
                                                 )}
-                                            </tr>
+                                            </div>
                                         ));
                                     })()}
                                 </tbody>
