@@ -138,6 +138,8 @@ CREATE TABLE IF NOT EXISTS fees (
     student_id INT REFERENCES students(id) ON DELETE CASCADE,
     total_fee DECIMAL(10, 2) DEFAULT 0,
     paid_amount DECIMAL(10, 2) DEFAULT 0,
+    bus_fee DECIMAL(10, 2) DEFAULT 0,
+    scholarship_amount DECIMAL(10, 2) DEFAULT 0,
     payment_date DATE,
     payment_mode VARCHAR(50),
     receipt_no VARCHAR(50),
