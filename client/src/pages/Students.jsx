@@ -23,8 +23,9 @@ const Students = () => {
         bus_no: '',
         bus_driver_name: '',
         bus_driver_phone: '',
-        bus_starting_point: '',
-        bus_ending_point: ''
+        bus_ending_point: '',
+        emis_no: '',
+        umis_no: ''
     });
 
     const classOptions = [
@@ -133,7 +134,9 @@ const Students = () => {
             bus_driver_name: '',
             bus_driver_phone: '',
             bus_starting_point: '',
-            bus_ending_point: ''
+            bus_ending_point: '',
+            emis_no: '',
+            umis_no: ''
         });
         setEditingId(null);
         setShowAddModal(false);
@@ -152,7 +155,9 @@ const Students = () => {
             bus_driver_name: student.bus_driver_name || '',
             bus_driver_phone: student.bus_driver_phone || '',
             bus_starting_point: student.bus_starting_point || '',
-            bus_ending_point: student.bus_ending_point || ''
+            bus_ending_point: student.bus_ending_point || '',
+            emis_no: student.emis_no || '',
+            umis_no: student.umis_no || ''
         });
         setEditingId(student.id);
         setShowAddModal(true);
@@ -446,6 +451,17 @@ const Students = () => {
                                 <div className="space-y-1">
                                     <label className="text-xs font-medium text-slate-500">Date of Birth</label>
                                     <input type="date" required name="dob" value={formData.dob} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-medium text-slate-500">EMIS Number</label>
+                                    <input name="emis_no" value={formData.emis_no} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-medium text-slate-500">UMIS Number</label>
+                                    <input name="umis_no" value={formData.umis_no} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
                                 </div>
                             </div>
 

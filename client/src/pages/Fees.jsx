@@ -26,7 +26,9 @@ const Fees = () => {
         payment_date: '',
         payment_mode: 'Cash',
         receipt_no: '',
-        status: 'Pending'
+        status: 'Pending',
+        scholarship_type: 'None',
+        scholarship_details: ''
     });
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
@@ -86,7 +88,9 @@ const Fees = () => {
             payment_date: student.payment_date ? student.payment_date.split('T')[0] : new Date().toISOString().split('T')[0],
             payment_mode: student.payment_mode || 'Cash',
             receipt_no: student.receipt_no || '',
-            status: student.status || 'Pending'
+            status: student.status || 'Pending',
+            scholarship_type: student.scholarship_type || 'None',
+            scholarship_details: student.scholarship_details || ''
         });
     };
 
@@ -379,6 +383,39 @@ const Fees = () => {
                                         value={feeForm.receipt_no}
                                         onChange={e => setFeeForm({ ...feeForm, receipt_no: e.target.value })}
                                     />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Scholarship Type</label>
+                                        <select
+                                            className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
+                                            value={feeForm.scholarship_type}
+                                            onChange={e => setFeeForm({ ...feeForm, scholarship_type: e.target.value, scholarship_details: e.target.value === 'Other' ? '' : e.target.value })}
+                                        >
+                                            <option value="None">None</option>
+                                            <option value="7.5">7.5</option>
+                                            <option value="First Graduate">First Graduate</option>
+                                            <option value="PMMS">PMMS</option>
+                                            <option value="BC/MBC">BC/MBC</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        {feeForm.scholarship_type === 'Other' && (
+                                            <>
+                                                <label className="block text-sm font-medium text-slate-700 mb-1">Details manually</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none transition-all"
+                                                    placeholder="Enter details..."
+                                                    value={feeForm.scholarship_details}
+                                                    onChange={e => setFeeForm({ ...feeForm, scholarship_details: e.target.value })}
+                                                />
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="pt-2">

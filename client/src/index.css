@@ -160,10 +160,9 @@ body::before {
     .mobile-stack td:last-child {
         border-bottom: none;
         margin-top: 0.25rem;
-        justify-content: flex-end;
     }
 
-    .mobile-stack thead {
+    table:has(.mobile-stack) thead {
         display: none;
     }
 

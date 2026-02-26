@@ -43,6 +43,8 @@ const Reports = () => {
             { header: "Dept", key: "department" },
             { header: "Year", key: "year" },
             { header: "Section", key: "section" },
+            { header: "EMIS", key: "emis_no" },
+            { header: "UMIS", key: "umis_no" },
             { header: "Phone", key: "phone" }
         ],
         attendance: [
@@ -68,6 +70,7 @@ const Reports = () => {
             { header: "Name", key: "name" },
             { header: "Total Fee", key: "total_fee" },
             { header: "Paid", key: "paid_amount" },
+            { header: "Scholarship", key: "scholarship_display" },
             { header: "Status", key: "status" },
             { header: "Receipt", key: "receipt_no" }
         ],
@@ -168,6 +171,7 @@ const Reports = () => {
                     receipt_no: item.receipt_no || '-',
                     paid_amount: item.paid_amount || 0,
                     total_fee: item.total_fee || 0,
+                    scholarship_display: item.scholarship_type && item.scholarship_type !== 'None' ? (item.scholarship_type === 'Other' ? item.scholarship_details : item.scholarship_type) : '-',
                     status: (parseFloat(item.paid_amount) >= parseFloat(item.total_fee) && item.total_fee > 0) ? 'Completed' : 'Next Payment',
                     nodue_overall_status: item.nodue_overall_status || 'Not Started',
                     office_status: item.office_status || '-',

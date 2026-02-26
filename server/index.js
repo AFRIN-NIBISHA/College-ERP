@@ -252,6 +252,8 @@ const initDb = async () => {
             ALTER TABLE attendance ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
             ALTER TABLE no_dues ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
             ALTER TABLE fees ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
+            ALTER TABLE fees ADD COLUMN IF NOT EXISTS scholarship_type VARCHAR(100);
+            ALTER TABLE fees ADD COLUMN IF NOT EXISTS scholarship_details TEXT;
             ALTER TABLE student_od ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
 
             -- Ensure Fee Naming Consistency safely
@@ -698,7 +700,8 @@ app.get('/api/fees', async (req, res) => {
                    COALESCE(f.total_fee, 50000) as total_fee, 
                    COALESCE(f.paid_amount, 0) as paid_amount, 
                    COALESCE(f.status, 'Pending') as status,
-                   f.payment_date, f.payment_mode, f.receipt_no
+                   f.payment_date, f.payment_mode, f.receipt_no,
+                   f.scholarship_type, f.scholarship_details
             FROM students s
             LEFT JOIN fees f ON s.id = f.student_id
             WHERE 1=1
@@ -727,7 +730,7 @@ app.get('/api/fees', async (req, res) => {
 });
 
 app.post('/api/fees', async (req, res) => {
-    const { student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status } = req.body;
+    const { student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details } = req.body;
     try {
         const check = await db.query("SELECT * FROM fees WHERE student_id = $1", [student_id]);
 
@@ -735,15 +738,16 @@ app.post('/api/fees', async (req, res) => {
             await db.query(
                 `UPDATE fees SET 
                     total_fee = $1, paid_amount = $2, payment_date = $3, 
-                    payment_mode = $4, receipt_no = $5, status = $6 
+                    payment_mode = $4, receipt_no = $5, status = $6,
+                    scholarship_type = $8, scholarship_details = $9
                 WHERE student_id = $7`,
-                [total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, student_id]
+                [total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, student_id, scholarship_type, scholarship_details]
             );
         } else {
             await db.query(
-                `INSERT INTO fees (student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-                [student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status]
+                `INSERT INTO fees (student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+                [student_id, total_fee, paid_amount, payment_date, payment_mode, receipt_no, status, scholarship_type, scholarship_details]
             );
         }
         res.json({ message: "Fee record updated" });
@@ -937,13 +941,13 @@ app.get('/api/students', async (req, res) => {
 
 // 3. Add Student
 app.post('/api/students', async (req, res) => {
-    const { roll_no, name, year, section, email, phone, dob, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point } = req.body;
+    const { roll_no, name, year, section, email, phone, dob, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point, emis_no, umis_no } = req.body;
     try {
         await db.query('BEGIN');
 
         const result = await db.query(
-            "INSERT INTO students (roll_no, name, department, year, section, email, phone, dob, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point) VALUES ($1, $2, 'CSE', $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *",
-            [roll_no, name, year, section, email, phone, dob, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point]
+            "INSERT INTO students (roll_no, name, department, year, section, email, phone, dob, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point, emis_no, umis_no) VALUES ($1, $2, 'CSE', $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *",
+            [roll_no, name, year, section, email, phone, dob, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point, emis_no, umis_no]
         );
 
         const newStudent = result.rows[0];
@@ -969,11 +973,11 @@ app.post('/api/students', async (req, res) => {
 // 3.1 Update Student
 app.put('/api/students/:id', async (req, res) => {
     const { id } = req.params;
-    const { roll_no, name, year, section, email, phone, dob, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point } = req.body;
+    const { roll_no, name, year, section, email, phone, dob, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point, emis_no, umis_no } = req.body;
     try {
         const result = await db.query(
-            "UPDATE students SET roll_no = $1, name = $2, year = $3, section = $4, email = $5, phone = $6, dob = $7, bus_no = $8, bus_driver_name = $9, bus_driver_phone = $10, bus_starting_point = $11, bus_ending_point = $12 WHERE id = $13 RETURNING *",
-            [roll_no, name, year, section, email, phone, dob, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point, id]
+            "UPDATE students SET roll_no = $1, name = $2, year = $3, section = $4, email = $5, phone = $6, dob = $7, bus_no = $8, bus_driver_name = $9, bus_driver_phone = $10, bus_starting_point = $11, bus_ending_point = $12, emis_no = $14, umis_no = $15 WHERE id = $13 RETURNING *",
+            [roll_no, name, year, section, email, phone, dob, bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point, id, emis_no, umis_no]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ message: 'Student not found' });
@@ -1816,6 +1820,8 @@ app.get('/api/no-due', async (req, res) => {
                 nd.status as nodue_overall_status,
                 COALESCE(nd.created_at, s.created_at) as created_at,
                 s.name, s.roll_no, s.year, s.section, s.department,
+                f.total_fee, f.paid_amount, f.status as fee_status,
+                f.scholarship_type, f.scholarship_details,
                 (
                     SELECT JSON_AGG(JSON_BUILD_OBJECT('title', b.title, 'due_date', bi.due_date))
                     FROM book_issues bi

@@ -484,6 +484,18 @@ const NoDue = () => {
                                                             ₹{Number((req.total_fee || 0) - (req.paid_amount || 0)).toLocaleString()}
                                                         </span>
                                                     </div>
+
+                                                    {(req.scholarship_type && req.scholarship_type !== 'None') && (
+                                                        <div className="border-t border-slate-100 pt-1 mt-1">
+                                                            <div className="flex justify-between">
+                                                                <span className="text-slate-500">Scholarship:</span>
+                                                                <span className="font-bold text-blue-600">
+                                                                    {req.scholarship_type === 'Other' ? req.scholarship_details : req.scholarship_type}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
                                                     <div className="text-right mt-1">
                                                         <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${(req.fee_status === 'Paid') ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                                                             {req.fee_status || 'Unknown'}

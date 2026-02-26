@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS students (
     academic_year VARCHAR(20) DEFAULT '2025-2026',
     status VARCHAR(20) DEFAULT 'Active', -- Active, Graduated, Dropout
     library_status VARCHAR(20) DEFAULT 'Active',
+    emis_no VARCHAR(50),
+    umis_no VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 
 -- Student On Duty (OD) table
@@ -140,7 +142,9 @@ CREATE TABLE IF NOT EXISTS fees (
     payment_mode VARCHAR(50),
     receipt_no VARCHAR(50),
     status VARCHAR(20) DEFAULT 'Pending',
-    academic_year VARCHAR(20) DEFAULT '2025-2026'
+    academic_year VARCHAR(20) DEFAULT '2025-2026',
+    scholarship_type VARCHAR(100),
+    scholarship_details TEXT
 );
 
 -- No Due table
