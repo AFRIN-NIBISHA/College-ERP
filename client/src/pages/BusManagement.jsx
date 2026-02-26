@@ -149,7 +149,7 @@ const BusManagement = () => {
         }
     };
 
-    const handleShareBusInfo = (bus) => {
+    const handleShareBusInfo = (bus, directShare = true) => {
         try {
             const doc = new jsPDF();
 
@@ -165,16 +165,16 @@ const BusManagement = () => {
             // Body Info
             doc.setFontSize(16);
             doc.setTextColor(59, 130, 246);
-            doc.text(`Official Document: ${bus.bus_number}`, 14, 45);
+            doc.text(`Official Document: ${bus.bus_number || 'Bus Info'}`, 14, 45);
 
             doc.setFontSize(12);
             doc.setTextColor(50);
 
             const details = [
                 ["Attribute", "Information"],
-                ["Bus Number", bus.bus_number],
+                ["Bus Number", bus.bus_number || 'N/A'],
                 ["Registration No", bus.registration_number || 'N/A'],
-                ["Driver Name", bus.driver_name],
+                ["Driver Name", bus.driver_name || 'N/A'],
                 ["Driver Contact", bus.driver_phone || 'N/A'],
                 ["Starting Point", bus.starting_point || 'N/A'],
                 ["Ending Point", bus.ending_point || 'N/A'],
@@ -191,36 +191,50 @@ const BusManagement = () => {
                 alternateRowStyles: { fillColor: [245, 247, 250] }
             });
 
-            // Signatures Placeholder - Safely calculation
-            let finalY = 200; // Default fallback position
-            if (doc.lastAutoTable && doc.lastAutoTable.cursor) {
-                finalY = doc.lastAutoTable.cursor.y + 30;
+            // Calculate Y safely for signatures
+            let finalY = 180;
+            if (doc.lastAutoTable && doc.lastAutoTable.finalY) {
+                finalY = doc.lastAutoTable.finalY + 30;
+            } else if (doc.autoTable && doc.autoTable.previous && doc.autoTable.previous.finalY) {
+                finalY = doc.autoTable.previous.finalY + 30;
             }
 
             doc.setFontSize(10);
             doc.text('Transport In-charge Signature', 14, finalY);
             doc.text('HOD/Principal Signature', 140, finalY);
 
-            const safeBusNum = (bus.bus_number || 'bus').replace(/\s+/g, '_');
-            const fileName = `${safeBusNum}_route_info.pdf`;
+            const safeBusNum = (bus.bus_number || 'bus').replace(/[^a-z0-9]/gi, '_');
+            const fileName = `${safeBusNum}_route.pdf`;
 
-            if (navigator.share && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+            if (directShare && navigator.share && navigator.canShare) {
                 const blob = doc.output('blob');
                 const file = new File([blob], fileName, { type: 'application/pdf' });
-                navigator.share({
-                    title: `${bus.bus_number} Route Info`,
-                    text: `Transport details for ${bus.bus_number}`,
-                    files: [file]
-                }).catch(err => {
-                    console.error("Web Share failed, downloading instead", err);
+
+                if (navigator.canShare({ files: [file] })) {
+                    navigator.share({
+                        title: `${bus.bus_number} Route`,
+                        text: `Bus details for ${bus.bus_number}`,
+                        files: [file]
+                    }).catch(err => {
+                        console.error("Share failed, saving instead", err);
+                        doc.save(fileName);
+                    });
+                } else {
                     doc.save(fileName);
-                });
+                }
             } else {
                 doc.save(fileName);
             }
         } catch (err) {
             console.error("PDF generation failed:", err);
-            alert("Failed to generate PDF. Please try again.");
+            alert("PDF generation failed. We will try to download it directly.");
+            try {
+                const docSimple = new jsPDF();
+                docSimple.text(`Bus: ${bus.bus_number}`, 10, 10);
+                docSimple.save('bus_info_fallback.pdf');
+            } catch (e) {
+                alert("Critical error. Please refresh the page.");
+            }
         }
     };
 
@@ -480,14 +494,24 @@ const BusManagement = () => {
                             </div>
 
                             {editingBus && (
-                                <button
-                                    type="button"
-                                    onClick={() => handleShareBusInfo({ ...editingBus, ...formData })}
-                                    className="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 font-black py-4 rounded-2xl border-2 border-dashed border-blue-200 transition-all flex items-center justify-center gap-3 group"
-                                >
-                                    <Share2 size={20} className="group-hover:rotate-12 transition-all" />
-                                    SHARE ROUTE PDF
-                                </button>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleShareBusInfo({ ...editingBus, ...formData }, true)}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl transition-all flex items-center justify-center gap-2 group shadow-lg shadow-blue-500/30"
+                                    >
+                                        <Share2 size={18} />
+                                        SHARE
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleShareBusInfo({ ...editingBus, ...formData }, false)}
+                                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-black py-4 rounded-2xl transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <FileDown size={18} />
+                                        SAVE PDF
+                                    </button>
+                                </div>
                             )}
 
                             {error && (
