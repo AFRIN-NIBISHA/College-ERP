@@ -22,7 +22,8 @@ const BusManagement = () => {
         driver_phone: '',
         starting_point: '',
         ending_point: '',
-        photo_data: ''
+        photo_data: '',
+        registration_number: ''
     });
     const [imageSrc, setImageSrc] = useState(null);
     const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -59,7 +60,8 @@ const BusManagement = () => {
                 driver_phone: bus.driver_phone || '',
                 starting_point: bus.starting_point || '',
                 ending_point: bus.ending_point || '',
-                photo_data: bus.photo_data || ''
+                photo_data: bus.photo_data || '',
+                registration_number: bus.registration_number || ''
             });
         } else {
             setEditingBus(null);
@@ -69,7 +71,8 @@ const BusManagement = () => {
                 driver_phone: '',
                 starting_point: '',
                 ending_point: '',
-                photo_data: ''
+                photo_data: '',
+                registration_number: ''
             });
         }
         setIsModalOpen(true);
@@ -258,6 +261,17 @@ const BusManagement = () => {
                                         </span>
                                     </div>
                                 </div>
+                                {bus.registration_number && (
+                                    <div className="flex items-center gap-4 text-slate-600 bg-blue-50/30 p-3 rounded-2xl border border-blue-100/30">
+                                        <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-blue-600">
+                                            <Check size={18} />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Reg No</span>
+                                            <span className="font-bold text-blue-700 tracking-tight text-xs">{bus.registration_number}</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}
@@ -289,16 +303,28 @@ const BusManagement = () => {
                         <p className="text-slate-500 mb-10 font-bold italic text-sm">Update driver and route details</p>
 
                         <form onSubmit={handleSubmit} className="space-y-8">
-                            <div className="space-y-2">
-                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Route / Bus Number</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-blue-500 transition-all font-black text-slate-800 placeholder:text-slate-300 shadow-inner"
-                                    placeholder="e.g. BUS-01 (Kanyakumari)"
-                                    value={formData.bus_number}
-                                    onChange={(e) => setFormData({ ...formData, bus_number: e.target.value })}
-                                />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Route / Bus Number</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-blue-500 transition-all font-black text-slate-800 placeholder:text-slate-300 shadow-inner"
+                                        placeholder="e.g. BUS-01"
+                                        value={formData.bus_number}
+                                        onChange={(e) => setFormData({ ...formData, bus_number: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Registration No</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-6 py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-blue-500 transition-all font-black text-slate-800 placeholder:text-slate-300 shadow-inner"
+                                        placeholder="e.g. TN-74-AX-1234"
+                                        value={formData.registration_number}
+                                        onChange={(e) => setFormData({ ...formData, registration_number: e.target.value })}
+                                    />
+                                </div>
                             </div>
 
                             <div className="space-y-2">
