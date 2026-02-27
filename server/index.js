@@ -393,28 +393,7 @@ const initDb = async () => {
             END $$;
         `);
 
-        // Safe individual migrations that won't crash the entire initialization block
-        const safeMigrations = [
-            "ALTER TABLE bus ADD COLUMN IF NOT EXISTS starting_point VARCHAR(255)",
-            "ALTER TABLE bus ADD COLUMN IF NOT EXISTS ending_point VARCHAR(255)",
-            "ALTER TABLE bus ADD COLUMN IF NOT EXISTS registration_number VARCHAR(50)",
-            "ALTER TABLE bus ADD COLUMN IF NOT EXISTS photo_data TEXT",
-            "ALTER TABLE bus ADD COLUMN IF NOT EXISTS route_pdf TEXT",
-            "ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign1 INT DEFAULT 0",
-            "ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign2 INT DEFAULT 0",
-            "ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign3 INT DEFAULT 0",
-            "ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign4 INT DEFAULT 0",
-        ];
-
-        for (let query of safeMigrations) {
-            try {
-                await db.query(query);
-            } catch (e) {
-                console.warn(`Migration skipped/failed: ${query}`, e.message);
-            }
-        }
-
-        console.log("Schema verified/updated.");
+        console.log("Main Schema verified/updated.");
 
         // Safe Seeding for Class Incharges (if table is empty)
         const classCount = await db.query("SELECT COUNT(*) FROM class_details");
@@ -457,6 +436,27 @@ const initDb = async () => {
         }
     } catch (err) {
         console.error("Schema init error:", err);
+    }
+
+    // Safe individual migrations that won't crash the entire initialization block and will run even if the main block fails
+    const safeMigrations = [
+        "ALTER TABLE bus ADD COLUMN IF NOT EXISTS starting_point VARCHAR(255)",
+        "ALTER TABLE bus ADD COLUMN IF NOT EXISTS ending_point VARCHAR(255)",
+        "ALTER TABLE bus ADD COLUMN IF NOT EXISTS registration_number VARCHAR(50)",
+        "ALTER TABLE bus ADD COLUMN IF NOT EXISTS photo_data TEXT",
+        "ALTER TABLE bus ADD COLUMN IF NOT EXISTS route_pdf TEXT",
+        "ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign1 INT DEFAULT 0",
+        "ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign2 INT DEFAULT 0",
+        "ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign3 INT DEFAULT 0",
+        "ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign4 INT DEFAULT 0",
+    ];
+
+    for (let query of safeMigrations) {
+        try {
+            await db.query(query);
+        } catch (e) {
+            console.warn(`Migration skipped/failed: ${query}`, e.message);
+        }
     }
 };
 
