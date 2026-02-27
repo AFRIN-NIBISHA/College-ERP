@@ -1480,58 +1480,37 @@ app.post('/api/marks', async (req, res) => {
         for (const entry of marksData) {
             const academicYear = await getCurrentYear();
             try {
-                // Try with the robust constraint first
-                await db.query(`
-                    INSERT INTO internal_marks (student_id, subject_code, ia1, ia2, ia3, assign1, assign2, assign3, assign4, academic_year)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-                    ON CONFLICT (student_id, subject_code, academic_year) 
-                    DO UPDATE SET 
-                        ia1 = EXCLUDED.ia1, 
-                        ia2 = EXCLUDED.ia2, 
-                        ia3 = EXCLUDED.ia3,
-                        assign1 = EXCLUDED.assign1,
-                        assign2 = EXCLUDED.assign2,
-                        assign3 = EXCLUDED.assign3,
-                        assign4 = EXCLUDED.assign4
-                `, [
-                    entry.student_id,
-                    subject_code,
-                    entry.ia1 || 0,
-                    entry.ia2 || 0,
-                    entry.ia3 || 0,
-                    entry.assign1 || 0,
-                    entry.assign2 || 0,
-                    entry.assign3 || 0,
-                    entry.assign4 || 0,
-                    academicYear
-                ]);
+                // Manually check if record exists to avoid ON CONFLICT constraint issues
+                const existingResult = await db.query(
+                    "SELECT id FROM internal_marks WHERE student_id = $1 AND subject_code = $2 AND academic_year = $3",
+                    [entry.student_id, subject_code, academicYear]
+                );
+
+                if (existingResult.rows.length > 0) {
+                    await db.query(`
+                        UPDATE internal_marks SET 
+                            ia1 = $1, ia2 = $2, ia3 = $3, 
+                            assign1 = $4, assign2 = $5, assign3 = $6, assign4 = $7
+                        WHERE student_id = $8 AND subject_code = $9 AND academic_year = $10
+                    `, [
+                        entry.ia1 || 0, entry.ia2 || 0, entry.ia3 || 0,
+                        entry.assign1 || 0, entry.assign2 || 0, entry.assign3 || 0, entry.assign4 || 0,
+                        entry.student_id, subject_code, academicYear
+                    ]);
+                } else {
+                    await db.query(`
+                        INSERT INTO internal_marks (student_id, subject_code, ia1, ia2, ia3, assign1, assign2, assign3, assign4, academic_year)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                    `, [
+                        entry.student_id, subject_code,
+                        entry.ia1 || 0, entry.ia2 || 0, entry.ia3 || 0,
+                        entry.assign1 || 0, entry.assign2 || 0, entry.assign3 || 0, entry.assign4 || 0,
+                        academicYear
+                    ]);
+                }
             } catch (innerErr) {
-                // Fallback to legacy constraint if schema wasn't fully initialized
-                console.warn(`Fallback triggered for marks insert due to error: ${innerErr.message}`);
-                await db.query(`
-                    INSERT INTO internal_marks (student_id, subject_code, ia1, ia2, ia3, assign1, assign2, assign3, assign4, academic_year)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-                    ON CONFLICT (student_id, subject_code) 
-                    DO UPDATE SET 
-                        ia1 = EXCLUDED.ia1, 
-                        ia2 = EXCLUDED.ia2, 
-                        ia3 = EXCLUDED.ia3,
-                        assign1 = EXCLUDED.assign1,
-                        assign2 = EXCLUDED.assign2,
-                        assign3 = EXCLUDED.assign3,
-                        assign4 = EXCLUDED.assign4
-                `, [
-                    entry.student_id,
-                    subject_code,
-                    entry.ia1 || 0,
-                    entry.ia2 || 0,
-                    entry.ia3 || 0,
-                    entry.assign1 || 0,
-                    entry.assign2 || 0,
-                    entry.assign3 || 0,
-                    entry.assign4 || 0,
-                    academicYear
-                ]);
+                console.error(`Error saving mark for student ${entry.student_id}:`, innerErr);
+                throw innerErr; // Rethrow to let the main catch block handle it and alert client
             }
             studentIds.push(entry.student_id);
         }
@@ -3108,8 +3087,8 @@ app.put('/api/bus/:id', async (req, res) => {
         );
         res.json(result.rows[0]);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Bus update error:', err);
+        res.status(500).json({ message: 'Failed to update bus', error: err.message });
     }
 });
 

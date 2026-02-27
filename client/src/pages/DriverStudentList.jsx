@@ -179,7 +179,8 @@ const DriverStudentList = () => {
                 fetchBuses();
             } catch (err) {
                 console.error("Upload failed", err);
-                alert("Upload failed. Please try again.");
+                const errMsg = err.response?.data?.message || err.response?.data?.error || err.message || "Unknown error";
+                alert(`Upload failed: ${errMsg}`);
             } finally {
                 setUploading(false);
             }
