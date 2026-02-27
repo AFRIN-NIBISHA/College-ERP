@@ -133,6 +133,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         driver: [
             { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
             { icon: Users, label: 'Student Bus List', path: '/driver-students' },
+            { icon: MapPin, label: 'Upload Route', path: '/driver-route' },
             { icon: Settings, label: 'Bus Management', path: '/bus-management' },
             { icon: Bell, label: 'Notices', path: '/notices' },
         ],

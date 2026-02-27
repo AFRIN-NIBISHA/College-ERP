@@ -20,6 +20,7 @@ import Profile from './pages/Profile';
 import StudentOD from './pages/StudentOD';
 import BusManagement from './pages/BusManagement';
 import DriverStudentList from './pages/DriverStudentList';
+import DriverRouteUpload from './pages/DriverRouteUpload';
 import Library from './pages/Library';
 import StudentLibrary from './pages/StudentLibrary';
 import AdminSettings from './pages/AdminSettings';
@@ -139,6 +140,7 @@ function App() {
                                 <Route path="/od-requests" element={<StudentOD />} />
                                 <Route path="/bus-management" element={<BusManagement />} />
                                 <Route path="/driver-students" element={<DriverStudentList />} />
+                                <Route path="/driver-route" element={<DriverRouteUpload />} />
                                 <Route path="/library" element={<LibraryRouter />} />
                                 <Route path="/settings" element={<AdminSettings />} />
                                 <Route path="*" element={<div className="text-center mt-20 text-slate-400 font-light text-xl">Page not found</div>} />
