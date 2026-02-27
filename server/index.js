@@ -130,6 +130,8 @@ const initDb = async () => {
             ALTER TABLE bus ADD COLUMN IF NOT EXISTS starting_point VARCHAR(255);
             ALTER TABLE bus ADD COLUMN IF NOT EXISTS ending_point VARCHAR(255);
             ALTER TABLE bus ADD COLUMN IF NOT EXISTS registration_number VARCHAR(50);
+            ALTER TABLE bus ADD COLUMN IF NOT EXISTS photo_data TEXT;
+            ALTER TABLE bus ADD COLUMN IF NOT EXISTS route_pdf TEXT;
             CREATE TABLE IF NOT EXISTS marks (
                 id SERIAL PRIMARY KEY,
                 student_id INT REFERENCES students(id) ON DELETE CASCADE,
@@ -251,7 +253,10 @@ const initDb = async () => {
                 driver_name VARCHAR(100) NOT NULL,
                 driver_phone VARCHAR(15),
                 starting_point VARCHAR(255),
-                ending_point VARCHAR(255)
+                ending_point VARCHAR(255),
+                photo_data TEXT,
+                registration_number VARCHAR(50),
+                route_pdf TEXT
             );
 
 

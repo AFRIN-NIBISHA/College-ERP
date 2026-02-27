@@ -248,6 +248,7 @@ CREATE TABLE IF NOT EXISTS bus (
     ending_point VARCHAR(255),
     photo_data TEXT,
     registration_number VARCHAR(50),
+    route_pdf TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
