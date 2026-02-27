@@ -18,11 +18,12 @@ const DriverRouteUpload = () => {
         setLoading(true);
         try {
             const res = await axios.get('/api/bus');
-            // Filter buses for this driver
-            const driverBuses = res.data.filter(b => b.driver_name === user?.username);
-            setBuses(driverBuses);
-            if (driverBuses.length > 0) {
-                setSelectedBus(driverBuses[0].bus_number);
+            // Since driver account usernames (e.g., 'driver') don't match the human typed driver_name (e.g., 'AJITH'), 
+            // we provide all buses so the driver can select the one they are driving today.
+            setBuses(res.data);
+            if (res.data.length > 0) {
+                const myBus = res.data.find(b => b.driver_name.toLowerCase() === user?.username?.toLowerCase());
+                setSelectedBus(myBus ? myBus.bus_number : res.data[0].bus_number);
             }
         } catch (err) {
             console.error('Error fetching buses', err);
