@@ -308,6 +308,10 @@ const initDb = async () => {
             
             -- Ensure Internal Marks Constraints
             ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS academic_year VARCHAR(20) DEFAULT '2025-2026';
+            ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign1 INT DEFAULT 0;
+            ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign2 INT DEFAULT 0;
+            ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign3 INT DEFAULT 0;
+            ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign4 INT DEFAULT 0;
             ALTER TABLE internal_marks DROP CONSTRAINT IF EXISTS internal_marks_student_id_subject_code_key;
             ALTER TABLE internal_marks DROP CONSTRAINT IF EXISTS internal_marks_student_id_subject_code_key1;
             ALTER TABLE internal_marks DROP CONSTRAINT IF EXISTS internal_marks_student_id_subject_code_academic_year_key;
