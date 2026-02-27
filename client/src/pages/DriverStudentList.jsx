@@ -247,41 +247,6 @@ const DriverStudentList = () => {
                                 <FileText size={20} className="text-emerald-500" />
                                 <span className="font-bold">Excel</span>
                             </button>
-                            <button
-                                onClick={() => handleDownloadPDF(true)}
-                                className="p-4 bg-blue-600 hover:bg-blue-500 text-white rounded-3xl shadow-xl shadow-blue-500/20 group transition-all flex items-center gap-2 pr-6"
-                                title="Share via Mobile"
-                            >
-                                <Share2 size={24} />
-                                <span className="font-bold">Share</span>
-                            </button>
-
-                            {(user?.role === 'driver' || user?.role === 'admin') && (
-                                <>
-                                    <input
-                                        type="file"
-                                        accept="application/pdf"
-                                        id="manual-route-upload"
-                                        className="hidden"
-                                        onChange={handleUploadRoutePdf}
-                                    />
-                                    <label
-                                        htmlFor="manual-route-upload"
-                                        className={`p-4 ${uploading ? 'bg-slate-100 text-slate-400' : 'bg-indigo-600 text-white hover:bg-indigo-500'} rounded-3xl shadow-xl shadow-indigo-500/20 group transition-all flex items-center gap-2 pr-6 cursor-pointer`}
-                                    >
-                                        <FileDown size={24} />
-                                        <span className="font-bold">{uploading ? 'Uploading...' : 'Upload Route'}</span>
-                                    </label>
-                                </>
-                            )}
-
-                            <button
-                                onClick={handleViewRouteMap}
-                                className="p-4 bg-slate-800 hover:bg-slate-700 text-white rounded-3xl shadow-xl shadow-slate-900/20 group transition-all flex items-center gap-2 pr-6"
-                            >
-                                <Milestone size={24} />
-                                <span className="font-bold text-sm">View Route</span>
-                            </button>
                         </div>
 
                         <div className="bg-white/80 p-4 rounded-3xl border border-slate-100 shadow-xl shadow-blue-900/5 flex items-center gap-4 min-w-[200px]">
