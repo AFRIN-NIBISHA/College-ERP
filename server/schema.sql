@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS students (
     religion VARCHAR(50),
     caste VARCHAR(50),
     nationality VARCHAR(50),
+    aadhaar_no VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 
 -- Student On Duty (OD) table

@@ -39,7 +39,8 @@ const Students = () => {
         blood_group: '',
         religion: '',
         caste: '',
-        nationality: ''
+        nationality: '',
+        aadhaar_no: ''
     });
 
     const classOptions = [
@@ -157,7 +158,8 @@ const Students = () => {
             blood_group: '',
             religion: '',
             caste: '',
-            nationality: ''
+            nationality: '',
+            aadhaar_no: ''
         });
         setEditingId(null);
         setShowAddModal(false);
@@ -185,7 +187,8 @@ const Students = () => {
             blood_group: student.blood_group || '',
             religion: student.religion || '',
             caste: student.caste || '',
-            nationality: student.nationality || ''
+            nationality: student.nationality || '',
+            aadhaar_no: student.aadhaar_no || ''
         });
         setEditingId(student.id);
         setShowAddModal(true);
@@ -481,6 +484,10 @@ const Students = () => {
                                                                             <p className="text-[10px] text-slate-400 font-bold uppercase">Nationality</p>
                                                                             <p className="text-sm font-semibold text-slate-700">{student.nationality || 'Indian'}</p>
                                                                         </div>
+                                                                        <div>
+                                                                            <p className="text-[10px] text-slate-400 font-bold uppercase">Aadhaar / Nat. ID</p>
+                                                                            <p className="text-sm font-mono font-bold text-slate-700">{student.aadhaar_no || '-'}</p>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
 
@@ -616,13 +623,19 @@ const Students = () => {
                                         <input name="nationality" value={formData.nationality} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
                                     </div>
                                     <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">Aadhaar Number</label>
+                                        <input name="aadhaar_no" value={formData.aadhaar_no} onChange={handleInputChange} placeholder="12-digit format" className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
                                         <label className="text-xs font-medium text-slate-500">EMIS No</label>
                                         <input name="emis_no" value={formData.emis_no} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
                                     </div>
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-medium text-slate-500">UMIS No</label>
-                                    <input name="umis_no" value={formData.umis_no} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-medium text-slate-500">UMIS No</label>
+                                        <input name="umis_no" value={formData.umis_no} onChange={handleInputChange} className="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20" />
+                                    </div>
                                 </div>
                             </div>
 
@@ -663,9 +676,9 @@ const Students = () => {
                             </div>
                         </form>
                     </div>
-                </div>
+                </div >
             )}
-        </div>
+        </div >
     );
 };
 

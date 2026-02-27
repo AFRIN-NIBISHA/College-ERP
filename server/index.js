@@ -119,6 +119,7 @@ const initDb = async () => {
             ALTER TABLE students ADD COLUMN IF NOT EXISTS nationality VARCHAR(50);
             ALTER TABLE students ADD COLUMN IF NOT EXISTS emis_no VARCHAR(50);
             ALTER TABLE students ADD COLUMN IF NOT EXISTS umis_no VARCHAR(50);
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS aadhaar_no VARCHAR(20);
 
             ALTER TABLE staff ADD COLUMN IF NOT EXISTS bus_no VARCHAR(50);
             ALTER TABLE staff ADD COLUMN IF NOT EXISTS bus_driver_name VARCHAR(100);
@@ -1014,7 +1015,7 @@ app.post('/api/students', async (req, res) => {
     const {
         roll_no, name, year, section, email, phone, dob,
         bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point,
-        emis_no, umis_no,
+        emis_no, umis_no, aadhaar_no,
         father_name, mother_name, address, blood_group, religion, caste, nationality
     } = req.body;
     try {
@@ -1024,14 +1025,14 @@ app.post('/api/students', async (req, res) => {
             `INSERT INTO students (
                 roll_no, name, department, year, section, email, phone, dob, 
                 bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point, 
-                emis_no, umis_no,
+                emis_no, umis_no, aadhaar_no,
                 father_name, mother_name, address, blood_group, religion, caste, nationality
-            ) VALUES ($1, $2, 'CSE', $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) RETURNING *`,
+            ) VALUES ($1, $2, 'CSE', $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $22, $15, $16, $17, $18, $19, $20, $21) RETURNING *`,
             [
                 roll_no, name, year, section, email, phone, dob,
                 bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point,
                 emis_no, umis_no,
-                father_name, mother_name, address, blood_group, religion, caste, nationality
+                father_name, mother_name, address, blood_group, religion, caste, nationality, aadhaar_no
             ]
         );
 
@@ -1061,7 +1062,7 @@ app.put('/api/students/:id', async (req, res) => {
     const {
         roll_no, name, year, section, email, phone, dob,
         bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point,
-        emis_no, umis_no,
+        emis_no, umis_no, aadhaar_no,
         father_name, mother_name, address, blood_group, religion, caste, nationality
     } = req.body;
     try {
@@ -1069,14 +1070,14 @@ app.put('/api/students/:id', async (req, res) => {
             `UPDATE students SET 
                 roll_no = $1, name = $2, year = $3, section = $4, email = $5, phone = $6, dob = $7, 
                 bus_no = $8, bus_driver_name = $9, bus_driver_phone = $10, bus_starting_point = $11, bus_ending_point = $12, 
-                emis_no = $14, umis_no = $15,
+                emis_no = $14, umis_no = $15, aadhaar_no = $23,
                 father_name = $16, mother_name = $17, address = $18, blood_group = $19, religion = $20, caste = $21, nationality = $22
             WHERE id = $13 RETURNING *`,
             [
                 roll_no, name, year, section, email, phone, dob,
                 bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point,
                 id, emis_no, umis_no,
-                father_name, mother_name, address, blood_group, religion, caste, nationality
+                father_name, mother_name, address, blood_group, religion, caste, nationality, aadhaar_no
             ]
         );
         if (result.rows.length === 0) {
