@@ -36,6 +36,17 @@ async function fixSchema() {
         } catch (e) {
             console.log("⚠️ Drop constraint failed:", e.message);
         }
+        // 3. Fix Internal Marks Unique Constraint
+        try {
+            await pool.query(`
+                ALTER TABLE internal_marks DROP CONSTRAINT IF EXISTS internal_marks_student_id_subject_code_key;
+                ALTER TABLE internal_marks DROP CONSTRAINT IF EXISTS internal_marks_student_id_subject_code_academic_year_key;
+                ALTER TABLE internal_marks ADD CONSTRAINT internal_marks_student_id_subject_code_academic_year_key UNIQUE (student_id, subject_code, academic_year);
+            `);
+            console.log("✅ Fixed internal_marks constraint.");
+        } catch (e) {
+            console.log("⚠️ Internal marks constraint fix failed:", e.message);
+        }
 
         console.log("Schema Fixes Applied Successfully.");
         pool.end();

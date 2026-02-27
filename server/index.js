@@ -303,6 +303,12 @@ const initDb = async () => {
             -- Ensure No Due Constraints
             ALTER TABLE no_dues DROP CONSTRAINT IF EXISTS no_dues_student_id_semester_key;
             ALTER TABLE no_dues ADD CONSTRAINT no_dues_student_id_semester_key UNIQUE (student_id, semester);
+            
+            -- Ensure Internal Marks Constraints
+            ALTER TABLE internal_marks DROP CONSTRAINT IF EXISTS internal_marks_student_id_subject_code_key;
+            ALTER TABLE internal_marks DROP CONSTRAINT IF EXISTS internal_marks_student_id_subject_code_academic_year_key;
+            ALTER TABLE internal_marks ADD CONSTRAINT internal_marks_student_id_subject_code_academic_year_key UNIQUE (student_id, subject_code, academic_year);
+            
             ALTER TABLE no_dues ADD COLUMN IF NOT EXISTS librarian_status VARCHAR(20) DEFAULT 'Pending';
 
             CREATE TABLE IF NOT EXISTS books (
