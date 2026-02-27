@@ -151,6 +151,13 @@ const DriverStudentList = () => {
         }
 
         if (!busToUpdate && selectedBus === 'All') {
+            const inferredBusNo = students[0]?.bus_no;
+            if (inferredBusNo) {
+                busToUpdate = buses.find(b => b.bus_number === inferredBusNo || normalizeBusNumber(b.bus_number) === normalizeBusNumber(inferredBusNo));
+            }
+        }
+
+        if (!busToUpdate && selectedBus === 'All') {
             alert("Please select a specific bus from the dropdown first.");
             return;
         }

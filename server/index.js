@@ -1479,30 +1479,60 @@ app.post('/api/marks', async (req, res) => {
         const studentIds = [];
         for (const entry of marksData) {
             const academicYear = await getCurrentYear();
-            await db.query(`
-                INSERT INTO internal_marks (student_id, subject_code, ia1, ia2, ia3, assign1, assign2, assign3, assign4, academic_year)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-                ON CONFLICT (student_id, subject_code, academic_year) 
-                DO UPDATE SET 
-                    ia1 = EXCLUDED.ia1, 
-                    ia2 = EXCLUDED.ia2, 
-                    ia3 = EXCLUDED.ia3,
-                    assign1 = EXCLUDED.assign1,
-                    assign2 = EXCLUDED.assign2,
-                    assign3 = EXCLUDED.assign3,
-                    assign4 = EXCLUDED.assign4
-            `, [
-                entry.student_id,
-                subject_code,
-                entry.ia1 || 0,
-                entry.ia2 || 0,
-                entry.ia3 || 0,
-                entry.assign1 || 0,
-                entry.assign2 || 0,
-                entry.assign3 || 0,
-                entry.assign4 || 0,
-                academicYear
-            ]);
+            try {
+                // Try with the robust constraint first
+                await db.query(`
+                    INSERT INTO internal_marks (student_id, subject_code, ia1, ia2, ia3, assign1, assign2, assign3, assign4, academic_year)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                    ON CONFLICT (student_id, subject_code, academic_year) 
+                    DO UPDATE SET 
+                        ia1 = EXCLUDED.ia1, 
+                        ia2 = EXCLUDED.ia2, 
+                        ia3 = EXCLUDED.ia3,
+                        assign1 = EXCLUDED.assign1,
+                        assign2 = EXCLUDED.assign2,
+                        assign3 = EXCLUDED.assign3,
+                        assign4 = EXCLUDED.assign4
+                `, [
+                    entry.student_id,
+                    subject_code,
+                    entry.ia1 || 0,
+                    entry.ia2 || 0,
+                    entry.ia3 || 0,
+                    entry.assign1 || 0,
+                    entry.assign2 || 0,
+                    entry.assign3 || 0,
+                    entry.assign4 || 0,
+                    academicYear
+                ]);
+            } catch (innerErr) {
+                // Fallback to legacy constraint if schema wasn't fully initialized
+                console.warn(`Fallback triggered for marks insert due to error: ${innerErr.message}`);
+                await db.query(`
+                    INSERT INTO internal_marks (student_id, subject_code, ia1, ia2, ia3, assign1, assign2, assign3, assign4, academic_year)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                    ON CONFLICT (student_id, subject_code) 
+                    DO UPDATE SET 
+                        ia1 = EXCLUDED.ia1, 
+                        ia2 = EXCLUDED.ia2, 
+                        ia3 = EXCLUDED.ia3,
+                        assign1 = EXCLUDED.assign1,
+                        assign2 = EXCLUDED.assign2,
+                        assign3 = EXCLUDED.assign3,
+                        assign4 = EXCLUDED.assign4
+                `, [
+                    entry.student_id,
+                    subject_code,
+                    entry.ia1 || 0,
+                    entry.ia2 || 0,
+                    entry.ia3 || 0,
+                    entry.assign1 || 0,
+                    entry.assign2 || 0,
+                    entry.assign3 || 0,
+                    entry.assign4 || 0,
+                    academicYear
+                ]);
+            }
             studentIds.push(entry.student_id);
         }
 
@@ -1518,8 +1548,8 @@ app.post('/api/marks', async (req, res) => {
 
         res.json({ message: "Marks updated successfully" });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Failed to save marks" });
+        console.error('Master Marks Error:', err);
+        res.status(500).json({ message: "Failed to save marks", error: err.message, stack: err.stack });
     }
 });
 // --- LOGIN & AUTH ---

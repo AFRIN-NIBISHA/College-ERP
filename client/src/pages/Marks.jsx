@@ -119,7 +119,8 @@ const Marks = () => {
             alert("Marks saved successfully!");
         } catch (err) {
             console.error("Error saving marks", err);
-            alert("Failed to save marks");
+            const errMsg = err.response?.data?.error || err.response?.data?.message || err.message || "Failed to save marks";
+            alert(`Failed to save marks: ${errMsg}`);
         } finally {
             setIsSaving(false);
         }
