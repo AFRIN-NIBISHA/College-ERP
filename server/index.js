@@ -126,12 +126,6 @@ const initDb = async () => {
             ALTER TABLE staff ADD COLUMN IF NOT EXISTS bus_driver_phone VARCHAR(15);
             ALTER TABLE staff ADD COLUMN IF NOT EXISTS bus_starting_point VARCHAR(255);
             ALTER TABLE staff ADD COLUMN IF NOT EXISTS bus_ending_point VARCHAR(255);
-
-            ALTER TABLE bus ADD COLUMN IF NOT EXISTS starting_point VARCHAR(255);
-            ALTER TABLE bus ADD COLUMN IF NOT EXISTS ending_point VARCHAR(255);
-            ALTER TABLE bus ADD COLUMN IF NOT EXISTS registration_number VARCHAR(50);
-            ALTER TABLE bus ADD COLUMN IF NOT EXISTS photo_data TEXT;
-            ALTER TABLE bus ADD COLUMN IF NOT EXISTS route_pdf TEXT;
             CREATE TABLE IF NOT EXISTS marks (
                 id SERIAL PRIMARY KEY,
                 student_id INT REFERENCES students(id) ON DELETE CASCADE,
@@ -398,6 +392,28 @@ const initDb = async () => {
                 END IF;
             END $$;
         `);
+
+        // Safe individual migrations that won't crash the entire initialization block
+        const safeMigrations = [
+            "ALTER TABLE bus ADD COLUMN IF NOT EXISTS starting_point VARCHAR(255)",
+            "ALTER TABLE bus ADD COLUMN IF NOT EXISTS ending_point VARCHAR(255)",
+            "ALTER TABLE bus ADD COLUMN IF NOT EXISTS registration_number VARCHAR(50)",
+            "ALTER TABLE bus ADD COLUMN IF NOT EXISTS photo_data TEXT",
+            "ALTER TABLE bus ADD COLUMN IF NOT EXISTS route_pdf TEXT",
+            "ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign1 INT DEFAULT 0",
+            "ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign2 INT DEFAULT 0",
+            "ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign3 INT DEFAULT 0",
+            "ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign4 INT DEFAULT 0",
+        ];
+
+        for (let query of safeMigrations) {
+            try {
+                await db.query(query);
+            } catch (e) {
+                console.warn(`Migration skipped/failed: ${query}`, e.message);
+            }
+        }
+
         console.log("Schema verified/updated.");
 
         // Safe Seeding for Class Incharges (if table is empty)
@@ -3088,7 +3104,7 @@ app.put('/api/bus/:id', async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error('Bus update error:', err);
-        res.status(500).json({ message: 'Failed to update bus', error: err.message });
+        res.status(500).json({ message: err.message });
     }
 });
 
