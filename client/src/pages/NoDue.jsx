@@ -289,12 +289,27 @@ const NoDue = () => {
     const sortedRequests = [...filteredRequests].sort((a, b) => {
         // A request is 'Completed' if the principal has approved it (final step) 
         // OR if any step rejected it.
-        const isCompletedA = a.principal_status === 'Approved' || a.office_status === 'Rejected' || a.librarian_status === 'Rejected' || a.hod_status === 'Rejected' || a.principal_status === 'Rejected' || (a.subjects && a.subjects.some(s => s.status === 'Rejected'));
-        const isCompletedB = b.principal_status === 'Approved' || b.office_status === 'Rejected' || b.librarian_status === 'Rejected' || b.hod_status === 'Rejected' || b.principal_status === 'Rejected' || (b.subjects && b.subjects.some(s => s.status === 'Rejected'));
+        const getSortTier = (req) => {
+            const isCompleted = req.principal_status === 'Approved' ||
+                req.office_status === 'Rejected' ||
+                req.librarian_status === 'Rejected' ||
+                req.hod_status === 'Rejected' ||
+                req.principal_status === 'Rejected' ||
+                (req.subjects && req.subjects.some(s => s.status === 'Rejected'));
+            if (isCompleted) return 3;
+            if (req.id) return 1;
+            return 2;
+        };
 
-        // Pending requests go to the top, completed ones go to the bottom
-        if (isCompletedA && !isCompletedB) return 1;
-        if (!isCompletedA && isCompletedB) return -1;
+        const tierA = getSortTier(a);
+        const tierB = getSortTier(b);
+
+        if (tierA !== tierB) return tierA - tierB;
+
+        const nameA = (a.name || '').toLowerCase();
+        const nameB = (b.name || '').toLowerCase();
+        if (nameA < nameB) return -1;
+        if (nameA > nameB) return 1;
 
         // Secondary sort: most recently requested first
         return new Date(b.created_at || 0) - new Date(a.created_at || 0);
@@ -304,9 +319,9 @@ const NoDue = () => {
         if (e.target.checked) {
             // Only select pending items for bulk approval
             const actionableIds = sortedRequests
-                .filter(a => !(a.principal_status === 'Approved' || a.office_status === 'Rejected' || a.librarian_status === 'Rejected' || a.hod_status === 'Rejected' || a.principal_status === 'Rejected' || (a.subjects && a.subjects.some(s => s.status === 'Rejected'))))
+                .filter(a => a.id && !(a.principal_status === 'Approved' || a.office_status === 'Rejected' || a.librarian_status === 'Rejected' || a.hod_status === 'Rejected' || a.principal_status === 'Rejected' || (a.subjects && a.subjects.some(s => s.status === 'Rejected'))))
                 .map(r => r.id);
-            setSelectedRequests(actionableIds.length > 0 ? actionableIds : sortedRequests.map(r => r.id));
+            setSelectedRequests(actionableIds.length > 0 ? actionableIds : sortedRequests.filter(r => r.id).map(r => r.id));
         } else {
             setSelectedRequests([]);
         }
@@ -416,7 +431,7 @@ const NoDue = () => {
                             <input
                                 type="checkbox"
                                 className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                                checked={selectedRequests.length > 0 && selectedRequests.length === sortedRequests.filter(a => !(a.principal_status === 'Approved' || a.office_status === 'Rejected' || a.librarian_status === 'Rejected' || a.hod_status === 'Rejected' || a.principal_status === 'Rejected' || (a.subjects && a.subjects.some(s => s.status === 'Rejected')))).length}
+                                checked={selectedRequests.length > 0 && selectedRequests.length === sortedRequests.filter(a => a.id && !(a.principal_status === 'Approved' || a.office_status === 'Rejected' || a.librarian_status === 'Rejected' || a.hod_status === 'Rejected' || a.principal_status === 'Rejected' || (a.subjects && a.subjects.some(s => s.status === 'Rejected')))).length}
                                 onChange={handleSelectAll}
                             />
                             <span className="font-bold text-slate-700">Select All Actionable Requests</span>
