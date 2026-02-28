@@ -7,6 +7,12 @@ const NoDue = () => {
     const { user } = useAuth();
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+    const showToast = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+        setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 4000);
+    };
 
     // Check role helpers
     // Role Permissions
@@ -109,7 +115,7 @@ const NoDue = () => {
                 semester: currentSemester
             });
             console.log("Submit Response:", res.data);
-            alert("No Due Request Submitted Successfully!");
+            showToast("No Due Request Submitted Successfully!", 'success');
 
             // Wait slightly before refetching to ensure DB commit visibility (optional but safer)
             setTimeout(() => {
@@ -118,7 +124,7 @@ const NoDue = () => {
 
         } catch (err) {
             console.error(err);
-            alert("Failed to submit request: " + (err.response?.data?.message || err.message));
+            showToast("Failed to submit request: " + (err.response?.data?.message || err.message), 'error');
         }
     };
 
@@ -154,11 +160,12 @@ const NoDue = () => {
             const response = await axios.put(`/api/no-due/${id}/approve`, requestData);
 
             console.log("✅ Backend response:", response.data);
+            showToast(`Successfully ${status.toLowerCase()}!`, 'success');
             fetchRequests();
         } catch (err) {
             console.error("❌ No Due Update Error:", err);
             console.error("❌ Error response:", err.response?.data);
-            alert(`Action failed: ${err.response?.data?.message || err.message}\n${err.response?.data?.details || ''}`);
+            showToast(`Action failed: ${err.response?.data?.message || err.message}`, 'error');
         }
     };
 
@@ -177,11 +184,11 @@ const NoDue = () => {
             console.log("Sending No Due delete request for ID:", id);
             await axios.delete(`/api/no-due/${id}`);
             setRequests(requests.filter(req => req.id !== id));
-            alert('No Due request deleted successfully');
+            showToast('No Due request deleted successfully', 'success');
         } catch (err) {
             console.error("Error deleting No Due request:", err);
             console.error("Error response:", err.response?.data);
-            alert('Failed to delete No Due request: ' + (err.response?.data?.message || err.message));
+            showToast('Failed to delete No Due request: ' + (err.response?.data?.message || err.message), 'error');
         }
     };
 
@@ -356,7 +363,7 @@ const NoDue = () => {
             // fetchRequests is called inside handleUpdate but we might want to wait
         } catch (err) {
             console.error("Bulk Approve Error", err);
-            alert("Some requests failed to approve.");
+            showToast("Some requests failed to approve.", 'error');
         } finally {
             setLoading(false);
             fetchRequests();
@@ -364,7 +371,15 @@ const NoDue = () => {
     };
 
     return (
-        <div className="max-w-6xl mx-auto space-y-8">
+        <div className="max-w-6xl mx-auto space-y-8 relative">
+            {/* Custom Toast Notification Popup */}
+            {toast.show && (
+                <div className={`fixed bottom-8 left-1/2 transform -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-full shadow-2xl transition-all duration-500 animate-in slide-in-from-bottom-5 fade-in ${toast.type === 'success' ? 'bg-emerald-600 text-white shadow-emerald-600/30' : 'bg-red-600 text-white shadow-red-600/30'}`}>
+                    {toast.type === 'success' ? <CheckCircle size={24} className="animate-bounce" /> : <XCircle size={24} className="animate-pulse" />}
+                    <span className="font-bold tracking-wide">{toast.message}</span>
+                </div>
+            )}
+
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-3xl font-bold text-slate-800">
