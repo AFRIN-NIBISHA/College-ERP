@@ -430,6 +430,10 @@ const Reports = () => {
                         {activeTab === 'fees' && (
                             <>
                                 <div className="p-3 bg-white rounded-xl border border-blue-100 shadow-sm">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Completed</p>
+                                    <p className="text-lg font-extrabold text-blue-600">{data.filter(item => item.fee_status === 'Completed').length}</p>
+                                </div>
+                                <div className="p-3 bg-white rounded-xl border border-blue-100 shadow-sm">
                                     <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Paid</p>
                                     <p className="text-lg font-extrabold text-emerald-600">₹{data.reduce((acc, curr) => acc + (parseFloat(curr.paid_amount) || 0), 0).toLocaleString()}</p>
                                 </div>
