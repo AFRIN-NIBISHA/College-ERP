@@ -449,6 +449,9 @@ const initDb = async () => {
         "ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign2 INT DEFAULT 0",
         "ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign3 INT DEFAULT 0",
         "ALTER TABLE internal_marks ADD COLUMN IF NOT EXISTS assign4 INT DEFAULT 0",
+        "ALTER TABLE students ADD COLUMN IF NOT EXISTS aadhaar_no VARCHAR(20)",
+        "ALTER TABLE students ADD COLUMN IF NOT EXISTS emis_no VARCHAR(50)",
+        "ALTER TABLE students ADD COLUMN IF NOT EXISTS umis_no VARCHAR(50)"
     ];
 
     for (let query of safeMigrations) {
