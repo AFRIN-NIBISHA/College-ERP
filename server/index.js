@@ -1093,6 +1093,11 @@ app.put('/api/students/:id', async (req, res) => {
         emis_no, umis_no, aadhaar_no,
         father_name, mother_name, address, blood_group, religion, caste, nationality
     } = req.body;
+
+    // Fix common data type issues (e.g. empty string to date)
+    const validDob = dob !== '' ? dob : null;
+    const validYear = year !== '' && !isNaN(year) ? parseInt(year) : null;
+
     try {
         const result = await db.query(
             `UPDATE students SET 
@@ -1102,7 +1107,7 @@ app.put('/api/students/:id', async (req, res) => {
                 father_name = $16, mother_name = $17, address = $18, blood_group = $19, religion = $20, caste = $21, nationality = $22
             WHERE id = $13 RETURNING *`,
             [
-                roll_no, name, year, section, email, phone, dob,
+                roll_no, name, validYear, section, email, phone, validDob,
                 bus_no, bus_driver_name, bus_driver_phone, bus_starting_point, bus_ending_point,
                 id, emis_no, umis_no,
                 father_name, mother_name, address, blood_group, religion, caste, nationality, aadhaar_no
@@ -1117,7 +1122,7 @@ app.put('/api/students/:id', async (req, res) => {
         if (err.code === '23505') {
             return res.status(400).json({ message: 'Student with this Roll Number already exists' });
         }
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Server error: ' + err.message });
     }
 });
 
