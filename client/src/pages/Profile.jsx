@@ -163,6 +163,22 @@ const Profile = () => {
                                         </div>
                                     </div>
 
+                                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest px-1 mt-6">National Identification</h4>
+                                    <div className="space-y-3 bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
+                                        <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                                            <span className="text-sm text-slate-500">Aadhaar No.</span>
+                                            <span className="font-bold text-slate-700">{displayData?.aadhaar_no || 'N/A'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                                            <span className="text-sm text-slate-500">EMIS No.</span>
+                                            <span className="font-bold text-slate-700">{displayData?.emis_no || 'N/A'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-2">
+                                            <span className="text-sm text-slate-500">UMIS No.</span>
+                                            <span className="font-bold text-slate-700">{displayData?.umis_no || 'N/A'}</span>
+                                        </div>
+                                    </div>
+
                                     <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest px-1 mt-6">Contact Address</h4>
                                     <div className="p-4 bg-slate-50/50 rounded-3xl border border-slate-100 min-h-[100px]">
                                         <p className="text-slate-600 text-sm leading-relaxed italic">
