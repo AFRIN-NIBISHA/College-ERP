@@ -279,9 +279,27 @@ const NoDue = () => {
         return false;
     });
 
+    const sortedRequests = [...filteredRequests].sort((a, b) => {
+        // A request is 'Completed' if the principal has approved it (final step) 
+        // OR if any step rejected it.
+        const isCompletedA = a.principal_status === 'Approved' || a.office_status === 'Rejected' || a.librarian_status === 'Rejected' || a.hod_status === 'Rejected' || a.principal_status === 'Rejected' || (a.subjects && a.subjects.some(s => s.status === 'Rejected'));
+        const isCompletedB = b.principal_status === 'Approved' || b.office_status === 'Rejected' || b.librarian_status === 'Rejected' || b.hod_status === 'Rejected' || b.principal_status === 'Rejected' || (b.subjects && b.subjects.some(s => s.status === 'Rejected'));
+
+        // Pending requests go to the top, completed ones go to the bottom
+        if (isCompletedA && !isCompletedB) return 1;
+        if (!isCompletedA && isCompletedB) return -1;
+
+        // Secondary sort: most recently requested first
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+    });
+
     const handleSelectAll = (e) => {
         if (e.target.checked) {
-            setSelectedRequests(filteredRequests.map(r => r.id));
+            // Only select pending items for bulk approval
+            const actionableIds = sortedRequests
+                .filter(a => !(a.principal_status === 'Approved' || a.office_status === 'Rejected' || a.librarian_status === 'Rejected' || a.hod_status === 'Rejected' || a.principal_status === 'Rejected' || (a.subjects && a.subjects.some(s => s.status === 'Rejected'))))
+                .map(r => r.id);
+            setSelectedRequests(actionableIds.length > 0 ? actionableIds : sortedRequests.map(r => r.id));
         } else {
             setSelectedRequests([]);
         }
@@ -364,7 +382,7 @@ const NoDue = () => {
                         <Send size={20} /> Apply for No Due
                     </button>
                 )}
-                {!isStudent && filteredRequests.length > 0 && (
+                {!isStudent && sortedRequests.length > 0 && (
                     <button
                         onClick={handleBulkApprove}
                         disabled={selectedRequests.length === 0}
@@ -378,19 +396,19 @@ const NoDue = () => {
             {loading ? <p>Loading...</p> : (
                 <div className="grid gap-6">
                     {/* Select All Bar for Staff/Admin */}
-                    {!isStudent && filteredRequests.length > 0 && (
+                    {!isStudent && sortedRequests.length > 0 && (
                         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
                             <input
                                 type="checkbox"
                                 className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                                checked={selectedRequests.length === filteredRequests.length}
+                                checked={selectedRequests.length > 0 && selectedRequests.length === sortedRequests.filter(a => !(a.principal_status === 'Approved' || a.office_status === 'Rejected' || a.librarian_status === 'Rejected' || a.hod_status === 'Rejected' || a.principal_status === 'Rejected' || (a.subjects && a.subjects.some(s => s.status === 'Rejected')))).length}
                                 onChange={handleSelectAll}
                             />
-                            <span className="font-bold text-slate-700">Select All Pending Requests</span>
+                            <span className="font-bold text-slate-700">Select All Actionable Requests</span>
                         </div>
                     )}
 
-                    {filteredRequests.length === 0 ? (
+                    {sortedRequests.length === 0 ? (
                         <div className="p-12 text-center bg-white rounded-3xl border border-dashed border-slate-300">
                             <FileText size={48} className="mx-auto text-slate-300 mb-4" />
                             <p className="text-slate-500">
@@ -398,7 +416,7 @@ const NoDue = () => {
                             </p>
                         </div>
                     ) : (
-                        filteredRequests.map(req => (
+                        sortedRequests.map(req => (
                             <div key={req.id} className={`bg-white p-4 md:p-6 rounded-2xl border transition-all ${selectedRequests.includes(req.id) ? 'border-blue-400 ring-1 ring-blue-100' : 'border-slate-200'} shadow-sm flex flex-col xl:flex-row xl:items-start justify-between gap-6`}>
 
                                 {/* Selection Checkbox */}
