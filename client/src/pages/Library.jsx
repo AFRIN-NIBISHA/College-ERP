@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
     Book, Search, Plus, Edit, Trash2, CheckCircle, Clock,
-    AlertCircle, Filter, BookOpen, User, Calendar, CreditCard, X, ArrowLeftRight
+    AlertCircle, Filter, BookOpen, User, Calendar, CreditCard, X, ArrowLeftRight, Upload
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { useAuth } from '../context/AuthContext';
 
 const Library = () => {
@@ -18,6 +19,7 @@ const Library = () => {
     const [showIssueModal, setShowIssueModal] = useState(false);
     const [editingBook, setEditingBook] = useState(null);
     const [selectedBookForIssue, setSelectedBookForIssue] = useState(null);
+    const [uploading, setUploading] = useState(false);
 
     const [bookFormData, setBookFormData] = useState({
         title: '', author: '', isbn: '', category: 'General', total_copies: 1, shelf_location: ''
@@ -112,6 +114,46 @@ const Library = () => {
 
     const resetBookForm = () => {
         setBookFormData({ title: '', author: '', isbn: '', category: 'General', total_copies: 1, shelf_location: '' });
+    };
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            setUploading(true);
+            const data = await file.arrayBuffer();
+            const workbook = XLSX.read(data);
+            const sheetName = workbook.SheetNames[0];
+            const sheet = workbook.Sheets[sheetName];
+            const parsedData = XLSX.utils.sheet_to_json(sheet);
+
+            if (parsedData.length === 0) {
+                alert("The Excel sheet is empty.");
+                setUploading(false);
+                return;
+            }
+
+            // Map Excel columns to our DB columns
+            const formattedBooks = parsedData.map(row => ({
+                title: row['Title'] || row['title'] || row['Book Name'] || 'Unknown Title',
+                author: row['Author'] || row['author'] || 'Unknown Author',
+                isbn: row['ISBN'] || row['isbn'] || null,
+                category: row['Category'] || row['category'] || 'General',
+                total_copies: parseInt(row['Total Copies'] || row['total_copies'] || row['Copies'] || 1),
+                shelf_location: row['Shelf'] || row['shelf_location'] || row['Location'] || ''
+            }));
+
+            const res = await axios.post('/api/library/books/bulk', { books: formattedBooks });
+            alert(`Upload Complete! Successfully added ${res.data.successCount} books. ${res.data.failCount > 0 ? `(${res.data.failCount} skipped due to duplicates/errors)` : ''}`);
+            fetchBooks();
+        } catch (err) {
+            console.error("Upload error:", err);
+            alert("Failed to process Excel file. Please check the format.");
+        } finally {
+            setUploading(false);
+            e.target.value = null; // reset input
+        }
     };
 
     const openEditBook = (book) => {
@@ -214,6 +256,24 @@ const Library = () => {
                                     <Plus size={20} />
                                     <span>Add Book</span>
                                 </button>
+
+                                <div className="relative">
+                                    <input
+                                        type="file"
+                                        accept=".xlsx, .xls, .csv"
+                                        onChange={handleFileUpload}
+                                        disabled={uploading}
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                                        title="Upload Excel File"
+                                    />
+                                    <button
+                                        disabled={uploading}
+                                        className={`flex items-center gap-2 px-6 py-3.5 rounded-2xl font-black text-sm shadow-lg transition-all ${uploading ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-200 hover:-translate-y-0.5'}`}
+                                    >
+                                        <Upload size={20} />
+                                        <span>{uploading ? 'Uploading...' : 'Excel Upload'}</span>
+                                    </button>
+                                </div>
                             </>
                         )}
                     </div>

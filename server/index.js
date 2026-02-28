@@ -3163,6 +3163,38 @@ app.post('/api/library/books', async (req, res) => {
     }
 });
 
+app.post('/api/library/books/bulk', async (req, res) => {
+    const { books } = req.body;
+    if (!Array.isArray(books) || books.length === 0) {
+        return res.status(400).json({ message: 'Missing or empty books array' });
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const book of books) {
+        const { title, author, isbn, category, total_copies, shelf_location } = book;
+        const finalTitle = title || 'Unknown Title';
+        const finalAuthor = author || 'Unknown Author';
+        const finalCopies = parseInt(total_copies) || 1;
+        const finalCategory = category || 'General';
+        const finalShelf = shelf_location || '';
+
+        try {
+            await db.query(
+                "INSERT INTO books (title, author, isbn, category, total_copies, available_copies, shelf_location) VALUES ($1, $2, $3, $4, $5, $5, $6)",
+                [finalTitle, finalAuthor, isbn, finalCategory, finalCopies, finalShelf]
+            );
+            successCount++;
+        } catch (err) {
+            console.error("Bulk insert skip ISBN exist/err:", isbn, err.message);
+            failCount++;
+        }
+    }
+
+    res.json({ message: `Bulk upload complete`, successCount, failCount });
+});
+
 app.put('/api/library/books/:id', async (req, res) => {
     const { id } = req.params;
     const { title, author, isbn, category, total_copies, shelf_location } = req.body;
